@@ -230,7 +230,7 @@ async fn do_requests_and_extract_prices(
     for (i, result) in (join_all(requests).await).into_iter().enumerate() {
         match result {
             Ok(response) => match response.text().await {
-                Ok(response_body) =>
+                Ok(response_body) => {
                     match serde_json::from_str::<Value>(&response_body) {
                         Ok(json) => {
                             json.get("matching_query").map_or_else(|| {
@@ -277,7 +277,8 @@ async fn do_requests_and_extract_prices(
 
                             return false;
                         },
-                    },
+                    }
+                },
 
                 Err(e) => {
                     println!("{}{e}", "Error when getting response body: ".red());
