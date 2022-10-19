@@ -1,16 +1,16 @@
-#[cfg(target_env = "msvc")]
+//#[cfg(target_env = "msvc")]
 use mimalloc::MiMalloc;
 
-#[cfg(target_env = "msvc")]
+//#[cfg(target_env = "msvc")]
 #[global_allocator]
 static GLOBAL: MiMalloc = MiMalloc;
 
-#[cfg(not(target_env = "msvc"))]
-use jemallocator::Jemalloc;
+//#[cfg(not(target_env = "msvc"))]
+// use jemallocator::Jemalloc;
 
-#[cfg(not(target_env = "msvc"))]
-#[global_allocator]
-static GLOBAL: Jemalloc = Jemalloc;
+//#[cfg(not(target_env = "msvc"))]
+//#[global_allocator]
+// static GLOBAL: Jemalloc = Jemalloc;
 
 use core::cmp::min;
 
