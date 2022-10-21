@@ -1,3 +1,50 @@
+// Enables lints disabled (allowed) by default to (possibly) catch more code
+// errors/smells https://doc.rust-lang.org/rustc/lints/listing/allowed-by-default.html
+
+#![warn(absolute_paths_not_starting_with_crate)]
+#![warn(box_pointers)]
+#![warn(elided_lifetimes_in_paths)]
+#![warn(explicit_outlives_requirements)]
+//#![feature(ffi_unwind_calls)]
+#![feature(c_unwind)]
+#![warn(ffi_unwind_calls)]
+#![feature(strict_provenance)]
+#![warn(fuzzy_provenance_casts)]
+#![warn(lossy_provenance_casts)]
+#![warn(keyword_idents)]
+#![warn(macro_use_extern_crate)]
+#![warn(meta_variable_misuse)]
+#![warn(missing_abi)]
+#![warn(missing_copy_implementations)]
+#![warn(missing_debug_implementations)]
+//#![warn(missing_docs)]
+#![feature(must_not_suspend)]
+#![warn(must_not_suspend)]
+#![warn(non_ascii_idents)]
+#![feature(non_exhaustive_omitted_patterns_lint)]
+#![warn(non_exhaustive_omitted_patterns)]
+#![warn(noop_method_call)]
+#![warn(pointer_structural_match)]
+#![warn(rust_2021_incompatible_closure_captures)]
+#![warn(rust_2021_incompatible_or_patterns)]
+#![warn(rust_2021_prefixes_incompatible_syntax)]
+#![warn(rust_2021_prelude_collisions)]
+#![warn(single_use_lifetimes)]
+#![warn(trivial_casts)]
+#![warn(trivial_numeric_casts)]
+#![warn(unreachable_pub)]
+#![warn(unsafe_code)]
+#![warn(unsafe_op_in_unsafe_fn)]
+#![warn(unused_crate_dependencies)]
+#![warn(unused_extern_crates)]
+#![warn(unused_import_braces)]
+#![warn(unused_lifetimes)]
+#![warn(unused_macro_rules)]
+#![warn(unused_qualifications)]
+#![warn(unused_results)]
+#![warn(unused_tuple_struct_fields)]
+#![warn(variant_size_differences)]
+
 //#[cfg(target_env = "msvc")]
 use mimalloc::MiMalloc;
 
@@ -11,6 +58,9 @@ static GLOBAL: MiMalloc = MiMalloc;
 //#[cfg(not(target_env = "msvc"))]
 //#[global_allocator]
 // static GLOBAL: Jemalloc = Jemalloc;
+
+use cookie_store as _;
+use trust_dns_resolver as _;
 
 use core::cmp::min;
 
@@ -196,20 +246,18 @@ async fn do_requests_and_extract_prices(
             for i in 1..8 {
                 let id = format!("MASTER_SKULL_TIER_{i}");
 
-                let query = vec![
-                    ("limit", "1"),
-                    ("page", "1"),
-                    ("sortOrder", "asc"),
-                    ("sortBy", "starting_bid"),
-                    ("id", &id),
-                    ("bin", "true"),
-                    ("category", "accessories"),
-                ];
-
                 requests.push(
                     client
                         .get("https://api.slothpixel.me/api/skyblock/auctions")
-                        .query(&query)
+                        .query(&vec![
+                            ("limit", "1"),
+                            ("page", "1"),
+                            ("sortOrder", "asc"),
+                            ("sortBy", "starting_bid"),
+                            ("id", &id),
+                            ("bin", "true"),
+                            ("category", "accessories"),
+                        ])
                         .timeout(Duration::from_secs(10))
                         .header("Accept", "application/json; charset=utf-8")
                         .header("Accept-Encoding", "br")
@@ -239,9 +287,7 @@ async fn do_requests_and_extract_prices(
                             matching_query.as_i64().map_or_else(|| {
                                 println!("{}{matching_query}", "error: matching_query field value is not an i64: ".red());
                             }, |matches| {
-                                let available_for_sale = matches >= 1;
-
-                                if available_for_sale {
+                                if matches >= 1 { // Available for sale
                                     json.get("auctions").map_or_else(|| {
                                         println!("{}{response_body}", "error: can't find auctions field in JSON: ".red());
                                     }, |auctions| {
@@ -260,7 +306,9 @@ async fn do_requests_and_extract_prices(
                                                         starting_bid.as_i64().map_or_else(|| {
                                                             println!("{}{starting_bid}", "error: starting_bid field is not an i64: ".red());
                                                         }, |price| {
-                                                            prices.insert(i + 1, price);
+                                                            if prices.insert(i + 1, price).is_some() {
+                                                                println!("error: duplicate value at index {}, updating the value and contiuning", i + 1);
+                                                            }
                                                         });
                                                     });
                                                 });

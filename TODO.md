@@ -4,23 +4,19 @@
 
 run.sh: figure out how to setup MIRAI for even more code smells
 
-rustc: enable the lints that are disabled (allowed) by default in rustc, see https://doc.rust-lang.org/rustc/lints/listing/allowed-by-default.html
-
 # Speeding up dev/debug builds
 
 general: use sccache for compiler cache, see https://github.com/mozilla/sccache
 
-general: maybe make /target a ram-disk folder, maybe use https://github.com/PauMAVA/cargo-ramdisk
-
 Cargo.toml: trying to use mold linker causes unknown argument error, figure it out
-
-# Making release build smaller (might decrease execution or startup speed plus there are sayings that UPX makes anti-virus software flag the executable)
-
-release_build.sh: upx doesn't work because of a gnu dt hash table error, figure it out
 
 # Dependencies
 
 Cargo.toml: reqwest stable doesn't have HTTP/3 support so we are using a fork, but that fork is based on 1 release behind than stable
+
+# Making release build smaller (might decrease execution or startup speed plus there are sayings that UPX makes anti-virus software flag the executable)
+
+release_build.sh: upx doesn't work because of a gnu dt hash table error, figure it out
 
 # Portability
 
