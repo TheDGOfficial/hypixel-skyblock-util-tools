@@ -351,7 +351,7 @@ async fn do_requests_and_extract_prices(
 /// format. Note that empty strings and just `-` are allowed.
 fn with_comma_separators(s: &str) -> Option<String> {
     // Position of the `.`
-    let dot = s.bytes().position(|c| c == b'.').unwrap_or(s.len());
+    let dot = s.bytes().position(|c| c == b'.').unwrap_or_else(|| s.len());
     // Is the number negative (starts with `-`)?
     let negative = s.bytes().next() == Some(b'-');
     // The dot cannot be at the front if it is negative.
@@ -420,8 +420,8 @@ fn print(text: &str) {
 }
 
 fn ask_int_input(question: &str, min: Option<i32>, max: Option<i32>) -> i32 {
-    let min_with_default = min.unwrap_or(i32::MIN);
-    let max_with_default = max.unwrap_or(i32::MAX);
+    let min_with_default = min.unwrap_or_else(|| i32::MIN);
+    let max_with_default = max.unwrap_or_else(|| i32::MAX);
 
     loop {
         print(question);
