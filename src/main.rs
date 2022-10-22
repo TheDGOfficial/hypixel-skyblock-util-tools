@@ -307,7 +307,7 @@ async fn do_requests_and_extract_prices(
                                                             println!("{}{starting_bid}", "error: starting_bid field is not an i64: ".red());
                                                         }, |price| {
                                                             if prices.insert(i + 1, price).is_some() {
-                                                                println!("error: duplicate value at index {}, updating the value and contiuning", i + 1);
+                                                                println!("error: duplicate value at index {}, updating the value and continuing", i + 1);
                                                             }
                                                         });
                                                     });
