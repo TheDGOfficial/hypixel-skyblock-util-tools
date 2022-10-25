@@ -34,7 +34,5 @@ main.rs: (general) make everything concurrent and parallel
 # The Actual TODO for New Features/Functinoality
 
 Add more utilities:
- - Catacombs stat boost calculator: A tool to calculate how much in percent would your stats be buffed, going from a certain Catacombs level to another, includes Stars and Master Stars too.
-
  - RNG Simulator: A tool to simulate RNG in Hypixel SkyBlock, that can provide data and useful information about item drop rates and such.
 
