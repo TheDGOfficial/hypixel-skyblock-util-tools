@@ -2,8 +2,9 @@
 rustup self update
 rustup update
 
-cargo +nightly update
-cargo +nightly generate-lockfile
+cargo update
+cargo generate-lockfile
 
+cargo install install-update
 cargo install-update -a
 
