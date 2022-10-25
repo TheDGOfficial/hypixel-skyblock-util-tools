@@ -179,11 +179,15 @@ fn catacombs_stat_boost_calculator(
 
             Err(e) => {
                 println!("{}{e}", "Error converting i32 to f64: ".red());
+
+                return false;
             },
         },
 
         Err(e) => {
             println!("{}{e}", "Error converting i32 to f64: ".red());
+
+            return false;
         },
     }
 
