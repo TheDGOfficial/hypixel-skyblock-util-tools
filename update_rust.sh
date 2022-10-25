@@ -5,6 +5,6 @@ rustup update
 cargo update
 cargo generate-lockfile
 
-cargo install install-update
+cargo install cargo-update
 cargo install-update -a
 
