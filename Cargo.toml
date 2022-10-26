@@ -31,7 +31,11 @@ serde_json = "1.0.87"
 #jemallocator = "0.5.0"
 mimalloc = { version = "0.1.30", default-features = false }
 
+fxhash = "0.2.1"
+
 colored = "2.0.0"
+
+jandom = "0.3.4"
 
 [patch.crates-io]
 reqwest = { git = "https://github.com/kckeiks/reqwest/", branch = "add-http3-support"}
