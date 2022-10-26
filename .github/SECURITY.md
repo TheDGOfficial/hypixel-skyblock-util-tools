@@ -23,3 +23,4 @@ Discord link is https://discord.gg/tmupwqn
 
 Do not use any other link provided. Do not open PRs publicly to fix security vulnerabilities, contact us, and we will
 fix it while mentioning you. You can also send a patch file if you have the solution already.
+

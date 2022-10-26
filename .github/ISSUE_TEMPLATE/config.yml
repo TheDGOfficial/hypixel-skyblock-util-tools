@@ -1,0 +1,9 @@
+blank_issues_enabled: false
+contact_links:
+    -   name: Create a discussion to discuss something/get help
+        url: https://github.com/TheDGOfficial/hypixel-skyblock-util-tools/discussions/
+        about: View/create discussions to dicuss something or get help
+    -   name: Get help from the community on Discord (mainly Turkish)
+        url: https://discord.gg/tmupwqn
+        about: Join the LifeMC Discord for support in Discord
+

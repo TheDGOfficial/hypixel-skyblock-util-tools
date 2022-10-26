@@ -42,3 +42,4 @@ So if you want to share the resulting binary, don't share debug build binaries, 
 For contributors, it is recommended to also test your changes with the Release build to make sure your code doesn't break anything when optimizations are applied and debug symbols are stripped.
   
 To perform a release build, run ./release_build.sh from your terminal. The resulting binary will be on target/x86_64-unknown-linux-gnu/release folder.
+
