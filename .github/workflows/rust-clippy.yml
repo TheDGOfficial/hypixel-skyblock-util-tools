@@ -41,7 +41,7 @@ jobs:
           fetch-depth: 0 # Shallow clones should be disabled for a better relevancy of analysis
 
       - name: Install Rust toolchain
-        uses: actions-rs/toolchain@16499b5e05bf2e26879000db0c1d13f7e13fa3af #@v1
+        uses: actions-rs/toolchain@1.0.6
         with:
           profile: minimal
           toolchain: nightly
@@ -72,16 +72,16 @@ jobs:
           --message-format=json | clippy-sarif | tee rust-clippy-results.sarif | sarif-fmt
         continue-on-error: true
 
-      - name: Build the binary
-        run:
-          cargo build
-        continue-on-error: true
-
       - name: Upload analysis results to GitHub
         uses: github/codeql-action/upload-sarif@v2.1.29
         with:
           sarif_file: rust-clippy-results.sarif
           wait-for-processing: true
+
+      - name: Build the binary
+        run:
+          cargo build
+        continue-on-error: true
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v3.1.1
