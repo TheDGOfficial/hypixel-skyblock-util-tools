@@ -61,6 +61,7 @@ jobs:
           restore-keys: ${{ runner.os }}-cargo
 
       - name: Install required cargo
+        if: steps.cache-primes.outputs.cache-hit != 'true'
         run: cargo install clippy-sarif sarif-fmt
 
       - name: Run rust-clippy
