@@ -78,9 +78,12 @@ use std::io::Write;
 use std::process::ExitCode;
 
 use colored::Colorize;
+use conv::ConvUtil;
 use core::hash::Hash;
 use core::time::Duration;
 use jandom::Random;
+use reqwest::Error;
+use reqwest::Response;
 use std::time::Instant;
 
 #[tokio::main]
@@ -141,30 +144,7 @@ const NECRONS_HANDLE_DROP_CHANCE: f64 = 0.0964;
 const NECRONS_HANDLE_MASTER_MODE_DROP_CHANCE: f64 = 0.1106;
 
 fn rng_simulator(start_without_user_input: &mut Option<Instant>) -> bool {
-    println!();
-    println!("Select which item you want to simulate RNG: ");
-
-    println!(" {}. Chimera (%{CHIMERA_DROP_CHANCE})", "1".bright_blue());
-    println!(
-        " {}. Judgement Core (%{JUDGEMENT_CORE_DROP_CHANCE})",
-        "2".bright_blue()
-    );
-    println!(
-        " {}. Warden Heart (%{WARDEN_HEART_DROP_CHANCE})",
-        "3".bright_blue()
-    );
-    println!(
-        " {}. Overflux Capacitor (%{OVERFLUX_CAPACITOR_DROP_CHANCE})",
-        "4".bright_blue()
-    );
-    println!(
-        " {}. Necron's Handle (%{NECRONS_HANDLE_DROP_CHANCE})",
-        "5".bright_blue()
-    );
-    println!(" {}. Necron's Handle (Master Mode) (%{NECRONS_HANDLE_MASTER_MODE_DROP_CHANCE})", "6".bright_blue());
-    println!(" {}. Custom", "7".bright_blue());
-
-    println!();
+    print_drops_selection();
 
     let selection = ask_int_input("Enter a number to select: ", Some(1), Some(7));
 
@@ -235,7 +215,7 @@ fn rng_simulator(start_without_user_input: &mut Option<Instant>) -> bool {
     let drop_rate_with_magic_find_and_looting = drop_rate_with_magic_find +
         percent_of(drop_rate_with_magic_find, f64::from(looting_extra_chance));
 
-    let odds = 100.0 / drop_rate_with_magic_find_and_looting;
+    let odds = get_odds(drop_rate_with_magic_find_and_looting);
 
     println!();
     println!(
@@ -261,8 +241,8 @@ fn rng_simulator(start_without_user_input: &mut Option<Instant>) -> bool {
 
     let max_drops = all_succeeded_magic_find_values.len();
 
-    let percent =
-        100.0 - f64::abs(percentage_change(max_drops as f64, f64::from(drops)));
+    let percent = 100.0 -
+        f64::abs(percentage_change(usize_to_f64(max_drops), f64::from(drops)));
 
     if rolls > 0 {
         println!();
@@ -276,7 +256,7 @@ fn rng_simulator(start_without_user_input: &mut Option<Instant>) -> bool {
 
     if !all_succeeded_magic_find_values.is_empty() {
         print_statistics(
-            100.0 / original_drop_chance,
+            get_odds(original_drop_chance),
             all_succeeded_magic_find_values,
             meter_succeeded_rolls,
             rng_meter_percent,
@@ -284,6 +264,49 @@ fn rng_simulator(start_without_user_input: &mut Option<Instant>) -> bool {
     }
 
     true
+}
+
+fn get_odds(percentage_chance: f64) -> f64 {
+    100.0 / percentage_chance
+}
+
+fn print_drops_selection() {
+    println!();
+    println!("Select which item you want to simulate RNG: ");
+
+    println!(
+        " {}. Chimera (%{CHIMERA_DROP_CHANCE}) [1/{}]",
+        "1".bright_blue(),
+        get_odds(CHIMERA_DROP_CHANCE)
+    );
+    println!(
+        " {}. Judgement Core (%{JUDGEMENT_CORE_DROP_CHANCE}) [1/{}]",
+        "2".bright_blue(),
+        get_odds(JUDGEMENT_CORE_DROP_CHANCE)
+    );
+    println!(
+        " {}. Warden Heart (%{WARDEN_HEART_DROP_CHANCE}) [1/{}]",
+        "3".bright_blue(),
+        get_odds(WARDEN_HEART_DROP_CHANCE)
+    );
+    println!(
+        " {}. Overflux Capacitor (%{OVERFLUX_CAPACITOR_DROP_CHANCE}) [1/{}]",
+        "4".bright_blue(),
+        get_odds(OVERFLUX_CAPACITOR_DROP_CHANCE)
+    );
+    println!(
+        " {}. Necron's Handle (%{NECRONS_HANDLE_DROP_CHANCE}) [1/{}]",
+        "5".bright_blue(),
+        get_odds(NECRONS_HANDLE_DROP_CHANCE)
+    );
+    println!(" {}. Necron's Handle (Master Mode) (%{NECRONS_HANDLE_MASTER_MODE_DROP_CHANCE}) [1/{}]", "6".bright_blue(), get_odds(NECRONS_HANDLE_MASTER_MODE_DROP_CHANCE));
+    println!(" {}. Custom", "7".bright_blue());
+
+    println!();
+}
+
+fn compare_f64(f64: f64, compare_to: f64) -> bool {
+    (f64 - compare_to).abs() < f64::EPSILON
 }
 
 fn print_statistics(
@@ -318,7 +341,7 @@ fn print_statistics(
 
     println!();
 
-    if original_rng_meter == -1.0 {
+    if compare_f64(original_rng_meter, -1.0) {
         println!("{}: The RNG Meter doesn't work on this drop type, so values below are based on if the RNG meter existed as a percentage to expected amount of rolls to get the drop, but didn't actually guarantee drops or modify chances.", "Note".red());
         println!();
     }
@@ -404,6 +427,16 @@ fn cap(number: f64, cap: f64) -> f64 {
     number
 }
 
+const fn f64_to_i32(f64: f64) -> i32 {
+    // We want the truncation behaviour here and i32::from is not implemented for
+    // f64 so using as is the only option.
+    #[allow(clippy::cast_possible_truncation)]
+    #[allow(clippy::as_conversions)]
+    {
+        f64 as i32
+    }
+}
+
 fn do_rolls_and_get_drops(
     original_drop_chance: f64, original_rng_meter_percent: f64,
     looting_extra_chance: i32, rolls: i32, magic_find: i32,
@@ -418,16 +451,18 @@ fn do_rolls_and_get_drops(
     let mut last_reset_at = 0;
 
     for roll in 1..=rolls {
-        let odds = 100.0 / original_drop_chance;
+        let odds = get_odds(original_drop_chance);
         let original_rng_meter_progress =
             percent_of(odds, original_rng_meter_percent);
 
-        let progress = if reset_meter_at_least_once {
-            f64::from(roll - last_reset_at)
-        } else {
-            original_rng_meter_progress + f64::from(roll)
-        }
-        .round() as i32;
+        let progress = f64_to_i32(
+            if reset_meter_at_least_once {
+                f64::from(roll - last_reset_at)
+            } else {
+                original_rng_meter_progress + f64::from(roll)
+            }
+            .round(),
+        );
 
         let rng_meter_percent = 100.0 -
             f64::abs(percentage_change(odds, cap(f64::from(progress), odds)));
@@ -435,7 +470,7 @@ fn do_rolls_and_get_drops(
         let final_drop_chance = if rng_meter_percent >= 100.0 {
             100.0
         } else {
-            let multiplier = if original_rng_meter_percent == -1.0 {
+            let multiplier = if compare_f64(original_rng_meter_percent, -1.0) {
                 1.0
             } else {
                 1.0 + ((2.0 * rng_meter_percent) / 100.0)
@@ -488,11 +523,11 @@ fn do_rolls_and_get_drops(
         }
 
         if minimum_magic_find_needed_to_success == 901 {
-            // println!(
-            // "Roll #{}: {}, can't succeed even with max Magic Find.",
-            // roll.to_string().yellow(),
-            // "FAIL".bright_red()
-            // );
+            println!(
+                "Roll #{}: {}, can't succeed even with max Magic Find.",
+                roll.to_string().yellow(),
+                "FAIL".bright_red()
+            );
         } else {
             all_succeeded_magic_find_values
                 .push(minimum_magic_find_needed_to_success);
@@ -514,12 +549,24 @@ fn do_rolls_and_get_drops(
     drops
 }
 
+fn usize_to_f64(usize: usize) -> f64 {
+    match usize.value_as::<f64>() {
+        Ok(f64) => f64,
+
+        Err(e) => {
+            println!("{}{e}", "warning: loss of precision due to overflow of usize while converting to f64: ".yellow());
+
+            #[allow(clippy::cast_precision_loss)]
+            #[allow(clippy::as_conversions)]
+            {
+                usize as f64
+            }
+        },
+    }
+}
+
 fn mean(array: &Vec<i32>) -> f64 {
-    f64::from(array.iter().sum::<i32>()) / array.len() as f64 // TODO use conv
-                                                              // crate instead
-                                                              // and error on
-                                                              // overflow on all
-                                                              // conversions
+    f64::from(array.iter().sum::<i32>()) / usize_to_f64(array.len())
 }
 
 fn median(array: &mut Vec<i32>) -> f64 {
@@ -865,80 +912,10 @@ async fn do_requests_and_extract_prices(
     while let Some(result_of_task) = completion_stream.next().await {
         match result_of_task {
             Ok(result_of_request) => {
-                match result_of_request {
-                    Ok(response) => {
-                        match response.text().await {
-                            Ok(response_body) => {
-                                match serde_json::from_str::<Value>(
-                                    &response_body,
-                                ) {
-                                    Ok(json) => {
-                                        json.get("matching_query").map_or_else(|| {
-                                    println!("{}{response_body}", "error: can't find matching_query field in JSON: ".red());
-                                }, |matching_query| {
-                                    matching_query.as_i64().map_or_else(|| {
-                                        println!("{}{matching_query}", "error: matching_query field value is not an i64: ".red());
-                                    }, |matches| {
-                                        if matches >= 1 { // Available for sale
-                                            json.get("auctions").map_or_else(|| {
-                                                println!("{}{response_body}", "error: can't find auctions field in JSON: ".red());
-                                            }, |auctions| {
-                                                auctions.as_array().map_or_else(|| {
-                                                    println!("{}{auctions}", "error: auctions field is not an array: ".red());
-                                                }, |auctions_array| {
-                                                    auctions_array.get(0).map_or_else(|| {
-                                                        println!("{}{response_body}", "error: can't find the first auction in the auctions list while matching_query was >= 1: ".red());
-                                                    }, |auction| {
-                                                        auction.as_object().map_or_else(|| {
-                                                            println!("{}{auction}", "error: auction data is not a Map: ".red());
-                                                        }, |auction_map| {
-                                                            auction_map.get("starting_bid").map_or_else(|| {
-                                                                println!("{}{response_body}", "error: can't find starting_bid field in auction JSON: ".red());
-                                                            }, |starting_bid| {
-                                                                starting_bid.as_i64().map_or_else(|| {
-                                                                    println!("{}{starting_bid}", "error: starting_bid field is not an i64: ".red());
-                                                                }, |price| {
-                                                                    if prices.insert(i + 1, price).is_some() {
-                                                                        println!("error: duplicate value at index {}, updating the value and continuing", i + 1);
-                                                                    }
-                                                                });
-                                                            });
-                                                        });
-                                                    });
-                                                });
-                                            });
-                                        }
-                                    });
-                                });
-                                    },
-
-                                    Err(e) => {
-                                        println!(
-                                            "{}{e}",
-                                            "Error when parsing JSON: ".red()
-                                        );
-
-                                        return false;
-                                    },
-                                }
-                            },
-
-                            Err(e) => {
-                                println!(
-                                    "{}{e}",
-                                    "Error when getting response body: ".red()
-                                );
-
-                                return false;
-                            },
-                        }
-                    },
-
-                    Err(e) => {
-                        println!("{}{e}", "Error when getting response: ".red());
-
-                        return false;
-                    },
+                if !parse_request_and_insert_prices(prices, i, result_of_request)
+                    .await
+                {
+                    return false;
                 }
             },
 
@@ -950,6 +927,81 @@ async fn do_requests_and_extract_prices(
         }
 
         i += 1;
+    }
+
+    true
+}
+
+async fn parse_request_and_insert_prices(
+    prices: &mut FxHashMap<usize, i64>, i: usize,
+    result_of_request: Result<Response, Error>,
+) -> bool {
+    match result_of_request {
+        Ok(response) => {
+            match response.text().await {
+                Ok(response_body) => {
+                    match serde_json::from_str::<Value>(&response_body) {
+                        Ok(json) => {
+                            json.get("matching_query").map_or_else(|| {
+                                println!("{}{response_body}", "error: can't find matching_query field in JSON: ".red());
+                            }, |matching_query| {
+                                matching_query.as_i64().map_or_else(|| {
+                                    println!("{}{matching_query}", "error: matching_query field value is not an i64: ".red());
+                                }, |matches| {
+                                    if matches >= 1 { // Available for sale
+                                        json.get("auctions").map_or_else(|| {
+                                            println!("{}{response_body}", "error: can't find auctions field in JSON: ".red());
+                                        }, |auctions| {
+                                            auctions.as_array().map_or_else(|| {
+                                                println!("{}{auctions}", "error: auctions field is not an array: ".red());
+                                            }, |auctions_array| {
+                                                auctions_array.get(0).map_or_else(|| {
+                                                    println!("{}{response_body}", "error: can't find the first auction in the auctions list while matching_query was >= 1: ".red());
+                                                }, |auction| {
+                                                    auction.as_object().map_or_else(|| {
+                                                        println!("{}{auction}", "error: auction data is not a Map: ".red());
+                                                    }, |auction_map| {
+                                                        auction_map.get("starting_bid").map_or_else(|| {
+                                                            println!("{}{response_body}", "error: can't find starting_bid field in auction JSON: ".red());
+                                                        }, |starting_bid| {
+                                                            starting_bid.as_i64().map_or_else(|| {
+                                                                println!("{}{starting_bid}", "error: starting_bid field is not an i64: ".red());
+                                                            }, |price| {
+                                                                if prices.insert(i + 1, price).is_some() {
+                                                                    println!("error: duplicate value at index {}, updating the value and continuing", i + 1);
+                                                                }
+                                                            });
+                                                        });
+                                                    });
+                                                });
+                                            });
+                                        });
+                                    }
+                                });
+                            });
+                        },
+
+                        Err(e) => {
+                            println!("{}{e}", "Error when parsing JSON: ".red());
+
+                            return false;
+                        },
+                    }
+                },
+
+                Err(e) => {
+                    println!("{}{e}", "Error when getting response body: ".red());
+
+                    return false;
+                },
+            }
+        },
+
+        Err(e) => {
+            println!("{}{e}", "Error when getting response: ".red());
+
+            return false;
+        },
     }
 
     true
