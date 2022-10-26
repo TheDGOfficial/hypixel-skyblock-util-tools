@@ -31,8 +31,3 @@ main.rs: http2\_prior\_knowledge() gives out errors, fix it and make it http3\_p
 
 main.rs: (general) make everything concurrent and parallel
 
-# The Actual TODO for New Features/Functinoality
-
-Add more utilities:
- - RNG Simulator: A tool to simulate RNG in Hypixel SkyBlock, that can provide data and useful information about item drop rates and such.
-
