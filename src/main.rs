@@ -720,10 +720,6 @@ fn catacombs_stat_boost_calculator(
     true
 }
 
-// fn percent_of(number: f64, percent: f64) -> f64 {
-//    (number / 100.0) * percent
-//}
-
 fn percent_of(number: f64, percent: f64) -> f64 {
     (number / 100.0) * percent
 }
