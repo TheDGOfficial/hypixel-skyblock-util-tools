@@ -22,7 +22,11 @@ release_build.sh: upx doesn't work because of a gnu dt hash table error, figure 
 
 Build scripts: Either build a actually portable executable that works on (at least) Windows/macOS/Linux or build executables for Windows & macOS along with the current Linux-only executable.
 
-Cargo.toml: we might want to switch to musl instead of gnu for c library
+Cargo.toml: we might want to switch to musl (or cosmopolitian libc) instead of gnu for c library
+
+# Organization
+
+main.rs: Split all code into multiple files and even directories to organize the project
 
 # The Actual Code
 
