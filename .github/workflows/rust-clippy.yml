@@ -33,7 +33,7 @@ jobs:
           fetch-depth: 0 # Shallow clones should be disabled for a better relevancy of analysis
 
       - name: Install Rust toolchain
-        uses: actions-rs/toolchain@v1.0.7
+        uses: dtolnay/rust-toolchain@nightly
         with:
           profile: minimal
           toolchain: nightly
