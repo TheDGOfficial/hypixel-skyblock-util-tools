@@ -316,10 +316,15 @@ fn print_statistics(
     println!();
 
     let mean_succeed_magic_find = mean(all_succeeded_magic_find_values);
-    let median_succeed_magic_find = median(all_succeeded_magic_find_values);
 
     println!("Mean (Average) Succeed Magic Find: {mean_succeed_magic_find}");
-    println!("Median (Middle) Succeed Magic Find: {median_succeed_magic_find}");
+    if let Some(median_succeed_magic_find) =
+        median(all_succeeded_magic_find_values)
+    {
+        println!(
+            "Median (Middle) Succeed Magic Find: {median_succeed_magic_find}"
+        );
+    }
 
     if !has_unique_elements(all_succeeded_magic_find_values) {
         if let Some(mode_succeed_magic_find) =
@@ -339,7 +344,9 @@ fn print_statistics(
         }
     }
 
-    println!();
+    if !meter_succeeded_rolls.len().is_empty() {
+        println!();
+    }
 
     if compare_f64(original_rng_meter, -1.0) {
         println!("{}: The RNG Meter doesn't work on this drop type, so values below are based on if the RNG meter existed as a percentage to expected amount of rolls to get the drop, but didn't actually guarantee drops or modify chances.", "Note".red());
@@ -347,21 +354,20 @@ fn print_statistics(
     }
 
     let mean_succeed_rolls = mean(meter_succeeded_rolls);
-    let median_succeed_rolls = median(meter_succeeded_rolls);
 
     let mean_succeed_meter =
         100.0 - f64::abs(percentage_change(odds, cap(mean_succeed_rolls, odds)));
 
-    println!(
-        "Mean (Average) Amount of Rolls until Succeed: {mean_succeed_rolls} (%{mean_succeed_meter} RNG Meter)"
-    );
+    if !mean_succeed_rolls.is_nan() && !mean_succeed_meter.is_nan() {
+        println!("Mean (Average) Amount of Rolls until Succeed: {mean_succeed_rolls} (%{mean_succeed_meter} RNG Meter)");
+    }
 
-    let median_succeed_meter = 100.0 -
-        f64::abs(percentage_change(odds, cap(median_succeed_rolls, odds)));
+    if let Some(median_succeed_rolls) = median(meter_succeeded_rolls) {
+        let median_succeed_meter = 100.0 -
+            f64::abs(percentage_change(odds, cap(median_succeed_rolls, odds)));
 
-    println!(
-        "Median (Middle) Amount of Rolls until Succeed: {median_succeed_rolls} (%{median_succeed_meter} RNG Meter)"
-    );
+        println!("Median (Middle) Amount of Rolls until Succeed: {median_succeed_rolls} (%{median_succeed_meter} RNG Meter)");
+    }
 
     if !has_unique_elements(meter_succeeded_rolls) {
         if let Some(mode_succeed_rolls) = mode(meter_succeeded_rolls) {
@@ -569,7 +575,22 @@ fn mean(array: &Vec<i32>) -> f64 {
     f64::from(array.iter().sum::<i32>()) / usize_to_f64(array.len())
 }
 
-fn median(array: &mut Vec<i32>) -> f64 {
+// Returns the middle value in an array.
+// This method sorts the array, and such, the array order will not be same after
+// this method is called. Returns None if the array is empty, and if theres only
+// one value in the array, returns that value.
+fn median(array: &mut Vec<i32>) -> Option<f64> {
+    if array.is_empty() {
+        return None;
+    }
+
+    if array.len() == 1 {
+        #[allow(clippy::indexing_slicing)]
+        {
+            return Some(f64::from(array[0]));
+        }
+    }
+
     array.sort_unstable();
 
     if array.len() % 2 == 0 {
@@ -578,12 +599,12 @@ fn median(array: &mut Vec<i32>) -> f64 {
 
         #[allow(clippy::indexing_slicing)]
         {
-            f64::from(array[left] + array[right]) / 2.0
+            Some(f64::from(array[left] + array[right]) / 2.0)
         }
     } else {
         #[allow(clippy::indexing_slicing)]
         {
-            f64::from(array[(array.len() / 2)])
+            Some(f64::from(array[(array.len() / 2)]))
         }
     }
 }
