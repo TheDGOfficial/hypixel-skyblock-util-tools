@@ -344,7 +344,7 @@ fn print_statistics(
         }
     }
 
-    if !meter_succeeded_rolls.len().is_empty() {
+    if !meter_succeeded_rolls.is_empty() {
         println!();
     }
 
