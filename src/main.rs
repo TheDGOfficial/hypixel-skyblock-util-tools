@@ -690,6 +690,8 @@ fn catacombs_stat_boost_calculator(
         Some(5),
     );
 
+    *start_without_user_input = Some(Instant::now());
+
     let planned_total_stat_boost = planned_catacombs_level_boost +
         planned_normal_stars_boost +
         planned_master_stars_boost;
@@ -714,8 +716,6 @@ fn catacombs_stat_boost_calculator(
             return false;
         },
     }
-
-    *start_without_user_input = Some(Instant::now());
 
     true
 }
