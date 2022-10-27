@@ -807,7 +807,7 @@ async fn upgrade_calculator_for_master_skulls(
             let previous_tier = tier - 1;
             let mut tier_ones_required_to_craft_this_tier = 1;
 
-            for _ in 0..(tier - 1) {
+            for _ in 0..previous_tier {
                 tier_ones_required_to_craft_this_tier *= 4;
             }
 
@@ -821,7 +821,7 @@ async fn upgrade_calculator_for_master_skulls(
             if tier == 1 {
                 println!("Master Skull - Tier {tier} is priced {}", with_comma_separators(&price.to_string()).unwrap_or_else(|| price.to_string()).yellow());
             } else {
-                println!("Master Skull - Tier {tier} is priced {}, equals to {} coins for 4x Tier {previous_tier} skulls, or {} coins for {tier_ones_required_to_craft_this_tier}x Tier 1 skulls", with_comma_separators(&price.to_string()).unwrap_or_else(|| price.to_string()).yellow(), with_comma_separators(&(price / 4).to_string()).unwrap_or_else(|| (price / 4).to_string()).yellow(), with_comma_separators(&price_per_tier_one.to_string()).unwrap_or_else(|| price_per_tier_one.to_string()).yellow());
+                println!("Master Skull - Tier {tier} is priced {}, equals to {} coins per 4x of Tier {previous_tier} skulls, or {} coins per {tier_ones_required_to_craft_this_tier}x of Tier 1 skulls", with_comma_separators(&price.to_string()).unwrap_or_else(|| price.to_string()).yellow(), with_comma_separators(&(price / 4).to_string()).unwrap_or_else(|| (price / 4).to_string()).yellow(), with_comma_separators(&price_per_tier_one.to_string()).unwrap_or_else(|| price_per_tier_one.to_string()).yellow());
             }
         });
     }
@@ -1087,7 +1087,7 @@ fn with_comma_separators(s: &str) -> Option<String> {
 // println!("is f64? {}", value.is_f64());
 // println!("is boolean? {}", value.is_boolean());
 // println!("is number? {}", value.is_number());
-// println!("is is object? {}", value.is_object());
+// println!("is object? {}", value.is_object());
 // }
 
 fn print(text: &str) {
@@ -1098,19 +1098,14 @@ fn print(text: &str) {
 }
 
 fn ask_int_input(question: &str, min: Option<i32>, max: Option<i32>) -> i32 {
-    // There's no i32::try_from<float> in the standard library,
-    // but the conversion shouldn't fail anyway, and we want the truncating
-    // behaviour here.
-    #[allow(clippy::cast_possible_truncation)]
-    #[allow(clippy::as_conversions)]
-    {
+    f64_to_i32(
         ask_float_input(
             question,
             convert_i32_option_to_f64_option(min),
             convert_i32_option_to_f64_option(max),
         )
-        .trunc() as i32
-    }
+        .trunc(),
+    )
 }
 
 fn convert_i32_option_to_f64_option(option: Option<i32>) -> Option<f64> {
