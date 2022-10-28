@@ -24,6 +24,8 @@ Build scripts: Either build a actually portable executable that works on (at lea
 
 Cargo.toml: we might want to switch to musl (or cosmopolitian libc) instead of gnu for c library and compile to i686 to support 32-bit OS'es.
 
+Dependencies: statically link openssl and libcrypto, currently the executable built on ubuntu 22.04 or above will dynamically link against openssl & libcrypto 3.x and will not work on 20.04 or other distributions that use 1.x versions, and vice versa.
+
 # Organization
 
 main.rs: Split all code into multiple files and even directories to organize the project

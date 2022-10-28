@@ -68,8 +68,7 @@ use core::cmp::min;
 use futures::stream::FuturesOrdered;
 use futures::StreamExt;
 
-use fxhash::FxHashMap;
-use fxhash::FxHashSet;
+use core::hash::BuildHasherDefault;
 
 use serde_json::Value;
 use std::io;
@@ -79,9 +78,10 @@ use std::process::ExitCode;
 
 use colored::Colorize;
 use conv::ConvUtil;
-use core::hash::Hash;
 use core::time::Duration;
 use jandom::Random;
+use nohash_hasher::IntMap;
+use nohash_hasher::IntSet;
 use reqwest::Error;
 use reqwest::Response;
 use std::time::Instant;
@@ -405,13 +405,12 @@ fn print_statistics(
     }
 }
 
-fn has_unique_elements<T>(iter: &T) -> bool
-where
-    T: IntoIterator + Clone,
-    T::Item: Eq + Hash,
-{
-    let mut unique = FxHashSet::default();
-    iter.clone().into_iter().all(move |x| unique.insert(x))
+fn has_unique_elements(vec: &[i32]) -> bool {
+    let mut unique = IntSet::with_capacity_and_hasher(
+        vec.len(),
+        BuildHasherDefault::default(),
+    );
+    vec.iter().all(move |x| unique.insert(*x))
 }
 
 // fn generate_java_seed() -> i64 {
@@ -612,7 +611,10 @@ fn median(array: &mut Vec<i32>) -> Option<f64> {
 // Returns the most occurring value in an array.
 // Returns None if the array is empty.
 fn mode(array: &Vec<i32>) -> Option<i32> {
-    let mut occurrences = FxHashMap::default();
+    let mut occurrences = IntMap::with_capacity_and_hasher(
+        array.len(),
+        BuildHasherDefault::default(),
+    );
 
     for &value in array {
         *occurrences.entry(value).or_insert(0) += 1;
@@ -788,7 +790,8 @@ async fn upgrade_calculator_for_master_skulls(
         return true;
     }
 
-    let mut prices = FxHashMap::default();
+    let mut prices =
+        IntMap::with_capacity_and_hasher(7, BuildHasherDefault::default());
 
     let critical_error_occurred =
         !do_requests_and_extract_prices(&mut prices).await;
@@ -877,10 +880,8 @@ async fn upgrade_calculator_for_master_skulls(
     true
 }
 
-async fn do_requests_and_extract_prices(
-    prices: &mut FxHashMap<usize, i64>,
-) -> bool {
-    let mut requests = Vec::new();
+async fn do_requests_and_extract_prices(prices: &mut IntMap<usize, i64>) -> bool {
+    let mut requests = Vec::with_capacity(7);
 
     match reqwest::ClientBuilder::new()
         .timeout(Duration::from_secs(10))
@@ -894,7 +895,7 @@ async fn do_requests_and_extract_prices(
                 requests.push(
                     client
                         .get("https://api.slothpixel.me/api/skyblock/auctions")
-                        .query(&vec![
+                        .query(&[
                             ("limit", "1"),
                             ("page", "1"),
                             ("sortOrder", "asc"),
@@ -950,7 +951,7 @@ async fn do_requests_and_extract_prices(
 }
 
 async fn parse_request_and_insert_prices(
-    prices: &mut FxHashMap<usize, i64>, i: usize,
+    prices: &mut IntMap<usize, i64>, i: usize,
     result_of_request: Result<Response, Error>,
 ) -> bool {
     match result_of_request {
