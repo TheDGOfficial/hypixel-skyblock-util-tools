@@ -145,8 +145,10 @@ pub(crate) fn rng_simulator(
     );
     println!();
 
-    let all_succeeded_magic_find_values: &mut Vec<i32> = &mut Vec::new();
-    let meter_succeeded_rolls: &mut Vec<i32> = &mut Vec::new();
+    let all_succeeded_magic_find_values: &mut Vec<i32> =
+        &mut Vec::with_capacity(TryInto::try_into(rolls).unwrap_or(0x7FFF_FFFF));
+    let meter_succeeded_rolls: &mut Vec<i32> =
+        &mut Vec::with_capacity(TryInto::try_into(rolls).unwrap_or(0x7FFF_FFFF));
 
     let drops = do_rolls_and_get_drops(
         original_drop_chance,
@@ -197,11 +199,11 @@ fn do_rolls_and_get_drops(
     let mut reset_meter_at_least_once = false;
     let mut last_reset_at = 0;
 
-    for roll in 1..=rolls {
-        let odds = get_odds(original_drop_chance);
-        let original_rng_meter_progress =
-            percent_of(odds, original_rng_meter_percent);
+    let odds = get_odds(original_drop_chance);
+    let original_rng_meter_progress =
+        percent_of(odds, original_rng_meter_percent);
 
+    for roll in 1..=rolls {
         let progress = f64_to_i32(
             if reset_meter_at_least_once {
                 f64::from(roll - last_reset_at)
