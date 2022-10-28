@@ -237,7 +237,8 @@ fn do_rolls_and_get_drops(
                 f64::from(looting_extra_chance),
             );
 
-        let magic_number = rand.next_f64();
+        let magic_number = rand.next_f64(); // future perf ref: this call is basically free, main bottleneck is io on
+                                            // the println! and other code
         let success =
             if magic_number < new_drop_rate_with_magic_find_and_looting / 100.0 {
                 drops += 1;
@@ -272,6 +273,7 @@ fn do_rolls_and_get_drops(
         }
 
         if minimum_magic_find_needed_to_success == 901 {
+            // bit of io bottleneck
             println!(
                 "Roll #{}: {}, can't succeed even with max Magic Find.",
                 roll.to_string().yellow(),
@@ -282,6 +284,7 @@ fn do_rolls_and_get_drops(
                 .push(minimum_magic_find_needed_to_success);
 
             if success {
+                // bit of io bottleneck
                 println!(
                     "Roll #{}: {}, minimum magic find to succeed is {}. RNG Meter: %{}",
                     roll.to_string().yellow(),
@@ -290,6 +293,7 @@ fn do_rolls_and_get_drops(
                     rng_meter_percent
                 );
             } else {
+                // bit of io bottleneck
                 println!("Roll #{}: {}, minimum magic find to succeed is {} which is higher than yours.", roll.to_string().yellow(), "FAIL".bright_red(), minimum_magic_find_needed_to_success.to_string().bright_red());
             }
         }
