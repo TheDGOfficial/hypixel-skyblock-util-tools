@@ -52,6 +52,9 @@ mod master_skull_upgrade_helper;
 
 mod rng_simulator;
 
+#[cfg(test)]
+mod tests;
+
 use mimalloc::MiMalloc;
 
 #[global_allocator]

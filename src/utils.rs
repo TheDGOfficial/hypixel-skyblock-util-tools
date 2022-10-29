@@ -60,8 +60,52 @@ pub(crate) fn usize_to_f64(usize: usize) -> f64 {
     }, |f64| f64)
 }
 
-pub(crate) fn mean(array: &Vec<i32>) -> f64 {
-    f64::from(array.iter().sum::<i32>()) / usize_to_f64(array.len())
+pub(crate) fn i64_to_f64(i64: i64) -> f64 {
+    f64::from_i64(i64).map_or_else(
+        || {
+            println!(
+                "{}{i64}",
+                "warning: loss of precision due while converting i64 to f64: "
+                    .yellow()
+            );
+
+            #[allow(clippy::cast_precision_loss)]
+            #[allow(clippy::as_conversions)]
+            {
+                i64 as f64
+            }
+        },
+        |f64| f64,
+    )
+}
+
+pub(crate) fn mean(array: &Vec<i32>) -> Option<f64> {
+    if array.is_empty() {
+        return None;
+    }
+
+    if array.len() == 1 {
+        if let Some(first) = array.first() {
+            return Some(f64::from(*first));
+        }
+
+        return None;
+    }
+
+    // We must calculate sum manually because theres no checked_sum shortcut
+    // method in standard library.
+    let mut sum: i64 = 0;
+
+    for value in array {
+        if let Some(result) = sum.checked_add(i64::from(*value)) {
+            sum = result;
+        } else {
+            // Overflow occurred
+            return None;
+        }
+    }
+
+    Some(i64_to_f64(sum) / usize_to_f64(array.len()))
 }
 
 // Returns the middle value in an array.

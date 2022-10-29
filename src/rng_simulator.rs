@@ -194,7 +194,7 @@ pub(crate) fn rng_simulator(
     true
 }
 
-fn drop_rate_with_magic_find_and_looting(
+pub(crate) fn drop_rate_with_magic_find_and_looting(
     drop_chance: f64, magic_find: i32, looting_extra_chance: i32,
 ) -> f64 {
     let drop_rate_with_magic_find =
@@ -204,7 +204,7 @@ fn drop_rate_with_magic_find_and_looting(
         percent_of(drop_rate_with_magic_find, f64::from(looting_extra_chance))
 }
 
-fn passes(
+pub(crate) fn passes(
     magic_number: f64, drop_chance: f64, magic_find: i32,
     looting_extra_chance: i32,
 ) -> bool {
@@ -216,7 +216,7 @@ fn passes(
         ) / 100.0
 }
 
-fn get_minimum_magic_find_needed_to_succeed(
+pub(crate) fn get_minimum_magic_find_needed_to_succeed(
     magic_number: f64, final_drop_chance: f64, looting_extra_chance: i32,
 ) -> i32 {
     // fast path - can't succeed even with maximum magic find
@@ -379,9 +379,10 @@ fn print_statistics(
 ) {
     println!();
 
-    let mean_succeed_magic_find = mean(all_succeeded_magic_find_values);
+    if let Some(mean_succeed_magic_find) = mean(all_succeeded_magic_find_values) {
+        println!("Mean (Average) Succeed Magic Find: {mean_succeed_magic_find}");
+    }
 
-    println!("Mean (Average) Succeed Magic Find: {mean_succeed_magic_find}");
     if let Some(median_succeed_magic_find) =
         median(all_succeeded_magic_find_values)
     {
@@ -417,13 +418,13 @@ fn print_statistics(
         println!();
     }
 
-    let mean_succeed_rolls = mean(meter_succeeded_rolls);
+    if let Some(mean_succeed_rolls) = mean(meter_succeeded_rolls) {
+        let mean_succeed_meter = 100.0 -
+            f64::abs(percentage_change(odds, cap(mean_succeed_rolls, odds)));
 
-    let mean_succeed_meter =
-        100.0 - f64::abs(percentage_change(odds, cap(mean_succeed_rolls, odds)));
-
-    if !mean_succeed_rolls.is_nan() && !mean_succeed_meter.is_nan() {
-        println!("Mean (Average) Amount of Rolls until Succeed: {mean_succeed_rolls} (%{mean_succeed_meter} RNG Meter)");
+        if !mean_succeed_rolls.is_nan() && !mean_succeed_meter.is_nan() {
+            println!("Mean (Average) Amount of Rolls until Succeed: {mean_succeed_rolls} (%{mean_succeed_meter} RNG Meter)");
+        }
     }
 
     if let Some(median_succeed_rolls) = median(meter_succeeded_rolls) {
