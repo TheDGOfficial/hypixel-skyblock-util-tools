@@ -16,6 +16,7 @@ use crate::utils::usize_to_f64;
 
 use crate::constants::CHIMERA_DROP_CHANCE;
 use crate::constants::JUDGEMENT_CORE_DROP_CHANCE;
+use crate::constants::MAXIMUM_MAGIC_FIND;
 use crate::constants::NECRONS_HANDLE_DROP_CHANCE;
 use crate::constants::NECRONS_HANDLE_MASTER_MODE_DROP_CHANCE;
 use crate::constants::OVERFLUX_CAPACITOR_DROP_CHANCE;
@@ -187,6 +188,31 @@ pub(crate) fn rng_simulator(
     true
 }
 
+fn get_minimum_magic_find_needed_to_succeed(
+    magic_number: f64, final_drop_chance: f64, looting_extra_chance: i32,
+) -> i32 {
+    let mut minimum_magic_find_needed_to_succeed = MAXIMUM_MAGIC_FIND + 1;
+
+    for mf in 0..=MAXIMUM_MAGIC_FIND {
+        let drop_rate_with_this_magic_find =
+            final_drop_chance + percent_of(final_drop_chance, f64::from(mf));
+        let drop_rate_with_this_magic_find_and_looting =
+            drop_rate_with_this_magic_find +
+                percent_of(
+                    drop_rate_with_this_magic_find,
+                    f64::from(looting_extra_chance),
+                );
+
+        if magic_number < drop_rate_with_this_magic_find_and_looting / 100.0 &&
+            mf < minimum_magic_find_needed_to_succeed
+        {
+            minimum_magic_find_needed_to_succeed = mf;
+        }
+    }
+
+    minimum_magic_find_needed_to_succeed
+}
+
 fn do_rolls_and_get_drops(
     original_drop_chance: f64, original_rng_meter_percent: f64,
     looting_extra_chance: i32, rolls: i32, magic_find: i32,
@@ -253,26 +279,14 @@ fn do_rolls_and_get_drops(
                 false
             };
 
-        let mut minimum_magic_find_needed_to_success = 901;
+        let minimum_magic_find_needed_to_succeed =
+            get_minimum_magic_find_needed_to_succeed(
+                magic_number,
+                final_drop_chance,
+                looting_extra_chance,
+            );
 
-        for mf in 0..=900 {
-            let drop_rate_with_this_magic_find =
-                final_drop_chance + percent_of(final_drop_chance, f64::from(mf));
-            let drop_rate_with_this_magic_find_and_looting =
-                drop_rate_with_this_magic_find +
-                    percent_of(
-                        drop_rate_with_this_magic_find,
-                        f64::from(looting_extra_chance),
-                    );
-
-            if magic_number < drop_rate_with_this_magic_find_and_looting / 100.0 &&
-                mf < minimum_magic_find_needed_to_success
-            {
-                minimum_magic_find_needed_to_success = mf;
-            }
-        }
-
-        if minimum_magic_find_needed_to_success == 901 {
+        if minimum_magic_find_needed_to_succeed == MAXIMUM_MAGIC_FIND + 1 {
             // bit of io bottleneck
             println!(
                 "Roll #{}: {}, can't succeed even with max Magic Find.",
@@ -281,7 +295,7 @@ fn do_rolls_and_get_drops(
             );
         } else {
             all_succeeded_magic_find_values
-                .push(minimum_magic_find_needed_to_success);
+                .push(minimum_magic_find_needed_to_succeed);
 
             if success {
                 // bit of io bottleneck
@@ -289,12 +303,12 @@ fn do_rolls_and_get_drops(
                     "Roll #{}: {}, minimum magic find to succeed is {}. RNG Meter: %{}",
                     roll.to_string().yellow(),
                     "PASS".bright_green(),
-                    minimum_magic_find_needed_to_success.to_string().green(),
+                    minimum_magic_find_needed_to_succeed.to_string().green(),
                     rng_meter_percent
                 );
             } else {
                 // bit of io bottleneck
-                println!("Roll #{}: {}, minimum magic find to succeed is {} which is higher than yours.", roll.to_string().yellow(), "FAIL".bright_red(), minimum_magic_find_needed_to_success.to_string().bright_red());
+                println!("Roll #{}: {}, minimum magic find to succeed is {} which is higher than yours.", roll.to_string().yellow(), "FAIL".bright_red(), minimum_magic_find_needed_to_succeed.to_string().bright_red());
             }
         }
     }

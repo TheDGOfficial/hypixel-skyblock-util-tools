@@ -1,3 +1,6 @@
+// Source: https://hypixel-skyblock.fandom.com/wiki/Magic_Find
+pub(crate) const MAXIMUM_MAGIC_FIND: i32 = 900;
+
 // Source: https://wiki.hypixel.net/Minos_Inquisitor
 pub(crate) const CHIMERA_DROP_CHANCE: f64 = 1.0;
 
