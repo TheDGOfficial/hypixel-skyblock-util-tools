@@ -6,10 +6,10 @@ use std::io::BufRead;
 use std::io::Write;
 
 use colored::Colorize;
-use conv::ConvUtil;
 
 use nohash_hasher::IntMap;
 use nohash_hasher::IntSet;
+use num::FromPrimitive;
 
 pub(crate) fn get_odds(percentage_chance: f64) -> f64 {
     100.0 / percentage_chance
@@ -35,30 +35,29 @@ pub(crate) fn cap(number: f64, cap: f64) -> f64 {
     number
 }
 
-pub(crate) const fn f64_to_i32(f64: f64) -> i32 {
-    // We want the truncation behaviour here and i32::from is not implemented for
-    // f64 so using as is the only option.
-    #[allow(clippy::cast_possible_truncation)]
-    #[allow(clippy::as_conversions)]
-    {
-        f64 as i32
-    }
+pub(crate) fn f64_to_i32(f64: f64) -> i32 {
+    i32::from_f64(f64).map_or_else(|| {
+        println!("{}{f64}", "warning: loss of precision while converting from f64 to i32, if this is intentional, call .trunc() on the value before calling this function. f64 value: ".yellow());
+
+        // i32::from is not implemented for f64 so using as is the only option.
+        #[allow(clippy::cast_possible_truncation)]
+        #[allow(clippy::as_conversions)]
+        {
+            f64 as i32
+        }
+    }, |i32| i32)
 }
 
 pub(crate) fn usize_to_f64(usize: usize) -> f64 {
-    match usize.value_as::<f64>() {
-        Ok(f64) => f64,
-
-        Err(e) => {
-            println!("{}{e}", "warning: loss of precision due to overflow of usize while converting to f64: ".yellow());
+    f64::from_usize(usize).map_or_else(|| {
+            println!("{}{usize}", "warning: loss of precision due to overflow of usize while converting to f64: ".yellow());
 
             #[allow(clippy::cast_precision_loss)]
             #[allow(clippy::as_conversions)]
             {
                 usize as f64
             }
-        },
-    }
+    }, |f64| f64)
 }
 
 pub(crate) fn mean(array: &Vec<i32>) -> f64 {
