@@ -210,7 +210,7 @@ fn do_rolls_and_get_drops(
             } else {
                 original_rng_meter_progress + f64::from(roll)
             }
-            .round(),
+            .trunc(),
         );
 
         let rng_meter_percent = 100.0 -
