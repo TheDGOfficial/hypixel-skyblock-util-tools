@@ -69,7 +69,7 @@ jobs:
 
       - name: Build the binary
         run:
-          cargo build
+          chmod +x release_build.sh && ./release_build.sh
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v3.1.1
