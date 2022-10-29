@@ -24,6 +24,12 @@ use crate::constants::WARDEN_HEART_DROP_CHANCE;
 
 use colored::Colorize;
 use jandom::Random;
+
+use std::io;
+
+use std::io::BufWriter;
+use std::io::Write;
+
 use std::time::Instant;
 
 fn print_drops_selection() {
@@ -188,29 +194,56 @@ pub(crate) fn rng_simulator(
     true
 }
 
+fn drop_rate_with_magic_find_and_looting(
+    drop_chance: f64, magic_find: i32, looting_extra_chance: i32,
+) -> f64 {
+    let drop_rate_with_magic_find =
+        drop_chance + percent_of(drop_chance, f64::from(magic_find));
+
+    drop_rate_with_magic_find +
+        percent_of(drop_rate_with_magic_find, f64::from(looting_extra_chance))
+}
+
+fn passes(
+    magic_number: f64, drop_chance: f64, magic_find: i32,
+    looting_extra_chance: i32,
+) -> bool {
+    magic_number <
+        drop_rate_with_magic_find_and_looting(
+            drop_chance,
+            magic_find,
+            looting_extra_chance,
+        ) / 100.0
+}
+
 fn get_minimum_magic_find_needed_to_succeed(
     magic_number: f64, final_drop_chance: f64, looting_extra_chance: i32,
 ) -> i32 {
-    let mut minimum_magic_find_needed_to_succeed = MAXIMUM_MAGIC_FIND + 1;
+    // fast path - can't succeed even with maximum magic find
+    if !passes(
+        magic_number,
+        final_drop_chance,
+        MAXIMUM_MAGIC_FIND,
+        looting_extra_chance,
+    ) {
+        return MAXIMUM_MAGIC_FIND + 1;
+    }
 
+    // slower path
     for mf in 0..=MAXIMUM_MAGIC_FIND {
-        let drop_rate_with_this_magic_find =
-            final_drop_chance + percent_of(final_drop_chance, f64::from(mf));
-        let drop_rate_with_this_magic_find_and_looting =
-            drop_rate_with_this_magic_find +
-                percent_of(
-                    drop_rate_with_this_magic_find,
-                    f64::from(looting_extra_chance),
-                );
-
-        if magic_number < drop_rate_with_this_magic_find_and_looting / 100.0 &&
-            mf < minimum_magic_find_needed_to_succeed
-        {
-            minimum_magic_find_needed_to_succeed = mf;
+        if passes(magic_number, final_drop_chance, mf, looting_extra_chance) {
+            return mf;
         }
     }
 
-    minimum_magic_find_needed_to_succeed
+    // normally unreachable unless the passes function returns true for
+    // MAXIMUM_MAGIC_FIND but returns false when run inside the for loop, but
+    // compiler can't prove this, so we need this piece of code here.
+    println!(
+        "warning: non-stable implementation of rng_simulator::passes detected"
+    );
+
+    MAXIMUM_MAGIC_FIND + 1
 }
 
 fn do_rolls_and_get_drops(
@@ -228,6 +261,9 @@ fn do_rolls_and_get_drops(
     let odds = get_odds(original_drop_chance);
     let original_rng_meter_progress =
         percent_of(odds, original_rng_meter_percent);
+
+    let lock = io::stdout().lock();
+    let mut buf = BufWriter::new(lock);
 
     for roll in 1..=rolls {
         let progress = f64_to_i32(
@@ -287,28 +323,39 @@ fn do_rolls_and_get_drops(
             );
 
         if minimum_magic_find_needed_to_succeed == MAXIMUM_MAGIC_FIND + 1 {
-            // bit of io bottleneck
-            println!(
+            if let Err(e) = writeln!(
+                buf,
                 "Roll #{}: {}, can't succeed even with max Magic Find.",
                 roll.to_string().yellow(),
                 "FAIL".bright_red()
-            );
+            ) {
+                // If the above call failed, this one will fail too probably,
+                // but try anyway and let the macro handle the error.
+                println!("{}{e}", "error: can't write to stdout: ".red());
+            }
         } else {
             all_succeeded_magic_find_values
                 .push(minimum_magic_find_needed_to_succeed);
 
             if success {
-                // bit of io bottleneck
-                println!(
+                if let Err(e) = writeln!(
+                    buf,
                     "Roll #{}: {}, minimum magic find to succeed is {}. RNG Meter: %{}",
                     roll.to_string().yellow(),
                     "PASS".bright_green(),
                     minimum_magic_find_needed_to_succeed.to_string().green(),
                     rng_meter_percent
-                );
-            } else {
-                // bit of io bottleneck
-                println!("Roll #{}: {}, minimum magic find to succeed is {} which is higher than yours.", roll.to_string().yellow(), "FAIL".bright_red(), minimum_magic_find_needed_to_succeed.to_string().bright_red());
+                ) {
+                    // If the above call failed, this one will fail too probably, but try anyway and let the macro handle the error.
+                    println!("{}{e}", "error: can't write to stdout: ".red());
+                }
+            }
+
+            if !success {
+                if let Err(e) = writeln!(buf, "Roll #{}: {}, minimum magic find to succeed is {} which is higher than yours.", roll.to_string().yellow(), "FAIL".bright_red(), minimum_magic_find_needed_to_succeed.to_string().bright_red()) {
+                    // If the above call failed, this one will fail too probably, but try anyway and let the macro handle the error.
+                    println!("{}{e}", "error: can't write to stdout: ".red());
+                }
             }
         }
     }
