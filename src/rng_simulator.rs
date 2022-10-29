@@ -265,6 +265,12 @@ fn do_rolls_and_get_drops(
     let lock = io::stdout().lock();
     let mut buf = BufWriter::new(lock);
 
+    let do_printing = rolls < 100_000;
+
+    if !do_printing {
+        println!("Will not print individual roll details to optimize performance since roll amount is 100K or higher.");
+    }
+
     for roll in 1..=rolls {
         let progress = f64_to_i32(
             if reset_meter_at_least_once {
@@ -323,38 +329,42 @@ fn do_rolls_and_get_drops(
             );
 
         if minimum_magic_find_needed_to_succeed == MAXIMUM_MAGIC_FIND + 1 {
-            if let Err(e) = writeln!(
-                buf,
-                "Roll #{}: {}, can't succeed even with max Magic Find.",
-                roll.to_string().yellow(),
-                "FAIL".bright_red()
-            ) {
-                // If the above call failed, this one will fail too probably,
-                // but try anyway and let the macro handle the error.
-                println!("{}{e}", "error: can't write to stdout: ".red());
+            if do_printing {
+                if let Err(e) = writeln!(
+                    buf,
+                    "Roll #{}: {}, can't succeed even with max Magic Find.",
+                    roll.to_string().yellow(),
+                    "FAIL".bright_red()
+                ) {
+                    // If the above call failed, this one will fail too probably,
+                    // but try anyway and let the macro handle the error.
+                    println!("{}{e}", "error: can't write to stdout: ".red());
+                }
             }
         } else {
             all_succeeded_magic_find_values
                 .push(minimum_magic_find_needed_to_succeed);
 
-            if success {
-                if let Err(e) = writeln!(
-                    buf,
-                    "Roll #{}: {}, minimum magic find to succeed is {}. RNG Meter: %{}",
-                    roll.to_string().yellow(),
-                    "PASS".bright_green(),
-                    minimum_magic_find_needed_to_succeed.to_string().green(),
-                    rng_meter_percent
-                ) {
-                    // If the above call failed, this one will fail too probably, but try anyway and let the macro handle the error.
-                    println!("{}{e}", "error: can't write to stdout: ".red());
+            if do_printing {
+                if success {
+                    if let Err(e) = writeln!(
+                        buf,
+                        "Roll #{}: {}, minimum magic find to succeed is {}. RNG Meter: %{}",
+                        roll.to_string().yellow(),
+                        "PASS".bright_green(),
+                        minimum_magic_find_needed_to_succeed.to_string().green(),
+                        rng_meter_percent
+                    ) {
+                        // If the above call failed, this one will fail too probably, but try anyway and let the macro handle the error.
+                        println!("{}{e}", "error: can't write to stdout: ".red());
+                    }
                 }
-            }
 
-            if !success {
-                if let Err(e) = writeln!(buf, "Roll #{}: {}, minimum magic find to succeed is {} which is higher than yours.", roll.to_string().yellow(), "FAIL".bright_red(), minimum_magic_find_needed_to_succeed.to_string().bright_red()) {
-                    // If the above call failed, this one will fail too probably, but try anyway and let the macro handle the error.
-                    println!("{}{e}", "error: can't write to stdout: ".red());
+                if !success {
+                    if let Err(e) = writeln!(buf, "Roll #{}: {}, minimum magic find to succeed is {} which is higher than yours.", roll.to_string().yellow(), "FAIL".bright_red(), minimum_magic_find_needed_to_succeed.to_string().bright_red()) {
+                        // If the above call failed, this one will fail too probably, but try anyway and let the macro handle the error.
+                        println!("{}{e}", "error: can't write to stdout: ".red());
+                    }
                 }
             }
         }
