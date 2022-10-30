@@ -7,7 +7,7 @@ cargo install cargo-ramdisk
 echo "Starting creation of ramdisk for target/"
 
 # Create target folder if it doesn't exist to prevent any errors in later commands
-# Ideally we should check if the folder exists before doing any operaiton, but this an easy fix without any big effects.
+# Ideally we should check if the folder exists before doing any operation, but this an easy fix without any big effects.
 echo "Creating target/ directory if it doesn't exist"
 mkdir -p target/
 
