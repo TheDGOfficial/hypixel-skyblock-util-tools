@@ -1,8 +1,12 @@
 # TODO list for the project
 
-# Lint/Analyzing
+# Performance
 
-run.sh: figure out how to setup MIRAI for even more code smells
+Do PGO, should be easy as this a CLI application: https://doc.rust-lang.org/rustc/profile-guided-optimization.html
+
+Basically optimize for most common inputs to every selection/tool
+
+Also consider making the default requirement x86_64v2 instead of x86_64.
 
 # Speeding up dev/debug builds
 
