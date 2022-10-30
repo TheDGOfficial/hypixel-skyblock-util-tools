@@ -1,17 +1,15 @@
 use core::hash::BuildHasherDefault;
-
 use std::io;
-
 use std::io::BufRead;
 use std::io::Write;
 
 use colored::Colorize;
-
-use crate::utils::FunctionResult::Failure;
-use crate::utils::FunctionResult::Success;
 use nohash_hasher::IntMap;
 use nohash_hasher::IntSet;
 use num::FromPrimitive;
+
+use crate::utils::FunctionResult::Failure;
+use crate::utils::FunctionResult::Success;
 
 pub(crate) fn get_odds(percentage_chance: f64) -> f64 {
     100.0 / percentage_chance

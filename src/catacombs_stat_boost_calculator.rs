@@ -1,8 +1,9 @@
-use crate::utils::ask_int_input;
-use crate::utils::percentage_change;
+use std::time::Instant;
 
 use colored::Colorize;
-use std::time::Instant;
+
+use crate::utils::ask_int_input;
+use crate::utils::percentage_change;
 
 pub(crate) fn catacombs_stat_boost_calculator(
     start_without_user_input: &mut Option<Instant>,

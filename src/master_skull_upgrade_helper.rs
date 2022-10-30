@@ -1,23 +1,18 @@
-use crate::utils::ask_int_input;
-use crate::utils::with_comma_separators;
-
-use colored::Colorize;
-
 use core::cmp::min;
 use core::hash::BuildHasherDefault;
 use core::time::Duration;
+use std::time::Instant;
 
+use colored::Colorize;
 use futures::stream::FuturesOrdered;
 use futures::StreamExt;
-
 use nohash_hasher::IntMap;
-
 use reqwest::Error;
 use reqwest::Response;
-
 use serde_json::Value;
 
-use std::time::Instant;
+use crate::utils::ask_int_input;
+use crate::utils::with_comma_separators;
 
 pub(crate) async fn upgrade_calculator_for_master_skulls(
     start_without_user_input: &mut Option<Instant>,
@@ -88,7 +83,7 @@ pub(crate) async fn upgrade_calculator_for_master_skulls(
 
     let mut total_required_amount =
         get_total_required_amount(best_tier_to_buy_and_combine, target_tier);
-    let mut total_required_amount_for_current =
+    let total_required_amount_for_current =
         get_total_required_amount(best_tier_to_buy_and_combine, current_tier);
 
     total_required_amount -= total_required_amount_for_current;

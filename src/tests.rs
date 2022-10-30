@@ -1,10 +1,11 @@
 #![allow(clippy::unwrap_used)]
 #![allow(clippy::unreachable)]
 
+use jandom::Random;
+
 use crate::rng_simulator::drop_rate_with_magic_find_and_looting;
 use crate::rng_simulator::get_minimum_magic_find_needed_to_succeed;
 use crate::rng_simulator::passes;
-
 use crate::utils::cap;
 use crate::utils::compare_f64;
 use crate::utils::conditional_value_or_default;
@@ -21,8 +22,6 @@ use crate::utils::percentage_change;
 use crate::utils::range;
 use crate::utils::usize_to_f64;
 use crate::utils::with_comma_separators;
-
-use jandom::Random;
 
 #[test]
 fn test_compare_f64() {

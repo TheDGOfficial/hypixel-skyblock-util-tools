@@ -1,3 +1,18 @@
+use std::io;
+use std::io::BufWriter;
+use std::io::Write;
+use std::time::Instant;
+
+use colored::Colorize;
+use jandom::Random;
+
+use crate::constants::CHIMERA_DROP_CHANCE;
+use crate::constants::JUDGEMENT_CORE_DROP_CHANCE;
+use crate::constants::MAXIMUM_MAGIC_FIND;
+use crate::constants::NECRONS_HANDLE_DROP_CHANCE;
+use crate::constants::NECRONS_HANDLE_MASTER_MODE_DROP_CHANCE;
+use crate::constants::OVERFLUX_CAPACITOR_DROP_CHANCE;
+use crate::constants::WARDEN_HEART_DROP_CHANCE;
 use crate::utils::ask_float_input;
 use crate::utils::ask_int_input;
 use crate::utils::cap;
@@ -13,24 +28,6 @@ use crate::utils::percent_of;
 use crate::utils::percentage_change;
 use crate::utils::range;
 use crate::utils::usize_to_f64;
-
-use crate::constants::CHIMERA_DROP_CHANCE;
-use crate::constants::JUDGEMENT_CORE_DROP_CHANCE;
-use crate::constants::MAXIMUM_MAGIC_FIND;
-use crate::constants::NECRONS_HANDLE_DROP_CHANCE;
-use crate::constants::NECRONS_HANDLE_MASTER_MODE_DROP_CHANCE;
-use crate::constants::OVERFLUX_CAPACITOR_DROP_CHANCE;
-use crate::constants::WARDEN_HEART_DROP_CHANCE;
-
-use colored::Colorize;
-use jandom::Random;
-
-use std::io;
-
-use std::io::BufWriter;
-use std::io::Write;
-
-use std::time::Instant;
 
 fn print_drops_selection() {
     println!();
@@ -236,7 +233,7 @@ pub(crate) fn get_minimum_magic_find_needed_to_succeed(
         }
     }
 
-    return unlikely_to_be_called();
+    unlikely_to_be_called()
 }
 
 #[inline(never)]
