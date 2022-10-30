@@ -50,13 +50,13 @@ pub(crate) fn f64_to_i32(f64: f64) -> i32 {
 
 pub(crate) fn usize_to_f64(usize: usize) -> f64 {
     f64::from_usize(usize).map_or_else(|| {
-            println!("{}{usize}", "warning: loss of precision due to overflow of usize while converting to f64: ".yellow());
+        println!("{}{usize}", "warning: loss of precision due to overflow of usize while converting to f64: ".yellow());
 
-            #[allow(clippy::cast_precision_loss)]
-            #[allow(clippy::as_conversions)]
-            {
-                usize as f64
-            }
+        #[allow(clippy::cast_precision_loss)]
+        #[allow(clippy::as_conversions)]
+        {
+            usize as f64
+        }
     }, |f64| f64)
 }
 

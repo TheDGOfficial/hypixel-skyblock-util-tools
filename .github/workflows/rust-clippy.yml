@@ -19,7 +19,7 @@ on:
 jobs:
   rust-clippy-analyze:
     if: "! contains(toJSON(github.event.commits.*.message), '[ci skip]')"
- 
+
     name: Run rust-clippy analyzing
     runs-on: ubuntu-22.04
     permissions:

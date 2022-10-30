@@ -259,7 +259,7 @@ fn test_get_minimum_magic_find_needed_to_succeed() {
         get_minimum_magic_find_needed_to_succeed(
             Random::default().next_f64(),
             100.0,
-            0
+            0,
         ),
         0
     );
@@ -273,7 +273,7 @@ fn test_get_minimum_magic_find_needed_to_succeed() {
         get_minimum_magic_find_needed_to_succeed(
             0.174_911_835_457_161_56,
             12.0,
-            15
+            15,
         ),
         27
     );
