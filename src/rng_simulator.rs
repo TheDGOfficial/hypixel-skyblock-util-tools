@@ -405,7 +405,7 @@ fn print_statistics(
         if let Some(range_succeed_magic_find) =
             range(all_succeeded_magic_find_values)
         {
-            println!("Range (Difference between smallest and highest) Succeed Magic Findd: {range_succeed_magic_find}");
+            println!("Range (Difference between smallest and highest) Succeed Magic Find: {range_succeed_magic_find}");
         }
     }
 
