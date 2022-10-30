@@ -236,6 +236,12 @@ pub(crate) fn get_minimum_magic_find_needed_to_succeed(
         }
     }
 
+    return unlikely_to_be_called();
+}
+
+#[inline(never)]
+#[cold]
+fn unlikely_to_be_called() -> i32 {
     // normally unreachable unless the passes function returns true for
     // MAXIMUM_MAGIC_FIND but returns false when run inside the for loop, but
     // compiler can't prove this, so we need this piece of code here.

@@ -86,31 +86,10 @@ pub(crate) async fn upgrade_calculator_for_master_skulls(
         });
     }
 
-    let mut total_required_amount = 1;
-
-    match usize::try_from(target_tier) {
-        Ok(tier) =>
-            for _ in best_tier_to_buy_and_combine..tier {
-                total_required_amount *= 4;
-            },
-
-        Err(e) => {
-            println!("{}{e}", "Error converting i32 to usize: ".red());
-        },
-    }
-
-    let mut total_required_amount_for_current = 1;
-
-    match usize::try_from(current_tier) {
-        Ok(tier) =>
-            for _ in best_tier_to_buy_and_combine..tier {
-                total_required_amount_for_current *= 4;
-            },
-
-        Err(e) => {
-            println!("{}{e}", "Error converting i32 to usize: ".red());
-        },
-    }
+    let mut total_required_amount =
+        get_total_required_amount(best_tier_to_buy_and_combine, target_tier);
+    let mut total_required_amount_for_current =
+        get_total_required_amount(best_tier_to_buy_and_combine, current_tier);
 
     total_required_amount -= total_required_amount_for_current;
 
@@ -135,6 +114,23 @@ pub(crate) async fn upgrade_calculator_for_master_skulls(
     }
 
     true
+}
+
+fn get_total_required_amount(starting_tier: usize, ending_tier: i32) -> i64 {
+    let mut total_required_amount = 1;
+
+    match usize::try_from(ending_tier) {
+        Ok(tier) =>
+            for _ in starting_tier..tier {
+                total_required_amount *= 4;
+            },
+
+        Err(e) => {
+            println!("{}{e}", "Error converting i32 to usize: ".red());
+        },
+    }
+
+    total_required_amount
 }
 
 async fn do_requests_and_extract_prices(prices: &mut IntMap<usize, i64>) -> bool {

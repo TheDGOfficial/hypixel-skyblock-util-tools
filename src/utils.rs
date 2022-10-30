@@ -7,6 +7,8 @@ use std::io::Write;
 
 use colored::Colorize;
 
+use crate::utils::FunctionResult::Failure;
+use crate::utils::FunctionResult::Success;
 use nohash_hasher::IntMap;
 use nohash_hasher::IntSet;
 use num::FromPrimitive;
@@ -79,17 +81,45 @@ pub(crate) fn i64_to_f64(i64: i64) -> f64 {
     )
 }
 
+// Result<T, E> like enum but without the result and error.
+// This useful if a function can fail without an error.
+enum FunctionResult {
+    Success,
+    Failure,
+}
+
+// Returns first element on the array and Success FunctionResult if there's only
+// one element in the array.
+
+// If theres more than one or no elements, returns None and Failure.
+// The failure here is like function returning, i.e false. It's not like an
+// error.
+
+// If the array size is not empty, but first value is None, returns None and
+// Success.
+fn return_first_elem_if_only_one_elem(
+    array: &Vec<i32>,
+) -> (Option<f64>, FunctionResult) {
+    if array.len() == 1 {
+        if let Some(first) = array.first() {
+            return (Some(f64::from(*first)), Success);
+        }
+
+        return (None, Success);
+    }
+
+    (None, Failure)
+}
+
 pub(crate) fn mean(array: &Vec<i32>) -> Option<f64> {
     if array.is_empty() {
         return None;
     }
 
-    if array.len() == 1 {
-        if let Some(first) = array.first() {
-            return Some(f64::from(*first));
-        }
+    let first_elem = return_first_elem_if_only_one_elem(array);
 
-        return None;
+    if let Success = first_elem.1 {
+        return first_elem.0;
     }
 
     // We must calculate sum manually because theres no checked_sum shortcut
@@ -117,12 +147,10 @@ pub(crate) fn median(array: &mut Vec<i32>) -> Option<f64> {
         return None;
     }
 
-    if array.len() == 1 {
-        if let Some(first) = array.first() {
-            return Some(f64::from(*first));
-        }
+    let first_elem = return_first_elem_if_only_one_elem(array);
 
-        return None;
+    if let Success = first_elem.1 {
+        return first_elem.0;
     }
 
     array.sort_unstable();
