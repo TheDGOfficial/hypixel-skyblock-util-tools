@@ -51,8 +51,8 @@ fn test_mean() {
 
 #[test]
 fn test_mean_overflow_i32() {
-    let mean = mean(&vec![900; 2_386_093]).unwrap();
-    let expected_result = 900.0;
+    let mean = mean(&vec![i32::MAX / 2; 3]).unwrap();
+    let expected_result = f64::from(i32::MAX / 2);
 
     assert!(
         compare_f64(mean, expected_result),
