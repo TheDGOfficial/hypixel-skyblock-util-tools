@@ -24,7 +24,7 @@ pub(crate) fn has_unique_elements(vec: &[i32]) -> bool {
         vec.len(),
         BuildHasherDefault::default(),
     );
-    vec.iter().all(move |x| unique.insert(*x))
+    vec.iter().all(move |x| unique.insert(x.to_owned()))
 }
 
 pub(crate) fn cap(number: f64, cap: f64) -> f64 {
@@ -81,7 +81,7 @@ pub(crate) fn i64_to_f64(i64: i64) -> f64 {
 
 // Result<T, E> like enum but without the result and error.
 // This useful if a function can fail without an error.
-enum FunctionResult {
+pub(crate) enum FunctionResult {
     Success,
     Failure,
 }
@@ -95,7 +95,7 @@ enum FunctionResult {
 
 // If the array size is not empty, but first value is None, returns None and
 // Success.
-fn return_first_elem_if_only_one_elem(
+pub(crate) fn return_first_elem_if_only_one_elem(
     array: &Vec<i32>,
 ) -> (Option<f64>, FunctionResult) {
     if array.len() == 1 {

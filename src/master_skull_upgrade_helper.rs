@@ -111,7 +111,9 @@ pub(crate) async fn upgrade_calculator_for_master_skulls(
     true
 }
 
-fn get_total_required_amount(starting_tier: usize, ending_tier: i32) -> i64 {
+pub(crate) fn get_total_required_amount(
+    starting_tier: usize, ending_tier: i32,
+) -> i64 {
     let mut total_required_amount = 1;
 
     match usize::try_from(ending_tier) {

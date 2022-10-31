@@ -1,6 +1,8 @@
 #![allow(clippy::unwrap_used)]
 #![allow(clippy::unreachable)]
+#![allow(clippy::panic)]
 
+use crate::master_skull_upgrade_helper::get_total_required_amount;
 use jandom::Random;
 
 use crate::rng_simulator::drop_rate_with_magic_find_and_looting;
@@ -20,8 +22,10 @@ use crate::utils::mode;
 use crate::utils::percent_of;
 use crate::utils::percentage_change;
 use crate::utils::range;
+use crate::utils::return_first_elem_if_only_one_elem;
 use crate::utils::usize_to_f64;
 use crate::utils::with_comma_separators;
+use crate::utils::FunctionResult;
 
 #[test]
 fn test_compare_f64() {
@@ -276,4 +280,57 @@ fn test_get_minimum_magic_find_needed_to_succeed() {
         ),
         27
     );
+}
+
+#[test]
+fn test_get_total_required_amount() {
+    assert_eq!(get_total_required_amount(1, 7), 4096);
+}
+
+#[test]
+fn test_return_first_elem_if_only_elem() {
+    test_return_first_elem_if_only_elem0(
+        &vec![15],
+        Some(15.0),
+        &FunctionResult::Success,
+    );
+    test_return_first_elem_if_only_elem0(&vec![], None, &FunctionResult::Failure);
+    test_return_first_elem_if_only_elem0(
+        &vec![1, 2],
+        None,
+        &FunctionResult::Failure,
+    );
+}
+
+fn test_return_first_elem_if_only_elem0(
+    vec: &Vec<i32>, expected_value: Option<f64>,
+    expected_function_result: &FunctionResult,
+) {
+    let result = return_first_elem_if_only_one_elem(vec);
+
+    if let Some(expected_result) = expected_value {
+        let value = result.0.unwrap();
+
+        assert!(
+            compare_f64(value, expected_result),
+            "{} != {}",
+            value,
+            expected_result
+        );
+    } else {
+        assert!(result.0.is_none());
+    }
+
+    match result.1 {
+        FunctionResult::Success => {
+            if let FunctionResult::Failure = expected_function_result {
+                panic!("expected Success, got Failure");
+            }
+        },
+        FunctionResult::Failure => {
+            if let FunctionResult::Success = expected_function_result {
+                panic!("expected Failure, got Success");
+            }
+        },
+    }
 }
