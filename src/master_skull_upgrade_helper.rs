@@ -86,7 +86,9 @@ pub(crate) async fn upgrade_calculator_for_master_skulls(
     let total_required_amount_for_current =
         get_total_required_amount(best_tier_to_buy_and_combine, current_tier);
 
-    total_required_amount -= total_required_amount_for_current;
+    if total_required_amount != 1 || total_required_amount_for_current != 1 {
+        total_required_amount -= total_required_amount_for_current;
+    }
 
     prices.get(&best_tier_to_buy_and_combine).map_or_else(|| {
         if !critical_error_occurred {
