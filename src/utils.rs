@@ -65,7 +65,7 @@ pub(crate) fn i64_to_f64(i64: i64) -> f64 {
         || {
             println!(
                 "{}{i64}",
-                "warning: loss of precision due while converting i64 to f64: "
+                "warning: loss of precision while converting i64 to f64: "
                     .yellow()
             );
 
@@ -320,7 +320,7 @@ pub(crate) fn ask_float_input(
 
                         println!("{}{}{}{}", "Invalid selection. Please enter a selection between ".bright_red(), min_with_default.to_string().bright_red(), " and ".bright_red(), max_with_default.to_string().bright_red());
                     } else {
-                        println!("{}", "Invalid value given. Please enter a valid whole number!".bright_red());
+                        println!("{}", "Invalid value given. Please enter a valid number!".bright_red());
                     },
 
                 Err(e) => {
