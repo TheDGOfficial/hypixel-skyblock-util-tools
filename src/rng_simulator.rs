@@ -215,6 +215,7 @@ pub(crate) fn passes(
 
 pub(crate) fn get_minimum_magic_find_needed_to_succeed(
     magic_number: f64, final_drop_chance: f64, looting_extra_chance: i32,
+    start_from_magic_find: Option<i32>,
 ) -> i32 {
     // fast path - can't succeed even with maximum magic find
     if !passes(
@@ -227,7 +228,7 @@ pub(crate) fn get_minimum_magic_find_needed_to_succeed(
     }
 
     // slower path
-    for mf in 0..=MAXIMUM_MAGIC_FIND {
+    for mf in start_from_magic_find.unwrap_or(0)..=MAXIMUM_MAGIC_FIND {
         if passes(magic_number, final_drop_chance, mf, looting_extra_chance) {
             return mf;
         }
@@ -324,11 +325,15 @@ fn do_rolls_and_get_drops(
                 false
             };
 
+        let start_from_magic_find =
+            if success { None } else { Some(magic_find + 1) };
+
         let minimum_magic_find_needed_to_succeed =
             get_minimum_magic_find_needed_to_succeed(
                 magic_number,
                 final_drop_chance,
                 looting_extra_chance,
+                start_from_magic_find,
             );
 
         if minimum_magic_find_needed_to_succeed == MAXIMUM_MAGIC_FIND + 1 {
