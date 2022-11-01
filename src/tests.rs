@@ -325,12 +325,12 @@ fn test_return_first_elem_if_only_elem0(
 
     match result.1 {
         FunctionResult::Success => {
-            if let FunctionResult::Failure = expected_function_result {
+            if let FunctionResult::Failure = *expected_function_result {
                 panic!("expected Success, got Failure");
             }
         },
         FunctionResult::Failure => {
-            if let FunctionResult::Success = expected_function_result {
+            if let FunctionResult::Success = *expected_function_result {
                 panic!("expected Failure, got Success");
             }
         },
