@@ -191,6 +191,7 @@ pub(crate) fn rng_simulator(
     true
 }
 
+#[inline]
 pub(crate) fn drop_rate_with_magic_find_and_looting(
     drop_chance: f64, magic_find: i32, looting_extra_chance: i32,
 ) -> f64 {
@@ -201,6 +202,7 @@ pub(crate) fn drop_rate_with_magic_find_and_looting(
         percent_of(drop_rate_with_magic_find, f64::from(looting_extra_chance))
 }
 
+#[inline]
 pub(crate) fn passes(
     magic_number: f64, drop_chance: f64, magic_find: i32,
     looting_extra_chance: i32,

@@ -15,6 +15,7 @@ pub(crate) const fn get_odds(percentage_chance: f64) -> f64 {
     100.0 / percentage_chance
 }
 
+#[inline]
 pub(crate) fn compare_f64(f64: f64, compare_to: f64) -> bool {
     (f64 - compare_to).abs() < f64::EPSILON
 }
@@ -200,6 +201,7 @@ pub(crate) fn range(array: &[i32]) -> Option<i32> {
     None
 }
 
+#[inline]
 pub(crate) fn conditional_value_or_default<T>(
     condition: bool, value: fn() -> T, default: T,
 ) -> T {
@@ -210,10 +212,12 @@ pub(crate) fn conditional_value_or_default<T>(
     default
 }
 
+#[inline]
 pub(crate) fn percent_of(number: f64, percent: f64) -> f64 {
     (number / 100.0) * percent
 }
 
+#[inline]
 pub(crate) fn percentage_change(starting_number: f64, ending_number: f64) -> f64 {
     ((ending_number - starting_number) / f64::abs(starting_number)) * 100.0
 }
@@ -259,6 +263,7 @@ pub(crate) fn with_comma_separators(s: &str) -> Option<String> {
     Some(out)
 }
 
+#[inline]
 pub(crate) fn print(text: &str) {
     print!("{text}");
     if let Err(e) = io::stdout().flush() {
