@@ -20,7 +20,7 @@ exclude = ["/.github/*"]
 
 [dependencies]
 tokio = { version = "1.21.2", features = ["full"] }
-reqwest = { version = "0.11.11", features = ["brotli", "http3"] }
+reqwest = { version = "0.11.11", default-features = false, features = ["brotli", "http3", "rustls", "trust-dns"] }
 
 cookie_store = "0.18.0"
 trust-dns-resolver = "0.22.0"
