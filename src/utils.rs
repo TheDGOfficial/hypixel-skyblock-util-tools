@@ -320,7 +320,11 @@ pub(crate) fn ask_float_input(
 
                         println!("{}{}{}{}", "Invalid selection. Please enter a selection between ".bright_red(), min_with_default.to_string().bright_red(), " and ".bright_red(), max_with_default.to_string().bright_red());
                     } else {
-                        println!("{}", "Invalid value given. Please enter a valid number!".bright_red());
+                        println!(
+                            "{}",
+                            "Invalid value given. Please enter a valid number!"
+                                .bright_red()
+                        );
                     },
 
                 Err(e) => {
