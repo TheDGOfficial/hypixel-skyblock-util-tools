@@ -11,7 +11,7 @@ use num::FromPrimitive;
 use crate::utils::FunctionResult::Failure;
 use crate::utils::FunctionResult::Success;
 
-pub(crate) fn get_odds(percentage_chance: f64) -> f64 {
+pub(crate) const fn get_odds(percentage_chance: f64) -> f64 {
     100.0 / percentage_chance
 }
 
@@ -27,7 +27,7 @@ pub(crate) fn has_unique_elements(vec: &[i32]) -> bool {
     vec.iter().all(move |x| unique.insert(x.to_owned()))
 }
 
-pub(crate) fn cap(number: f64, cap: f64) -> f64 {
+pub(crate) const fn cap(number: f64, cap: f64) -> f64 {
     if number > cap {
         return cap;
     }

@@ -43,6 +43,7 @@
 #![warn(unused_tuple_struct_fields)]
 #![warn(variant_size_differences)]
 #![feature(stmt_expr_attributes)]
+#![feature(const_fn_floating_point_arithmetic)]
 
 use std::process::ExitCode;
 use std::time::Instant;
