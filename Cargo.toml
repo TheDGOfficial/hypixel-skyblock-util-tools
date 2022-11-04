@@ -62,7 +62,7 @@ rustflags = ["-C", "opt-level=3", "-C", "target-cpu=native", "-Z", "tune-cpu=nat
 [profile.dev]
 strip = false
 lto = false
-rustflags = ["-C", "opt-level=0", "-Z", "share-generics=y"]
+rustflags = ["-C", "opt-level=0", "-Z", "share-generics=y", "-Csplit-debuginfo=unpacked"]
 codegen-units = 256
 incremental = true
 
