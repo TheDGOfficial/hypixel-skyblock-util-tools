@@ -6,5 +6,5 @@ cargo update
 cargo generate-lockfile
 
 cargo install cargo-update
-cargo install-update -a
+cargo install-update --git --all
 
