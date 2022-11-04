@@ -82,8 +82,10 @@ pub(crate) fn catacombs_stat_boost_calculator(
 fn get_cata_stat_boost(catacombs_level: i32) -> i32 {
     let mut cata_stat_boost = 0;
 
-    for level in 1..=catacombs_level {
+    for level in 0..=catacombs_level {
         cata_stat_boost += match level {
+            0 => 0,
+
             1..=5 => 4,
             6..=10 => 5,
             11..=15 => 6,

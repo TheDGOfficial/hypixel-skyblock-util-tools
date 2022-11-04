@@ -213,13 +213,24 @@ pub(crate) fn conditional_value_or_default<T>(
 }
 
 #[inline]
+pub(crate) fn value_or_minimum(value: f64, minimum: f64) -> f64 {
+    if value < minimum {
+        return minimum;
+    }
+
+    value
+}
+
+#[inline]
 pub(crate) fn percent_of(number: f64, percent: f64) -> f64 {
     (number / 100.0) * percent
 }
 
 #[inline]
 pub(crate) fn percentage_change(starting_number: f64, ending_number: f64) -> f64 {
-    ((ending_number - starting_number) / f64::abs(starting_number)) * 100.0
+    ((ending_number - starting_number) /
+        value_or_minimum(f64::abs(starting_number), 1.0)) *
+        100.0
 }
 
 pub(crate) fn with_comma_separators(s: &str) -> Option<String> {
