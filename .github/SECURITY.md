@@ -12,7 +12,7 @@
 be delayed just before a stable GitHub release. Development/Alpha/Beta releases from GitHub Releases (those marked as "
 pre-releases") are also supported, but only if there is no stable release succeeding them.
 
-We may also provide support to self-builds of default branch, i.e. when build fails on a specific OS, or Java version.
+We may also provide support to self-builds of default branch, i.e. when build fails on a specific OS (that is supported by the project).
 
 ## Reporting a Vulnerability
 

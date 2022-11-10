@@ -22,8 +22,8 @@ exclude = ["/.github/*"]
 tokio = { version = "1.21.2", features = ["full"] }
 reqwest = { version = "0.11.11", default-features = false, features = ["brotli", "http3", "rustls", "trust-dns"] }
 
-cookie_store = "0.18.0"
-trust-dns-resolver = "0.22.0"
+cookie_store = "0.19.0"
+trust-dns-resolver = { version = "0.22.0", features = ["dns-over-https-rustls"] }
 
 futures = "0.3.25"
 serde_json = "1.0.87"
