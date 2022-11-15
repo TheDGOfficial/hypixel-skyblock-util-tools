@@ -1,7 +1,7 @@
-// Source: https://hypixel-skyblock.fandom.com/wiki/Magic_Find
+// Source: https://hypixel-skyblock.fandom.com/wiki/Magic_Find#Trivia
 pub(crate) const MAXIMUM_MAGIC_FIND: i32 = 900;
 
-// Source: https://wiki.hypixel.net/Minos_Inquisitor
+// Source: https://wiki.hypixel.net/Minos_Inquisitor#Loot
 pub(crate) const CHIMERA_DROP_CHANCE: f64 = 1.0;
 
 // Source: In-game RNG Meter base chance.
