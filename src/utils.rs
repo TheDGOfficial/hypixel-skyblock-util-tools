@@ -11,6 +11,7 @@ use num::FromPrimitive;
 use crate::utils::FunctionResult::Failure;
 use crate::utils::FunctionResult::Success;
 
+#[inline]
 pub(crate) const fn get_odds(percentage_chance: f64) -> f64 {
     100.0 / percentage_chance
 }
@@ -28,6 +29,7 @@ pub(crate) fn has_unique_elements(vec: &[i32]) -> bool {
     vec.iter().all(move |x| unique.insert(x.to_owned()))
 }
 
+#[inline]
 pub(crate) const fn cap(number: f64, cap: f64) -> f64 {
     if number > cap {
         return cap;
@@ -213,7 +215,7 @@ pub(crate) fn conditional_value_or_default<T>(
 }
 
 #[inline]
-pub(crate) fn value_or_minimum(value: f64, minimum: f64) -> f64 {
+pub(crate) const fn value_or_minimum(value: f64, minimum: f64) -> f64 {
     if value < minimum {
         return minimum;
     }
@@ -222,7 +224,7 @@ pub(crate) fn value_or_minimum(value: f64, minimum: f64) -> f64 {
 }
 
 #[inline]
-pub(crate) fn percent_of(number: f64, percent: f64) -> f64 {
+pub(crate) const fn percent_of(number: f64, percent: f64) -> f64 {
     (number / 100.0) * percent
 }
 
