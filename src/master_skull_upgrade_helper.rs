@@ -17,8 +17,11 @@ use crate::utils::with_comma_separators;
 pub(crate) async fn upgrade_calculator_for_master_skulls(
     start_without_user_input: &mut Option<Instant>,
 ) -> bool {
-    let current_tier =
-        ask_int_input("Enter your current Master Skull tier: ", Some(1), Some(7));
+    let current_tier = ask_int_input(
+        "Enter your current Master Skull tier: ",
+        Some(1),
+        Some(7),
+    );
     let minimum_upgrade_tier = min(current_tier + 1, 7);
 
     let target_tier = if minimum_upgrade_tier == 7 {
@@ -36,7 +39,8 @@ pub(crate) async fn upgrade_calculator_for_master_skulls(
     if current_tier == target_tier {
         println!(
             "{}",
-            "You already have the Tier 7 Master Skull, exiting.".bright_green()
+            "You already have the Tier 7 Master Skull, exiting."
+                .bright_green()
         );
 
         return true;
@@ -102,7 +106,7 @@ pub(crate) async fn upgrade_calculator_for_master_skulls(
     });
 
     if critical_error_occurred {
-        println!(
+        eprintln!(
             "{}",
             "Critical error(s) occurred while running the program. Please read above for details.".red()
         );
@@ -114,7 +118,8 @@ pub(crate) async fn upgrade_calculator_for_master_skulls(
 }
 
 pub(crate) fn get_total_required_amount(
-    starting_tier: usize, ending_tier: i32,
+    starting_tier: usize,
+    ending_tier: i32,
 ) -> i64 {
     let mut total_required_amount = 1;
 
@@ -125,14 +130,16 @@ pub(crate) fn get_total_required_amount(
             },
 
         Err(e) => {
-            println!("{}{e}", "Error converting i32 to usize: ".red());
+            eprintln!("{}{e}", "Error converting i32 to usize: ".red());
         },
     }
 
     total_required_amount
 }
 
-async fn do_requests_and_extract_prices(prices: &mut IntMap<usize, i64>) -> bool {
+async fn do_requests_and_extract_prices(
+    prices: &mut IntMap<usize, i64>,
+) -> bool {
     let mut requests = Vec::with_capacity(7);
 
     match reqwest::ClientBuilder::new()
@@ -169,28 +176,30 @@ async fn do_requests_and_extract_prices(prices: &mut IntMap<usize, i64>) -> bool
             },
 
         Err(e) => {
-            println!("{}{e}", "Error when building http client: ".red());
+            eprintln!("{}{e}", "Error when building http client: ".red());
         },
     }
 
-    let mut completion_stream = requests
-        .into_iter()
-        .map(tokio::spawn)
-        .collect::<FuturesOrdered<_>>();
+    let mut completion_stream =
+        requests.into_iter().map(tokio::spawn).collect::<FuturesOrdered<_>>();
     let mut i = 0;
 
     while let Some(result_of_task) = completion_stream.next().await {
         match result_of_task {
             Ok(result_of_request) => {
-                if !parse_request_and_insert_prices(prices, i, result_of_request)
-                    .await
+                if !parse_request_and_insert_prices(
+                    prices,
+                    i,
+                    result_of_request,
+                )
+                .await
                 {
                     return false;
                 }
             },
 
             Err(e) => {
-                println!("{}{e}", "Error on task execution: ".red());
+                eprintln!("{}{e}", "Error on task execution: ".red());
 
                 return false;
             },
@@ -203,7 +212,8 @@ async fn do_requests_and_extract_prices(prices: &mut IntMap<usize, i64>) -> bool
 }
 
 async fn parse_request_and_insert_prices(
-    prices: &mut IntMap<usize, i64>, i: usize,
+    prices: &mut IntMap<usize, i64>,
+    i: usize,
     result_of_request: Result<Response, Error>,
 ) -> bool {
     match result_of_request {
@@ -213,32 +223,32 @@ async fn parse_request_and_insert_prices(
                     match serde_json::from_str::<Value>(&response_body) {
                         Ok(json) => {
                             json.get("matching_query").map_or_else(|| {
-                                println!("{}{response_body}", "error: can't find matching_query field in JSON: ".red());
+                                eprintln!("{}{response_body}", "error: can't find matching_query field in JSON: ".red());
                             }, |matching_query| {
                                 matching_query.as_i64().map_or_else(|| {
-                                    println!("{}{matching_query}", "error: matching_query field value is not an i64: ".red());
+                                    eprintln!("{}{matching_query}", "error: matching_query field value is not an i64: ".red());
                                 }, |matches| {
                                     if matches >= 1 { // Available for sale
                                         json.get("auctions").map_or_else(|| {
-                                            println!("{}{response_body}", "error: can't find auctions field in JSON: ".red());
+                                            eprintln!("{}{response_body}", "error: can't find auctions field in JSON: ".red());
                                         }, |auctions| {
                                             auctions.as_array().map_or_else(|| {
-                                                println!("{}{auctions}", "error: auctions field is not an array: ".red());
+                                                eprintln!("{}{auctions}", "error: auctions field is not an array: ".red());
                                             }, |auctions_array| {
                                                 auctions_array.get(0).map_or_else(|| {
-                                                    println!("{}{response_body}", "error: can't find the first auction in the auctions list while matching_query was >= 1: ".red());
+                                                    eprintln!("{}{response_body}", "error: can't find the first auction in the auctions list while matching_query was >= 1: ".red());
                                                 }, |auction| {
                                                     auction.as_object().map_or_else(|| {
-                                                        println!("{}{auction}", "error: auction data is not a Map: ".red());
+                                                        eprintln!("{}{auction}", "error: auction data is not a Map: ".red());
                                                     }, |auction_map| {
                                                         auction_map.get("starting_bid").map_or_else(|| {
-                                                            println!("{}{response_body}", "error: can't find starting_bid field in auction JSON: ".red());
+                                                            eprintln!("{}{response_body}", "error: can't find starting_bid field in auction JSON: ".red());
                                                         }, |starting_bid| {
                                                             starting_bid.as_i64().map_or_else(|| {
-                                                                println!("{}{starting_bid}", "error: starting_bid field is not an i64: ".red());
+                                                                eprintln!("{}{starting_bid}", "error: starting_bid field is not an i64: ".red());
                                                             }, |price| {
                                                                 if prices.insert(i + 1, price).is_some() {
-                                                                    println!("error: duplicate value at index {}, updating the value and continuing", i + 1);
+                                                                    eprintln!("error: duplicate value at index {}, updating the value and continuing", i + 1);
                                                                 }
                                                             });
                                                         });
@@ -252,7 +262,10 @@ async fn parse_request_and_insert_prices(
                         },
 
                         Err(e) => {
-                            println!("{}{e}", "Error when parsing JSON: ".red());
+                            eprintln!(
+                                "{}{e}",
+                                "Error when parsing JSON: ".red()
+                            );
 
                             return false;
                         },
@@ -260,7 +273,10 @@ async fn parse_request_and_insert_prices(
                 },
 
                 Err(e) => {
-                    println!("{}{e}", "Error when getting response body: ".red());
+                    eprintln!(
+                        "{}{e}",
+                        "Error when getting response body: ".red()
+                    );
 
                     return false;
                 },
@@ -268,7 +284,7 @@ async fn parse_request_and_insert_prices(
         },
 
         Err(e) => {
-            println!("{}{e}", "Error when getting response: ".red());
+            eprintln!("{}{e}", "Error when getting response: ".red());
 
             return false;
         },

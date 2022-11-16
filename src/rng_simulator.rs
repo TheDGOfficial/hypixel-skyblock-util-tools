@@ -64,18 +64,10 @@ fn print_drops_selection() {
     println!();
 }
 
-pub(crate) fn rng_simulator(
-    start_without_user_input: &mut Option<Instant>,
-) -> bool {
-    print_drops_selection();
-
-    let selection = ask_int_input("Enter a number to select: ", Some(1), Some(7));
-
-    let mut no_looting = true;
-
-    let mut drop_chance = match selection {
+fn get_drop_chance(selection: i32, no_looting: &mut bool) -> f64 {
+    match selection {
         1 => {
-            no_looting = false;
+            *no_looting = false;
 
             CHIMERA_DROP_CHANCE
         },
@@ -85,17 +77,30 @@ pub(crate) fn rng_simulator(
         5 => NECRONS_HANDLE_DROP_CHANCE,
         6 => NECRONS_HANDLE_MASTER_MODE_DROP_CHANCE,
         7 => {
-            no_looting = false;
+            *no_looting = false;
 
             ask_float_input("Enter custom drop chance: ", None, None)
         },
 
         _ => {
-            println!("{}{selection}", "error: invalid selection: ".red());
+            eprintln!("{}{selection}", "error: invalid selection: ".red());
 
             0.0
         },
-    };
+    }
+}
+
+pub(crate) fn rng_simulator(
+    start_without_user_input: &mut Option<Instant>,
+) -> bool {
+    print_drops_selection();
+
+    let selection =
+        ask_int_input("Enter a number to select: ", Some(1), Some(7));
+
+    let mut no_looting = true;
+
+    let mut drop_chance = get_drop_chance(selection, &mut no_looting);
 
     let original_drop_chance = drop_chance;
     let mut rng_meter_percent = -1.0;
@@ -116,11 +121,14 @@ pub(crate) fn rng_simulator(
         }
     }
 
-    let magic_find =
-        ask_int_input("What is your Magic Find? (0-900): ", Some(0), Some(900));
+    let magic_find = ask_int_input(
+        "What is your Magic Find? (0-900): ",
+        Some(0),
+        Some(900),
+    );
 
-    let looting_extra_chance = 15 *
-        conditional_value_or_default(
+    let looting_extra_chance = 15
+        * conditional_value_or_default(
             !no_looting,
             || {
                 ask_int_input("What is your Looting level? (if it works on this drop, 0-5): ", Some(0), Some(5))
@@ -128,15 +136,19 @@ pub(crate) fn rng_simulator(
             0,
         );
 
-    let rolls = ask_int_input("How many rolls you want to do?: ", Some(0), None);
+    let rolls =
+        ask_int_input("How many rolls you want to do?: ", Some(0), None);
 
     *start_without_user_input = Some(Instant::now());
 
     let drop_rate_with_magic_find =
         drop_chance + percent_of(drop_chance, f64::from(magic_find));
 
-    let drop_rate_with_magic_find_and_looting = drop_rate_with_magic_find +
-        percent_of(drop_rate_with_magic_find, f64::from(looting_extra_chance));
+    let drop_rate_with_magic_find_and_looting = drop_rate_with_magic_find
+        + percent_of(
+            drop_rate_with_magic_find,
+            f64::from(looting_extra_chance),
+        );
 
     let odds = get_odds(drop_rate_with_magic_find_and_looting);
 
@@ -150,9 +162,12 @@ pub(crate) fn rng_simulator(
     println!();
 
     let all_succeeded_magic_find_values: &mut Vec<i32> =
-        &mut Vec::with_capacity(TryInto::try_into(rolls).unwrap_or(0x7FFF_FFFF));
-    let meter_succeeded_rolls: &mut Vec<i32> =
-        &mut Vec::with_capacity(TryInto::try_into(rolls).unwrap_or(0x7FFF_FFFF));
+        &mut Vec::with_capacity(
+            TryInto::try_into(rolls).unwrap_or(0x7FFF_FFFF),
+        );
+    let meter_succeeded_rolls: &mut Vec<i32> = &mut Vec::with_capacity(
+        TryInto::try_into(rolls).unwrap_or(0x7FFF_FFFF),
+    );
 
     let drops = do_rolls_and_get_drops(
         original_drop_chance,
@@ -166,8 +181,11 @@ pub(crate) fn rng_simulator(
 
     let max_drops = all_succeeded_magic_find_values.len();
 
-    let percent = 100.0 -
-        f64::abs(percentage_change(usize_to_f64(max_drops), f64::from(drops)));
+    let percent = 100.0
+        - f64::abs(percentage_change(
+            usize_to_f64(max_drops),
+            f64::from(drops),
+        ));
 
     if rolls > 0 {
         println!();
@@ -193,30 +211,40 @@ pub(crate) fn rng_simulator(
 
 #[inline]
 pub(crate) fn drop_rate_with_magic_find_and_looting(
-    drop_chance: f64, magic_find: i32, looting_extra_chance: i32,
+    drop_chance: f64,
+    magic_find: i32,
+    looting_extra_chance: i32,
 ) -> f64 {
     let drop_rate_with_magic_find =
         drop_chance + percent_of(drop_chance, f64::from(magic_find));
 
-    drop_rate_with_magic_find +
-        percent_of(drop_rate_with_magic_find, f64::from(looting_extra_chance))
+    drop_rate_with_magic_find
+        + percent_of(
+            drop_rate_with_magic_find,
+            f64::from(looting_extra_chance),
+        )
 }
 
 #[inline]
 pub(crate) fn passes(
-    magic_number: f64, drop_chance: f64, magic_find: i32,
+    magic_number: f64,
+    drop_chance: f64,
+    magic_find: i32,
     looting_extra_chance: i32,
 ) -> bool {
-    magic_number <
-        drop_rate_with_magic_find_and_looting(
+    magic_number
+        < drop_rate_with_magic_find_and_looting(
             drop_chance,
             magic_find,
             looting_extra_chance,
         ) / 100.0
 }
 
+#[inline]
 pub(crate) fn get_minimum_magic_find_needed_to_succeed(
-    magic_number: f64, final_drop_chance: f64, looting_extra_chance: i32,
+    magic_number: f64,
+    final_drop_chance: f64,
+    looting_extra_chance: i32,
     start_from_magic_find: Option<i32>,
 ) -> i32 {
     // fast path - can't succeed even with maximum magic find
@@ -245,7 +273,7 @@ fn unlikely_to_be_called() -> i32 {
     // normally unreachable unless the passes function returns true for
     // MAXIMUM_MAGIC_FIND but returns false when run inside the for loop, but
     // compiler can't prove this, so we need this piece of code here.
-    println!(
+    eprintln!(
         "warning: non-stable implementation of rng_simulator::passes detected"
     );
 
@@ -253,8 +281,11 @@ fn unlikely_to_be_called() -> i32 {
 }
 
 fn do_rolls_and_get_drops(
-    original_drop_chance: f64, original_rng_meter_percent: f64,
-    looting_extra_chance: i32, rolls: i32, magic_find: i32,
+    original_drop_chance: f64,
+    original_rng_meter_percent: f64,
+    looting_extra_chance: i32,
+    rolls: i32,
+    magic_find: i32,
     all_succeeded_magic_find_values: &mut Vec<i32>,
     meter_succeeded_rolls: &mut Vec<i32>,
 ) -> i32 {
@@ -287,8 +318,11 @@ fn do_rolls_and_get_drops(
             .trunc(),
         );
 
-        let rng_meter_percent = 100.0 -
-            f64::abs(percentage_change(odds, cap(f64::from(progress), odds)));
+        let rng_meter_percent = 100.0
+            - f64::abs(percentage_change(
+                odds,
+                cap(f64::from(progress), odds),
+            ));
 
         let final_drop_chance = if rng_meter_percent >= 100.0 {
             100.0
@@ -302,40 +336,40 @@ fn do_rolls_and_get_drops(
             original_drop_chance * multiplier
         };
 
-        let drop_rate_with_magic_find = final_drop_chance +
-            percent_of(final_drop_chance, f64::from(magic_find));
+        let drop_rate_with_magic_find = final_drop_chance
+            + percent_of(final_drop_chance, f64::from(magic_find));
 
-        let new_drop_rate_with_magic_find_and_looting = drop_rate_with_magic_find +
-            percent_of(
-                drop_rate_with_magic_find,
-                f64::from(looting_extra_chance),
-            );
+        let new_drop_rate_with_magic_find_and_looting =
+            drop_rate_with_magic_find
+                + percent_of(
+                    drop_rate_with_magic_find,
+                    f64::from(looting_extra_chance),
+                );
 
-        let magic_number = rand.next_f64(); // future perf ref: this call is basically free, main bottleneck is io on
-                                            // the println! and other code
-        let success =
-            if magic_number < new_drop_rate_with_magic_find_and_looting / 100.0 {
-                drops += 1;
+        let magic_number = rand.next_f64(); // future perf ref: this call is basically free, main bottleneck is io
+                                            // on the println! and
+                                            // other code
+        let success = if magic_number
+            < new_drop_rate_with_magic_find_and_looting / 100.0
+        {
+            drops += 1;
 
-                reset_meter_at_least_once = true;
-                last_reset_at = roll;
+            reset_meter_at_least_once = true;
+            last_reset_at = roll;
 
-                meter_succeeded_rolls.push(progress);
+            meter_succeeded_rolls.push(progress);
 
-                true
-            } else {
-                false
-            };
-
-        let start_from_magic_find =
-            if success { None } else { Some(magic_find + 1) };
+            true
+        } else {
+            false
+        };
 
         let minimum_magic_find_needed_to_succeed =
             get_minimum_magic_find_needed_to_succeed(
                 magic_number,
                 final_drop_chance,
                 looting_extra_chance,
-                start_from_magic_find,
+                if success { None } else { Some(magic_find + 1) },
             );
 
         if minimum_magic_find_needed_to_succeed == MAXIMUM_MAGIC_FIND + 1 {
@@ -346,9 +380,10 @@ fn do_rolls_and_get_drops(
                     roll.to_string().yellow(),
                     "FAIL".bright_red()
                 ) {
-                    // If the above call failed, this one will fail too probably,
-                    // but try anyway and let the macro handle the error.
-                    println!("{}{e}", "error: can't write to stdout: ".red());
+                    // If the above call failed, this one will fail too
+                    // probably, but try anyway and let the
+                    // macro handle the error.
+                    eprintln!("{}{e}", "error: can't write to stdout: ".red());
                 }
             }
         } else {
@@ -366,14 +401,14 @@ fn do_rolls_and_get_drops(
                         rng_meter_percent
                     ) {
                         // If the above call failed, this one will fail too probably, but try anyway and let the macro handle the error.
-                        println!("{}{e}", "error: can't write to stdout: ".red());
+                        eprintln!("{}{e}", "error: can't write to stdout: ".red());
                     }
                 }
 
                 if !success {
                     if let Err(e) = writeln!(buf, "Roll #{}: {}, minimum magic find to succeed is {} which is higher than yours.", roll.to_string().yellow(), "FAIL".bright_red(), minimum_magic_find_needed_to_succeed.to_string().bright_red()) {
                         // If the above call failed, this one will fail too probably, but try anyway and let the macro handle the error.
-                        println!("{}{e}", "error: can't write to stdout: ".red());
+                        eprintln!("{}{e}", "error: can't write to stdout: ".red());
                     }
                 }
             }
@@ -384,13 +419,19 @@ fn do_rolls_and_get_drops(
 }
 
 fn print_statistics(
-    odds: f64, all_succeeded_magic_find_values: &mut Vec<i32>,
-    meter_succeeded_rolls: &mut Vec<i32>, original_rng_meter: f64,
+    odds: f64,
+    all_succeeded_magic_find_values: &mut Vec<i32>,
+    meter_succeeded_rolls: &mut Vec<i32>,
+    original_rng_meter: f64,
 ) {
     println!();
 
-    if let Some(mean_succeed_magic_find) = mean(all_succeeded_magic_find_values) {
-        println!("Mean (Average) Succeed Magic Find: {mean_succeed_magic_find}");
+    if let Some(mean_succeed_magic_find) =
+        mean(all_succeeded_magic_find_values)
+    {
+        println!(
+            "Mean (Average) Succeed Magic Find: {mean_succeed_magic_find}"
+        );
     }
 
     if let Some(median_succeed_magic_find) =
@@ -429,8 +470,8 @@ fn print_statistics(
     }
 
     if let Some(mean_succeed_rolls) = mean(meter_succeeded_rolls) {
-        let mean_succeed_meter = 100.0 -
-            f64::abs(percentage_change(odds, cap(mean_succeed_rolls, odds)));
+        let mean_succeed_meter = 100.0
+            - f64::abs(percentage_change(odds, cap(mean_succeed_rolls, odds)));
 
         if !mean_succeed_rolls.is_nan() && !mean_succeed_meter.is_nan() {
             println!("Mean (Average) Amount of Rolls until Succeed: {mean_succeed_rolls} (%{mean_succeed_meter} RNG Meter)");
@@ -438,16 +479,19 @@ fn print_statistics(
     }
 
     if let Some(median_succeed_rolls) = median(meter_succeeded_rolls) {
-        let median_succeed_meter = 100.0 -
-            f64::abs(percentage_change(odds, cap(median_succeed_rolls, odds)));
+        let median_succeed_meter = 100.0
+            - f64::abs(percentage_change(
+                odds,
+                cap(median_succeed_rolls, odds),
+            ));
 
         println!("Median (Middle) Amount of Rolls until Succeed: {median_succeed_rolls} (%{median_succeed_meter} RNG Meter)");
     }
 
     if !has_unique_elements(meter_succeeded_rolls) {
         if let Some(mode_succeed_rolls) = mode(meter_succeeded_rolls) {
-            let mode_succeed_meter = 100.0 -
-                f64::abs(percentage_change(
+            let mode_succeed_meter = 100.0
+                - f64::abs(percentage_change(
                     odds,
                     cap(f64::from(mode_succeed_rolls), odds),
                 ));
@@ -460,8 +504,8 @@ fn print_statistics(
 
     if meter_succeeded_rolls.len() > 1 {
         if let Some(range_succeed_rolls) = range(meter_succeeded_rolls) {
-            let range_succeed_meter = 100.0 -
-                f64::abs(percentage_change(
+            let range_succeed_meter = 100.0
+                - f64::abs(percentage_change(
                     odds,
                     cap(f64::from(range_succeed_rolls), odds),
                 ));
@@ -471,8 +515,8 @@ fn print_statistics(
     }
 
     if let Some(max) = meter_succeeded_rolls.iter().max() {
-        let max_meter = 100.0 -
-            f64::abs(percentage_change(
+        let max_meter = 100.0
+            - f64::abs(percentage_change(
                 odds,
                 cap(f64::from(max.to_owned()), odds),
             ));

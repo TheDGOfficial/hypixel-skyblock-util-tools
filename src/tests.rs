@@ -272,8 +272,8 @@ fn test_get_minimum_magic_find_needed_to_succeed() {
         // r/oddlyspecific
 
         // too lazy so got those values from running the method smh
-        // we know it works now (so the values we got are correct), this test is
-        // to ensure it keeps working in the future
+        // we know it works now (so the values we got are correct), this test
+        // is to ensure it keeps working in the future
         get_minimum_magic_find_needed_to_succeed(
             0.174_911_835_457_161_56,
             12.0,
@@ -296,7 +296,11 @@ fn test_return_first_elem_if_only_elem() {
         Some(15.0),
         &FunctionResult::Success,
     );
-    test_return_first_elem_if_only_elem0(&vec![], None, &FunctionResult::Failure);
+    test_return_first_elem_if_only_elem0(
+        &vec![],
+        None,
+        &FunctionResult::Failure,
+    );
     test_return_first_elem_if_only_elem0(
         &vec![1, 2],
         None,
@@ -305,7 +309,8 @@ fn test_return_first_elem_if_only_elem() {
 }
 
 fn test_return_first_elem_if_only_elem0(
-    vec: &Vec<i32>, expected_value: Option<f64>,
+    vec: &Vec<i32>,
+    expected_value: Option<f64>,
     expected_function_result: &FunctionResult,
 ) {
     let result = return_first_elem_if_only_one_elem(vec);

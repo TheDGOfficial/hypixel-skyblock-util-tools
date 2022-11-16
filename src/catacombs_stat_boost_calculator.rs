@@ -14,8 +14,8 @@ pub(crate) fn catacombs_stat_boost_calculator(
         Some(50),
     ));
 
-    let normal_stars_boost = 10 *
-        ask_int_input(
+    let normal_stars_boost = 10
+        * ask_int_input(
             "Enter the amount of normal stars your gear has: ",
             Some(0),
             Some(5),
@@ -33,8 +33,8 @@ pub(crate) fn catacombs_stat_boost_calculator(
         Some(50),
     ));
 
-    let planned_normal_stars_boost = 10 *
-        ask_int_input(
+    let planned_normal_stars_boost = 10
+        * ask_int_input(
             "Enter the amount of normal stars you plan your gear to have: ",
             Some(0),
             Some(5),
@@ -51,9 +51,9 @@ pub(crate) fn catacombs_stat_boost_calculator(
     let total_stat_boost =
         catacombs_boost + normal_stars_boost + master_stars_boost;
 
-    let planned_total_stat_boost = planned_catacombs_level_boost +
-        planned_normal_stars_boost +
-        planned_master_stars_boost;
+    let planned_total_stat_boost = planned_catacombs_level_boost
+        + planned_normal_stars_boost
+        + planned_master_stars_boost;
 
     match f64::try_from(total_stat_boost) {
         Ok(total_now) => match f64::try_from(planned_total_stat_boost) {
@@ -63,14 +63,14 @@ pub(crate) fn catacombs_stat_boost_calculator(
             },
 
             Err(e) => {
-                println!("{}{e}", "Error converting i32 to f64: ".red());
+                eprintln!("{}{e}", "Error converting i32 to f64: ".red());
 
                 return false;
             },
         },
 
         Err(e) => {
-            println!("{}{e}", "Error converting i32 to f64: ".red());
+            eprintln!("{}{e}", "Error converting i32 to f64: ".red());
 
             return false;
         },
@@ -103,7 +103,10 @@ fn get_cata_stat_boost(catacombs_level: i32) -> i32 {
             50 => 20,
 
             _ => {
-                println!("{}{level}", "error: invalid catacombs level: ".red());
+                eprintln!(
+                    "{}{level}",
+                    "error: invalid catacombs level: ".red()
+                );
 
                 0
             },

@@ -86,12 +86,29 @@ async fn main() -> ExitCode {
     let selection =
         utils::ask_int_input("Enter a number to select: ", Some(1), Some(3));
 
-    if selection == 1 &&
-        !master_skull_upgrade_helper::upgrade_calculator_for_master_skulls(
+    if selection == 1
+        && !master_skull_upgrade_helper::upgrade_calculator_for_master_skulls(
             start_without_user_input,
         )
         .await
     {
+        eprintln!("Exiting with failure exit code");
+        return ExitCode::FAILURE;
+    }
+
+    if selection == 2
+        && !catacombs_stat_boost_calculator::catacombs_stat_boost_calculator(
+            start_without_user_input,
+        )
+    {
+        eprintln!("Exiting with failure exit code");
+        return ExitCode::FAILURE;
+    }
+
+    if selection == 3
+        && !rng_simulator::rng_simulator(start_without_user_input)
+    {
+        eprintln!("Exiting with failure exit code");
         return ExitCode::FAILURE;
     }
 

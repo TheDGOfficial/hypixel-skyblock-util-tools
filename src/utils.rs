@@ -40,7 +40,7 @@ pub(crate) const fn cap(number: f64, cap: f64) -> f64 {
 
 pub(crate) fn f64_to_i32(f64: f64) -> i32 {
     i32::from_f64(f64).map_or_else(|| {
-        println!("{}{f64}", "warning: loss of precision while converting from f64 to i32, if this is intentional, call .trunc() on the value before calling this function. f64 value: ".yellow());
+        eprintln!("{}{f64}", "warning: loss of precision while converting from f64 to i32, if this is intentional, call .trunc() on the value before calling this function. f64 value: ".yellow());
 
         // i32::from is not implemented for f64 so using as is the only option.
         #[allow(clippy::cast_possible_truncation)]
@@ -53,7 +53,7 @@ pub(crate) fn f64_to_i32(f64: f64) -> i32 {
 
 pub(crate) fn usize_to_f64(usize: usize) -> f64 {
     f64::from_usize(usize).map_or_else(|| {
-        println!("{}{usize}", "warning: loss of precision due to overflow of usize while converting to f64: ".yellow());
+        eprintln!("{}{usize}", "warning: loss of precision due to overflow of usize while converting to f64: ".yellow());
 
         #[allow(clippy::cast_precision_loss)]
         #[allow(clippy::as_conversions)]
@@ -66,7 +66,7 @@ pub(crate) fn usize_to_f64(usize: usize) -> f64 {
 pub(crate) fn i64_to_f64(i64: i64) -> f64 {
     f64::from_i64(i64).map_or_else(
         || {
-            println!(
+            eprintln!(
                 "{}{i64}",
                 "warning: loss of precision while converting i64 to f64: "
                     .yellow()
@@ -89,8 +89,8 @@ pub(crate) enum FunctionResult {
     Failure,
 }
 
-// Returns first element on the array and Success FunctionResult if there's only
-// one element in the array.
+// Returns first element on the array and Success FunctionResult if there's
+// only one element in the array.
 
 // If theres more than one or no elements, returns None and Failure.
 // The failure here is like function returning, i.e false. It's not like an
@@ -140,9 +140,9 @@ pub(crate) fn mean(array: &Vec<i32>) -> Option<f64> {
 }
 
 // Returns the middle value in an array.
-// This method sorts the array, and such, the array order will not be same after
-// this method is called. Returns None if the array is empty, and if theres only
-// one value in the array, returns that value.
+// This method sorts the array, and such, the array order will not be same
+// after this method is called. Returns None if the array is empty, and if
+// theres only one value in the array, returns that value.
 pub(crate) fn median(array: &mut Vec<i32>) -> Option<f64> {
     if array.is_empty() {
         return None;
@@ -185,10 +185,7 @@ pub(crate) fn mode(array: &Vec<i32>) -> Option<i32> {
         *occurrences.entry(value).or_insert(0) += 1;
     }
 
-    occurrences
-        .into_iter()
-        .max_by_key(|&(_, count)| count)
-        .map(|(val, _)| val)
+    occurrences.into_iter().max_by_key(|&(_, count)| count).map(|(val, _)| val)
 }
 
 // Returns difference between maximum and minimum values in an array.
@@ -205,7 +202,9 @@ pub(crate) fn range(array: &[i32]) -> Option<i32> {
 
 #[inline]
 pub(crate) fn conditional_value_or_default<T>(
-    condition: bool, value: fn() -> T, default: T,
+    condition: bool,
+    value: fn() -> T,
+    default: T,
 ) -> T {
     if condition {
         return value();
@@ -240,7 +239,8 @@ pub(crate) fn with_comma_separators(s: &str) -> Option<String> {
     let negative = s.bytes().next() == Some(b'-');
 
     let mut integer_digits_remaining = dot - usize::from(negative);
-    let mut out = String::with_capacity(s.len() + integer_digits_remaining / 3);
+    let mut out =
+        String::with_capacity(s.len() + integer_digits_remaining / 3);
 
     for (i, c) in s.bytes().enumerate() {
         match c {
@@ -256,8 +256,8 @@ pub(crate) fn with_comma_separators(s: &str) -> Option<String> {
 
             b'0'..=b'9' =>
                 if integer_digits_remaining > 0 {
-                    if i != usize::from(negative) &&
-                        integer_digits_remaining % 3 == 0
+                    if i != usize::from(negative)
+                        && integer_digits_remaining % 3 == 0
                     {
                         out.push(',');
                     }
@@ -280,12 +280,14 @@ pub(crate) fn with_comma_separators(s: &str) -> Option<String> {
 pub(crate) fn print(text: &str) {
     print!("{text}");
     if let Err(e) = io::stdout().flush() {
-        println!("{}{e}", "Unable to flush stdout: ".red());
+        eprintln!("{}{e}", "Unable to flush stdout: ".red());
     }
 }
 
 pub(crate) fn ask_int_input(
-    question: &str, min: Option<i32>, max: Option<i32>,
+    question: &str,
+    min: Option<i32>,
+    max: Option<i32>,
 ) -> i32 {
     f64_to_i32(
         ask_float_input(
@@ -307,7 +309,7 @@ pub(crate) fn convert_i32_option_to_f64_option(
             },
 
             Err(e) => {
-                println!("{}{e}", "Error converting i32 to f64: ".red());
+                eprintln!("{}{e}", "Error converting i32 to f64: ".red());
             },
         }
     }
@@ -316,7 +318,9 @@ pub(crate) fn convert_i32_option_to_f64_option(
 }
 
 pub(crate) fn ask_float_input(
-    question: &str, min: Option<f64>, max: Option<f64>,
+    question: &str,
+    min: Option<f64>,
+    max: Option<f64>,
 ) -> f64 {
     let min_with_default = min.unwrap_or(f64::MIN);
     let max_with_default = max.unwrap_or(f64::MAX);
@@ -330,15 +334,15 @@ pub(crate) fn ask_float_input(
             match result {
                 Ok(line) =>
                     if let Ok(float_input) = line.parse::<f64>() {
-                        if float_input >= min_with_default &&
-                            float_input <= max_with_default
+                        if float_input >= min_with_default
+                            && float_input <= max_with_default
                         {
                             return float_input;
                         }
 
-                        println!("{}{}{}{}", "Invalid selection. Please enter a selection between ".bright_red(), min_with_default.to_string().bright_red(), " and ".bright_red(), max_with_default.to_string().bright_red());
+                        eprintln!("{}{}{}{}", "Invalid selection. Please enter a selection between ".bright_red(), min_with_default.to_string().bright_red(), " and ".bright_red(), max_with_default.to_string().bright_red());
                     } else {
-                        println!(
+                        eprintln!(
                             "{}",
                             "Invalid value given. Please enter a valid number!"
                                 .bright_red()
@@ -346,14 +350,14 @@ pub(crate) fn ask_float_input(
                     },
 
                 Err(e) => {
-                    println!(
+                    eprintln!(
                         "{}{e}",
                         "Error when getting line input: ".bright_red()
                     );
                 },
             }
         } else {
-            println!("{}", "error: no more lines".bright_red());
+            eprintln!("{}", "error: no more lines".bright_red());
         }
 
         println!();
