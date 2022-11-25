@@ -43,8 +43,8 @@ export TUNE_CPU="native"
 
 # Switch back to rustc defaults if portable option is specified
 if [ "$1" == "--portable" ] || [ "$2" == "--portable" ] || [ "$3" == "--portable" ] || [ "$4" == "--portable" ]; then
-  TARGET_CPU=TARGET_CPU_DEFAULT
-  TUNE_CPU=TUNE_CPU_DEFAULT
+  TARGET_CPU="$TARGET_CPU_DEFAULT"
+  TUNE_CPU="$TUNE_CPU_DEFAULT"
 fi
 
 echo "Target CPU is $TARGET_CPU. Tuning for $TUNE_CPU CPUs."
