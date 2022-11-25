@@ -4,10 +4,14 @@
 
 use crate::master_skull_upgrade_helper::get_total_required_amount;
 use jandom::Random;
+use std::env;
+use std::path::Path;
+use std::path::PathBuf;
 
 use crate::rng_simulator::drop_rate_with_magic_find_and_looting;
 use crate::rng_simulator::get_minimum_magic_find_needed_to_succeed;
 use crate::rng_simulator::passes;
+use crate::utils;
 use crate::utils::cap;
 use crate::utils::compare_f64;
 use crate::utils::conditional_value_or_default;
@@ -26,6 +30,54 @@ use crate::utils::return_first_elem_if_only_one_elem;
 use crate::utils::usize_to_f64;
 use crate::utils::with_comma_separators;
 use crate::utils::FunctionResult;
+
+fn get_workspace_path() -> PathBuf {
+    Path::new(".idea").join("workspace.xml")
+}
+
+#[test]
+fn test_intellij_clippy_args() {
+    if get_workspace_path().exists() {
+        test_intellij_clippy_args0(&env::var("CLIPPY_ARGS").unwrap());
+    }
+}
+
+#[test]
+#[should_panic(expected = "assertion failed: `(left == right)`")]
+fn test_intellij_clippy_args_should_fail() {
+    if get_workspace_path().exists() {
+        test_intellij_clippy_args0("whatever");
+    }
+}
+
+fn test_intellij_clippy_args0(args: &str) {
+    let workspace_file_path = &get_workspace_path();
+
+    let workspace_file_contents = utils::lines_from_file_from_end(
+        workspace_file_path,
+        usize::MAX,
+        false,
+    );
+
+    assert!(
+        !workspace_file_contents.is_empty(),
+        "workspace file path is empty or can't get its contents"
+    );
+
+    for line in workspace_file_contents {
+        if line
+            .trim()
+            .starts_with(r#"<option name="externalLinterArguments" value=""#)
+        {
+            assert_eq!(
+                line.trim().replace('\t', "").replace(" />", "/>"),
+                format!(
+                    r#"<option name="externalLinterArguments" value="{args}"/>"#
+                )
+            );
+        }
+    }
+}
 
 #[test]
 fn test_compare_f64() {
