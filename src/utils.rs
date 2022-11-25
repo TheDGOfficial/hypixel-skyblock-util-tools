@@ -119,7 +119,7 @@ pub(crate) fn mean(array: &Vec<i32>) -> Option<f64> {
 
     let first_elem = return_first_elem_if_only_one_elem(array);
 
-    if let Success = first_elem.1 {
+    if matches!(first_elem.1, Success) {
         return first_elem.0;
     }
 
@@ -150,7 +150,7 @@ pub(crate) fn median(array: &mut Vec<i32>) -> Option<f64> {
 
     let first_elem = return_first_elem_if_only_one_elem(array);
 
-    if let Success = first_elem.1 {
+    if matches!(first_elem.1, Success) {
         return first_elem.0;
     }
 

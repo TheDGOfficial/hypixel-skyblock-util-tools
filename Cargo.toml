@@ -45,7 +45,8 @@ jandom = "0.3.4"
 reqwest = { git = "https://github.com/kckeiks/reqwest/", branch = "add-http3-support" }
 
 [profile.release]
-strip = true  # Automatically strip symbols from the binary.
+debug = false
+strip = "debuginfo"  # Automatically strip symbols from the binary.
 lto = "fat"
 codegen-units = 1
 panic = "abort"
@@ -53,7 +54,8 @@ incremental = false
 opt-level = 3
 
 [profile.release.package."*"]
-strip = true
+debug = false
+strip = "debuginfo"
 codegen-units = 1
 incremental = false
 opt-level = 3
@@ -63,6 +65,6 @@ rustflags = ["-C", "opt-level=3", "-C", "target-cpu=native", "-Z", "tune-cpu=nat
 strip = false
 lto = false
 rustflags = ["-C", "opt-level=0", "-Z", "share-generics=y"]
-codegen-units = 256
+codegen-units = 512
 incremental = true
 

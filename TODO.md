@@ -8,6 +8,8 @@ Basically optimize for most common inputs to every selection/tool
 
 Also consider making the default requirement x86_64v2 instead of x86_64.
 
+Maybe also do BOLT on top of PGO. https://github.com/llvm/llvm-project/tree/main/bolt
+
 # Speeding up dev/debug builds
 
 general: use sccache for compiler cache, see https://github.com/mozilla/sccache

@@ -1,11 +1,11 @@
 use core::cmp::min;
-use core::hash::BuildHasherDefault;
 use core::time::Duration;
 use std::time::Instant;
 
 use colored::Colorize;
 use futures::stream::FuturesOrdered;
 use futures::StreamExt;
+use nohash_hasher::BuildNoHashHasher;
 use nohash_hasher::IntMap;
 use reqwest::Error;
 use reqwest::Response;
@@ -47,7 +47,7 @@ pub(crate) async fn upgrade_calculator_for_master_skulls(
     }
 
     let mut prices =
-        IntMap::with_capacity_and_hasher(7, BuildHasherDefault::default());
+        IntMap::with_capacity_and_hasher(7, BuildNoHashHasher::default());
 
     let critical_error_occurred =
         !do_requests_and_extract_prices(&mut prices).await;
@@ -141,18 +141,18 @@ async fn do_requests_and_extract_prices(
     prices: &mut IntMap<usize, i64>,
 ) -> bool {
     let mut requests = Vec::with_capacity(7);
-
-    match reqwest::ClientBuilder::new()
+    let client = reqwest::ClientBuilder::new()
         .timeout(Duration::from_secs(10))
         .brotli(true)
-        .build()
-    {
-        Ok(client) =>
+        .build();
+
+    match client {
+        Ok(resulting_client) =>
             for i in 1..8 {
                 let id = format!("MASTER_SKULL_TIER_{i}");
 
                 requests.push(
-                    client
+                    resulting_client
                         .get("https://api.slothpixel.me/api/skyblock/auctions")
                         .query(&[
                             ("limit", "1"),
