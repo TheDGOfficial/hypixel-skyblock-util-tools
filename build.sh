@@ -1,4 +1,3 @@
 #!/bin/bash
-./update_rust.sh
+. ./update_rust.sh
 cargo build
-

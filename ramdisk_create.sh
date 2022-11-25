@@ -28,4 +28,3 @@ echo "Deleting target-copy/ in disk since it's no longer needed"
 rm -r target-copy/
 
 echo "Finished creation of ramdisk for target/"
-

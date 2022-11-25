@@ -14,4 +14,3 @@ echo "Renaming target-copy/ to target/"
 mv target-copy/ target/
 
 echo "Finished flush of target/ on RAM to disk"
-
