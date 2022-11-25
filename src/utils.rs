@@ -1,13 +1,7 @@
 use std::fs::File;
 use std::io;
 use std::io::BufRead;
-use std::io::BufReader;
-use std::io::Read;
 use std::io::Write;
-use std::path::Path;
-use std::path::PathBuf;
-use std::time::SystemTime;
-use tokio::fs;
 
 use colored::Colorize;
 use nohash_hasher::BuildNoHashHasher;
