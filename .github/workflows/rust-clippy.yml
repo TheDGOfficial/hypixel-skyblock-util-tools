@@ -57,7 +57,7 @@ jobs:
 
       - name: Run rust-clippy
         run:
-          chmod +x init_clippy_args.sh && ./init_clippy_args.sh
+          chmod +x init_clippy_args.sh && . ./init_clippy_args.sh
           cargo clippy
           --all-features
           --message-format=json $CLIPPY_ARGS | clippy-sarif | tee rust-clippy-results.sarif | sarif-fmt
