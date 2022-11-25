@@ -37,7 +37,7 @@ export TARGET_CPU="native"
 export TUNE_CPU="native"
 
 if [ "$1" == "--portable" ] || [ "$2" == "--portable" ] || [ "$3" == "--portable" ] || [ "$4" == "--portable" ]; then
-  TARGET_CPU="x86-64"
+  TARGET_CPU="x86-64-v2"
   TUNE_CPU="generic"
 fi
 

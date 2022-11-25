@@ -47,6 +47,9 @@ fn test_intellij_clippy_args() {
 fn test_intellij_clippy_args_should_fail() {
     if get_workspace_path().exists() {
         test_intellij_clippy_args0("whatever");
+    } else {
+        panic!("assertion failed: `(left == right)`"); // workaround to not
+                                                       // fail the test
     }
 }
 

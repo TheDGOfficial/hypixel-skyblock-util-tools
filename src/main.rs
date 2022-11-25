@@ -54,6 +54,7 @@ use std::time::Instant;
 use colored::Colorize;
 use cookie_store as _;
 use mimalloc::MiMalloc;
+use trust_dns_resolver as _;
 
 use log::debug;
 
@@ -133,7 +134,7 @@ async fn main() -> ExitCode {
                 // I'm too lazy to maintain 2 projects so this goes here even
                 // though its basically another project
                 return minecraft_launcher_launcher::launch().await;
-            } // Binary name is not minecraft-launcher nor javacheck-remover so
+            } // Binary name is not minecraft-launcher so
               // assume user wants the hypixel skyblock tools and
               // fall through
         } else {
