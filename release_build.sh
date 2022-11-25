@@ -33,12 +33,18 @@ fi
 
 rm -rf /tmp/pgo-data
 
+# Defaults for rustc
+TARGET_CPU_DEFAULT="x86-64"
+TUNE_CPU_DEFAULT="generic"
+
+# Defaults for this script
 export TARGET_CPU="native"
 export TUNE_CPU="native"
 
+# Switch back to rustc defaults if portable option is specified
 if [ "$1" == "--portable" ] || [ "$2" == "--portable" ] || [ "$3" == "--portable" ] || [ "$4" == "--portable" ]; then
-  TARGET_CPU="x86-64-v2"
-  TUNE_CPU="generic"
+  TARGET_CPU=TARGET_CPU_DEFAULT
+  TUNE_CPU=TUNE_CPU_DEFAULT
 fi
 
 echo "Target CPU is $TARGET_CPU. Tuning for $TUNE_CPU CPUs."
@@ -66,7 +72,17 @@ if ! command -v $LLVM_PROFDATA_CMD &>/dev/null; then
   PGO_FLAG=""
 fi
 
-export NORMAL_FLAGS="--remap-path-prefix=/home/$USER/.cargo/=/.cargo/ -C opt-level=3 -C target-cpu=$TARGET_CPU -Z tune-cpu=$TUNE_CPU -C lto -Z mir-opt-level=4"
+TARGET_TUNE_CPU=""
+
+if [ "$TARGET_CPU" != "$TARGET_CPU_DEFAULT" ]; then
+ TARGET_TUNE_CPU=" -C target-cpu=$TARGET_CPU"
+fi
+
+if [ "$TUNE_CPU" != "$TUNE_CPU_DEFAULT" ]; then
+ TARGET_TUNE_CPU="$TARGET_TUNE_CPU -Z tune-cpu=$TUNE_CPU"
+fi
+
+export NORMAL_FLAGS="--remap-path-prefix=/home/$USER/.cargo/=/.cargo/ -C opt-level=3$TARGET_TUNE_CPU -C lto -Z mir-opt-level=4"
 
 CARGO_CMD="$(get_cargo_cmd build $TARGET)"
 CARGO_CMD_TEST="$(get_cargo_cmd test $TARGET)"
