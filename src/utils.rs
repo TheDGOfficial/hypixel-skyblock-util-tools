@@ -1,12 +1,20 @@
+use std::fs::File;
 use std::io;
 use std::io::BufRead;
+use std::io::BufReader;
+use std::io::Read;
 use std::io::Write;
+use std::path::Path;
+use std::path::PathBuf;
+use std::time::SystemTime;
+use tokio::fs;
 
 use colored::Colorize;
 use nohash_hasher::BuildNoHashHasher;
 use nohash_hasher::IntMap;
 use nohash_hasher::IntSet;
 use num::FromPrimitive;
+use rev_buf_reader::RevBufReader;
 
 use crate::utils::FunctionResult::Failure;
 use crate::utils::FunctionResult::Success;
@@ -49,6 +57,18 @@ pub(crate) fn f64_to_i32(f64: f64) -> i32 {
             f64 as i32
         }
     }, |i32| i32)
+}
+
+pub(crate) fn u128_to_u64(u128: u128) -> u64 {
+    u64::from_u128(u128).map_or_else(|| {
+        eprintln!("{}{u128}", "warning: loss of precision due to overflow of u128 while converting to u64: ".yellow());
+
+        #[allow(clippy::cast_possible_truncation)]
+        #[allow(clippy::as_conversions)]
+        {
+            u128 as u64
+        }
+    }, |u64| u64)
 }
 
 pub(crate) fn usize_to_f64(usize: usize) -> f64 {
@@ -228,10 +248,28 @@ pub(crate) const fn percent_of(number: f64, percent: f64) -> f64 {
 }
 
 #[inline]
-pub(crate) fn percentage_change(starting_number: f64, ending_number: f64) -> f64 {
-    ((ending_number - starting_number) /
-        value_or_minimum(f64::abs(starting_number), 1.0)) *
-        100.0
+pub(crate) fn percentage_change(
+    starting_number: f64,
+    ending_number: f64,
+) -> f64 {
+    ((ending_number - starting_number)
+        / value_or_minimum(f64::abs(starting_number), 1.0))
+        * 100.0
+}
+
+pub(crate) fn nano_time() -> Option<u128> {
+    match SystemTime::now().duration_since(SystemTime::UNIX_EPOCH) {
+        Ok(duration) => Some(duration.as_nanos()),
+
+        Err(e) => {
+            eprintln!(
+                "{}{e}",
+                "error when getting nanoseconds since unix epoch: ".red()
+            );
+
+            None
+        },
+    }
 }
 
 pub(crate) fn with_comma_separators(s: &str) -> Option<String> {
@@ -315,6 +353,127 @@ pub(crate) fn convert_i32_option_to_f64_option(
     }
 
     None
+}
+
+pub(crate) async fn read_file(file: &Path) -> Option<String> {
+    match fs::read_to_string(file).await {
+        Ok(text) => Some(text),
+
+        Err(e) => {
+            eprintln!(
+                "{}{}: {e}",
+                "error: can't read file: ".red(),
+                file.to_string_lossy()
+            );
+
+            None
+        },
+    }
+}
+
+pub(crate) async fn write_file(file: &Path, text: &str) -> bool {
+    match fs::write(file, text).await {
+        Ok(()) => true,
+
+        Err(e) => {
+            eprintln!(
+                "{}{}: {e}",
+                "error: can't write to file: ".red(),
+                file.to_string_lossy()
+            );
+
+            false
+        },
+    }
+}
+
+pub(crate) fn lines_from_file_from_end(
+    file_path: &Path,
+    limit: usize,
+    print_errors: bool,
+) -> Vec<String> {
+    match File::open(file_path) {
+        Ok(file) => {
+            let buf = RevBufReader::new(file);
+
+            buf.lines()
+                .take(limit)
+                .map(|operation_result| match operation_result {
+                    Ok(line) => line,
+
+                    Err(e) => {
+                        eprintln!(
+                            "{}{}{e}",
+                            "error while processing file: ".red(),
+                            file_path.to_string_lossy()
+                        );
+
+                        String::new()
+                    },
+                })
+                .collect()
+        },
+
+        Err(e) => {
+            if print_errors {
+                eprintln!(
+                    "{}{}{e}",
+                    "can't open file: ".red(),
+                    file_path.to_string_lossy()
+                );
+            }
+
+            vec![]
+        },
+    }
+}
+
+pub(crate) fn get_minecraft_dir() -> Option<PathBuf> {
+    home::home_dir().map_or_else(
+        || {
+            eprintln!("error: can't find home directory");
+
+            None
+        },
+        |home_path| Some(get_minecraft_dir_from_home_path(&home_path)),
+    )
+}
+
+pub(crate) fn get_minecraft_dir_from_home_path(home_path: &Path) -> PathBuf {
+    home_path.join(".minecraft")
+}
+
+pub(crate) async fn copy(from: &Path, to: &Path) -> bool {
+    if let Err(e) = fs::copy(from, to).await {
+        eprintln!("{}{e}", "error when copying: ".red());
+
+        return false;
+    }
+
+    true
+}
+
+pub(crate) fn is_same_file(
+    file1: &Path,
+    file2: &Path,
+) -> Result<bool, io::Error> {
+    let f1 = File::open(file1)?;
+    let f2 = File::open(file2)?;
+
+    if f1.metadata()?.len() != f2.metadata()?.len() {
+        return Ok(false);
+    }
+
+    let r1 = BufReader::new(f1);
+    let r2 = BufReader::new(f2);
+
+    for (b1, b2) in r1.bytes().zip(r2.bytes()) {
+        if b1? != b2? {
+            return Ok(false);
+        }
+    }
+
+    Ok(true)
 }
 
 pub(crate) fn ask_float_input(

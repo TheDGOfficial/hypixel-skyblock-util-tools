@@ -45,13 +45,19 @@
 #![feature(stmt_expr_attributes)]
 #![feature(const_fn_floating_point_arithmetic)]
 
+use std::collections::HashMap;
+use std::env;
+use std::path::Path;
 use std::process::ExitCode;
 use std::time::Instant;
 
 use colored::Colorize;
 use cookie_store as _;
 use mimalloc::MiMalloc;
-use trust_dns_resolver as _;
+
+use log::debug;
+
+mod minecraft_launcher_launcher;
 
 mod constants;
 mod utils;
@@ -61,17 +67,18 @@ mod master_skull_upgrade_helper;
 
 mod rng_simulator;
 
+mod survivability_calculator;
+
+mod slayer_kill_goal_watcher;
+
 #[cfg(test)]
 mod tests;
 
 #[global_allocator]
 static GLOBAL: MiMalloc = MiMalloc;
 
-#[tokio::main]
-async fn main() -> ExitCode {
-    let start = Instant::now();
-    let start_without_user_input: &mut Option<Instant> = &mut Some(start);
-
+#[inline]
+fn print_selections() {
     println!("Select which utility you want to run: ");
     println!(
         " {}. Upgrade price calculator for {}",
@@ -80,11 +87,73 @@ async fn main() -> ExitCode {
     );
     println!(" {}. Catacombs stat boost calculator", "2".bright_blue());
     println!(" {}. RNG simulator", "3".bright_blue());
+    println!(" {}. Survivability Calculator", "4".bright_blue());
+    println!(" {}. Slayer kill goal watcher", "5".bright_blue());
 
     println!();
+}
+
+#[tokio::main]
+async fn main() -> ExitCode {
+    pretty_env_logger::init();
+    debug!(
+        "program version is {}",
+        option_env!("CARGO_PKG_VERSION").unwrap_or("unknown")
+    );
+
+    debug!(
+        "environment variables are {:#?}",
+        env::vars().collect::<HashMap<String, String>>()
+    );
+
+    let args: Vec<String> = env::args().collect();
+
+    debug!("given commandline arguments are {:#?}", args);
+
+    if let Some(binary_name) = args.first() {
+        debug!("binary name is {}", binary_name);
+
+        if let Some(binary_file_name) = Path::new(binary_name).file_name() {
+            if let Some(argument) = args.get(1) {
+                if argument == "install-minecraft-launcher-launcher" {
+                    return minecraft_launcher_launcher::install(
+                        &binary_file_name.to_string_lossy(),
+                        &args,
+                    )
+                    .await;
+                }
+
+                eprintln!("{}{argument}", "invalid argument: ".red());
+
+                return ExitCode::FAILURE; // Exit because providing invalid
+                                          // arguments should not fall through
+            } // No arguments given, fall through to hypixel skyblock tools
+
+            if binary_file_name == "minecraft-launcher" {
+                // I'm too lazy to maintain 2 projects so this goes here even
+                // though its basically another project
+                return minecraft_launcher_launcher::launch().await;
+            } // Binary name is not minecraft-launcher nor javacheck-remover so
+              // assume user wants the hypixel skyblock tools and
+              // fall through
+        } else {
+            eprintln!(
+                "{}",
+                "warning: can't get file name path of running binary".yellow()
+            );
+        }
+    } else {
+        eprintln!("{}", "warning: can't get running binary string".yellow());
+        // Fall through because we don't really need the binary name
+    }
+
+    let start = Instant::now();
+    let start_without_user_input: &mut Option<Instant> = &mut Some(start);
+
+    print_selections();
 
     let selection =
-        utils::ask_int_input("Enter a number to select: ", Some(1), Some(3));
+        utils::ask_int_input("Enter a number to select: ", Some(1), Some(5));
 
     if selection == 1
         && !master_skull_upgrade_helper::upgrade_calculator_for_master_skulls(
@@ -112,15 +181,22 @@ async fn main() -> ExitCode {
         return ExitCode::FAILURE;
     }
 
-    if selection == 2 &&
-        !catacombs_stat_boost_calculator::catacombs_stat_boost_calculator(
+    if selection == 4
+        && !survivability_calculator::survivability_calculator(
             start_without_user_input,
         )
     {
+        eprintln!("Exiting with failure exit code");
         return ExitCode::FAILURE;
     }
 
-    if selection == 3 && !rng_simulator::rng_simulator(start_without_user_input) {
+    if selection == 5
+        && !slayer_kill_goal_watcher::slayer_kill_goal_watcher(
+            start_without_user_input,
+        )
+        .await
+    {
+        eprintln!("Exiting with failure exit code");
         return ExitCode::FAILURE;
     }
 
