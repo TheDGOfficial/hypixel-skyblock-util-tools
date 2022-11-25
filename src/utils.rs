@@ -1,9 +1,16 @@
-use core::hash::BuildHasherDefault;
+use std::fs::File;
 use std::io;
 use std::io::BufRead;
+use std::io::BufReader;
+use std::io::Read;
 use std::io::Write;
+use std::path::Path;
+use std::path::PathBuf;
+use std::time::SystemTime;
+use tokio::fs;
 
 use colored::Colorize;
+use nohash_hasher::BuildNoHashHasher;
 use nohash_hasher::IntMap;
 use nohash_hasher::IntSet;
 use num::FromPrimitive;
@@ -24,7 +31,7 @@ pub(crate) fn compare_f64(f64: f64, compare_to: f64) -> bool {
 pub(crate) fn has_unique_elements(vec: &[i32]) -> bool {
     let mut unique = IntSet::with_capacity_and_hasher(
         vec.len(),
-        BuildHasherDefault::default(),
+        BuildNoHashHasher::default(),
     );
     vec.iter().all(move |x| unique.insert(x.to_owned()))
 }
@@ -178,7 +185,7 @@ pub(crate) fn median(array: &mut Vec<i32>) -> Option<f64> {
 pub(crate) fn mode(array: &Vec<i32>) -> Option<i32> {
     let mut occurrences = IntMap::with_capacity_and_hasher(
         array.len(),
-        BuildHasherDefault::default(),
+        BuildNoHashHasher::default(),
     );
 
     for &value in array {
