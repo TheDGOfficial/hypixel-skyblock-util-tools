@@ -13,7 +13,8 @@ keywords = ["hypixel skyblock"]
 categories = ["command-line-utilities"]
 
 edition = "2021"
-rust-version = "1.66.0"
+#TODO bump with every Rust version
+rust-version = "1.67.0"
 exclude = ["/.github/*"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -55,7 +56,7 @@ pretty_env_logger = "0.4.0"
 
 notify-rust = "4.5.10"
 
-# TODO fails with fullscreen-shell-v1_client_api.rs:714:1 unexpected closing delimiter while compiling wayland-protocols.
+# TODO fails with fullscreen-shell-v1_client_api.rs:714:1 unexpected closing delimiter while compiling wayland-protocols
 #arboard = { version = "3.2.0", features = ["wayland-data-control"] }
 arboard = "3.2.0"
 
