@@ -278,7 +278,7 @@ fn get_enemy_damage_per_hit(selection: i32) -> i32 {
                 },
                 4 => {
                     println!();
-                    println!("{} This assumes there are no heads, you didn't get hit by any lazers, and the hit shield DPS increase is also not factored in.", "Note:".red());
+                    println!("{} This assumes there are no heads, you didn't get hit by any lasers, and the hit shield DPS increase is also not factored in.", "Note:".red());
 
                     VOIDGLOOM_SERAPH_TIER_4_TOTAL_DAMAGE
                 },

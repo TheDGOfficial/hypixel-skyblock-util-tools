@@ -60,7 +60,7 @@ pub(crate) async fn launch() -> ExitCode {
 // or another editor.
 
 // NOTE 2.1: Despite that, it requires running it without sudo AND then
-// escalating to sudo priveligies because the launcher itself and java checker
+// escalating to sudo privileges because the launcher itself and java checker
 // MUST run without sudo. Only the PID monitoring for the starting of Java
 // process (game process) requires, and will, use sudo.
 

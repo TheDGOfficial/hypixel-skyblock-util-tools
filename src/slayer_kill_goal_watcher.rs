@@ -36,7 +36,7 @@ use notify_rust::Urgency;
 use serde_json::Error;
 
 // TODO
-// Make it count indiviual twilight arrow poison amount gained, currently it
+// Make it count individual twilight arrow poison amount gained, currently it
 // only counts the twilight arrow poison drops i.e lets say you did 2 bosses
 // and got 64 arrow poisons each, total of 128 poisons, current program will
 // say you got 2 drops
@@ -445,6 +445,15 @@ pub(crate) async fn slayer_kill_goal_watcher(
         }
     }
 
+    register_watcher_with_new_clipboard(session_data, global_data);
+
+    true
+}
+
+fn register_watcher_with_new_clipboard(
+    session_data: &mut VoidgloomData,
+    global_data: &mut VoidgloomData,
+) {
     match Clipboard::new() {
         Ok(mut clipboard) => {
             register_watcher(session_data, global_data, &mut clipboard);
@@ -457,8 +466,6 @@ pub(crate) async fn slayer_kill_goal_watcher(
             );
         },
     }
-
-    true
 }
 
 fn register_watcher(
@@ -762,7 +769,7 @@ fn parse_log_line(
             .for_each(|data| data.endersnake_runes += 1);
     }
     // The drop rarity of eye from boss can change depending on if
-    // lootshare or own boss, or if it is  selected on meter,
+    // loot-share or own boss, or if it is  selected on meter,
     // so avoid the drop rarity and just check containing DROP!. Why
     // not just Summoning Eye? Because Zealot dropped eyes give that
     // message too.

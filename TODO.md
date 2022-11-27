@@ -29,7 +29,7 @@ Build scripts: Either build an actually portable executable that works on (at le
 executables for Windows & macOS along with the current Linux-only executable.
 
 Cargo.toml: we might want to switch to musl (or cosmopolitian libc) instead of gnu for c library and compile to i686 to
-support 32-bit OS'es.
+support 32-bit OS's.
 
 # The Actual Code
 
