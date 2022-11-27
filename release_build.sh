@@ -61,7 +61,7 @@ else
 
   PGO_FLAG=""
 
-  #echo "Profile Guided Optmization (PGO) will be done using default inputs."
+  #echo "Profile Guided Optimization (PGO) will be done using default inputs."
 fi
 
 LLVM_VERSION="15"
@@ -106,7 +106,8 @@ if [ "$PGO_FLAG" != "" ]; then
   echo -e "2\n0\n0\n0\n50\n5\n5\n" | ./target/$TARGET/release/hypixel-skyblock-util-tools
   echo -e "3\n1\n0\n5\n99999\n" | ./target/$TARGET/release/hypixel-skyblock-util-tools
   echo -e "4\n1\n9\n15000\n5000\n4000\n" | ./target/$TARGET/release/hypixel-skyblock-util-tools
-  echo -e "5\n1\n" | ./target/$TARGET/release/hypixel-skyblock-util-tools
+  #TODO never exits, also needs specific log file and rare drop samples
+  #echo -e "5\n1\n" | ./target/$TARGET/release/hypixel-skyblock-util-tools
 
   $LLVM_PROFDATA_CMD merge -o /tmp/pgo-data/merged.profdata /tmp/pgo-data
 
