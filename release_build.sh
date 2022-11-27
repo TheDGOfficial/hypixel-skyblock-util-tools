@@ -1,9 +1,19 @@
 #!/bin/bash
 get_cargo_cmd() {
+  BUILD_MAIN_CMD="cargo"
+
+  if [[ -n "$CROSS_COMPILE" ]]; then
+   BUILD_MAIN_CMD="cross"
+  fi
+
+  PANIC_ABORT_CMDLINE="$BUILD_MAIN_CMD $1 -Z build-std=std,panic_abort -Z build-std-features=panic_immediate_abort --target=$2"
+
   if [ "$1" == "test" ]; then
-    echo "cargo $1 --target=$2"
+    echo "$BUILD_MAIN_CMD $1 --target=$2"
+  elif [[ -n "$PROFILING_PROFILE" ]]; then
+    echo "$PANIC_ABORT_CMDLINE --profile profiling"
   else
-    echo "cargo $1 -Z build-std=std,panic_abort -Z build-std-features=panic_immediate_abort --target=$2 --release"
+    echo "$PANIC_ABORT_CMDLINE --release"
   fi
 }
 
@@ -114,5 +124,8 @@ if [ "$PGO_FLAG" != "" ]; then
   RUSTFLAGS="$NORMAL_FLAGS -Cprofile-use=/tmp/pgo-data/merged.profdata -Cllvm-args=-pgo-warn-missing-function" $CARGO_CMD
 fi
 
-strip target/$TARGET/release/hypixel-skyblock-util-tools
-#upx --best target/$TARGET/release/hypixel-skyblock-util-tools
+if [[ -z "$PROFILING_PROFILE" ]]; then
+ strip target/$TARGET/release/hypixel-skyblock-util-tools
+ #upx --best target/$TARGET/release/hypixel-skyblock-util-tools
+fi
+

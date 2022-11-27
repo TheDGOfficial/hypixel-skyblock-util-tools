@@ -5,6 +5,7 @@ use colored::Colorize;
 use crate::utils::ask_int_input;
 use crate::utils::percentage_change;
 
+#[inline]
 pub(crate) fn catacombs_stat_boost_calculator(
     start_without_user_input: &mut Option<Instant>,
 ) -> bool {
@@ -79,6 +80,7 @@ pub(crate) fn catacombs_stat_boost_calculator(
     true
 }
 
+#[inline]
 fn get_cata_stat_boost(catacombs_level: i32) -> i32 {
     let mut cata_stat_boost = 0;
 

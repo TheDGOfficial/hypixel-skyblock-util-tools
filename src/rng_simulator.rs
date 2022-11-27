@@ -29,6 +29,7 @@ use crate::utils::percentage_change;
 use crate::utils::range;
 use crate::utils::usize_to_f64;
 
+#[inline]
 fn print_drops_selection() {
     println!();
     println!("Select which item you want to simulate RNG: ");
@@ -64,6 +65,7 @@ fn print_drops_selection() {
     println!();
 }
 
+#[inline]
 fn get_drop_chance(selection: i32, no_looting: &mut bool) -> f64 {
     match selection {
         1 => {
@@ -90,6 +92,7 @@ fn get_drop_chance(selection: i32, no_looting: &mut bool) -> f64 {
     }
 }
 
+#[inline]
 pub(crate) fn rng_simulator(
     start_without_user_input: &mut Option<Instant>,
 ) -> bool {
@@ -213,7 +216,7 @@ pub(crate) fn rng_simulator(
 pub(crate) fn drop_rate_with_magic_find_and_looting(
     drop_chance: f64,
     magic_find: i32,
-    looting_extra_chance: i32,
+    looting_extra_chance: f64,
 ) -> f64 {
     let drop_rate_with_magic_find =
         drop_chance + percent_of(drop_chance, f64::from(magic_find));
@@ -221,7 +224,7 @@ pub(crate) fn drop_rate_with_magic_find_and_looting(
     drop_rate_with_magic_find
         + percent_of(
             drop_rate_with_magic_find,
-            f64::from(looting_extra_chance),
+            looting_extra_chance,
         )
 }
 
@@ -230,7 +233,7 @@ pub(crate) fn passes(
     magic_number: f64,
     drop_chance: f64,
     magic_find: i32,
-    looting_extra_chance: i32,
+    looting_extra_chance: f64,
 ) -> bool {
     magic_number
         < drop_rate_with_magic_find_and_looting(
@@ -244,7 +247,7 @@ pub(crate) fn passes(
 pub(crate) fn get_minimum_magic_find_needed_to_succeed(
     magic_number: f64,
     final_drop_chance: f64,
-    looting_extra_chance: i32,
+    looting_extra_chance: f64,
     start_from_magic_find: Option<i32>,
 ) -> i32 {
     // fast path - can't succeed even with maximum magic find
@@ -258,7 +261,9 @@ pub(crate) fn get_minimum_magic_find_needed_to_succeed(
     }
 
     // slower path
-    for mf in start_from_magic_find.unwrap_or(0)..=MAXIMUM_MAGIC_FIND {
+    // NOTE: do not make it inclusive range, makes it a lot slower, see https://github.com/rust-lang/rust/issues/45222
+    #[allow(clippy::range_plus_one)]
+    for mf in start_from_magic_find.unwrap_or(0)..(MAXIMUM_MAGIC_FIND + 1) {
         if passes(magic_number, final_drop_chance, mf, looting_extra_chance) {
             return mf;
         }
@@ -280,6 +285,7 @@ fn unlikely_to_be_called() -> i32 {
     MAXIMUM_MAGIC_FIND + 1
 }
 
+#[inline]
 fn do_rolls_and_get_drops(
     original_drop_chance: f64,
     original_rng_meter_percent: f64,
@@ -307,6 +313,8 @@ fn do_rolls_and_get_drops(
     if !do_printing {
         println!("Will not print individual roll details to optimize performance since roll amount is 100K or higher.");
     }
+
+    let looting_extra_chance_f64 = f64::from(looting_extra_chance);
 
     for roll in 1..=rolls {
         let progress = f64_to_i32(
@@ -368,7 +376,7 @@ fn do_rolls_and_get_drops(
             get_minimum_magic_find_needed_to_succeed(
                 magic_number,
                 final_drop_chance,
-                looting_extra_chance,
+                looting_extra_chance_f64,
                 if success { None } else { Some(magic_find + 1) },
             );
 
@@ -418,6 +426,7 @@ fn do_rolls_and_get_drops(
     drops
 }
 
+#[inline]
 fn print_statistics(
     odds: f64,
     all_succeeded_magic_find_values: &mut Vec<i32>,

@@ -14,6 +14,7 @@ use serde_json::Value;
 use crate::utils::ask_int_input;
 use crate::utils::with_comma_separators;
 
+#[inline]
 pub(crate) async fn upgrade_calculator_for_master_skulls(
     start_without_user_input: &mut Option<Instant>,
 ) -> bool {
@@ -117,6 +118,7 @@ pub(crate) async fn upgrade_calculator_for_master_skulls(
     true
 }
 
+#[inline]
 pub(crate) fn get_total_required_amount(
     starting_tier: usize,
     ending_tier: i32,
@@ -137,6 +139,7 @@ pub(crate) fn get_total_required_amount(
     total_required_amount
 }
 
+#[inline]
 async fn do_requests_and_extract_prices(
     prices: &mut IntMap<usize, i64>,
 ) -> bool {
@@ -211,6 +214,7 @@ async fn do_requests_and_extract_prices(
     true
 }
 
+#[inline]
 async fn parse_request_and_insert_prices(
     prices: &mut IntMap<usize, i64>,
     i: usize,

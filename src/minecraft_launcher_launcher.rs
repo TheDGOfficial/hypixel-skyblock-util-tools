@@ -29,6 +29,7 @@ use cnproc::PidMonitor;
 use cnproc::PidEvent;
 
 #[cfg(not(target_os = "linux"))]
+#[inline]
 #[allow(clippy::unused_async)]
 pub(crate) async fn launch() -> ExitCode {
     eprintln!("Minecraft Launcher launcher is only supported on Linux");
@@ -65,6 +66,7 @@ pub(crate) async fn launch() -> ExitCode {
 // process (game process) requires, and will, use sudo.
 
 // TODO Future plans include checking for Bootstrap launcher updates.
+#[inline]
 #[cfg(target_os = "linux")]
 pub(crate) async fn launch() -> ExitCode {
     let user = sudo::check() == RunningAs::User;
@@ -92,6 +94,7 @@ pub(crate) async fn launch() -> ExitCode {
 
 static KILLING_IN_PROGRESS: AtomicBool = AtomicBool::new(false);
 
+#[inline]
 fn kill_launcher_process(launcher_process: &Process) {
     if launcher_process.kill() {
         println!("Killed process successfully");
@@ -100,6 +103,7 @@ fn kill_launcher_process(launcher_process: &Process) {
     }
 }
 
+#[inline]
 fn find_launcher_processes(mut sys: System, kill: bool) -> bool {
     if kill
         && KILLING_IN_PROGRESS.compare_exchange(
@@ -178,6 +182,7 @@ fn find_launcher_processes(mut sys: System, kill: bool) -> bool {
     found
 }
 
+#[inline]
 #[allow(unused_results)]
 fn start_watching_java_process() {
     tokio::spawn(async move {
@@ -254,6 +259,7 @@ fn start_watching_java_process() {
     });
 }
 
+#[inline]
 pub(crate) async fn remove_javacheck() {
     match home::home_dir() {
         Some(home_folder) => {
@@ -281,6 +287,7 @@ pub(crate) async fn remove_javacheck() {
     }
 }
 
+#[inline]
 #[allow(unused_results)]
 fn launch_launcher() {
     tokio::spawn(async move {
@@ -306,6 +313,7 @@ fn launch_launcher() {
     });
 }
 
+#[inline]
 fn escalate_if_needed() -> bool {
     #[allow(box_pointers)]
     if let Err(e) = sudo::escalate_if_needed() {
@@ -320,6 +328,7 @@ fn escalate_if_needed() -> bool {
     true
 }
 
+#[inline]
 #[cfg(not(target_os = "linux"))]
 #[allow(clippy::unused_async)]
 pub(crate) async fn install(_: &str, _: &[String]) -> ExitCode {
@@ -330,6 +339,7 @@ pub(crate) async fn install(_: &str, _: &[String]) -> ExitCode {
 
 // This function installs the binary running this program itself to the
 // /usr/bin/minecraft-launcher.
+#[inline]
 #[cfg(target_os = "linux")]
 pub(crate) async fn install(
     binary_file_name: &str,

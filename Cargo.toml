@@ -97,3 +97,8 @@ rustflags = ["-C", "opt-level=0", "-Z", "share-generics=y"]
 codegen-units = 512
 incremental = true
 
+[profile.profiling]
+inherits = "release"
+strip = false
+debug = true
+

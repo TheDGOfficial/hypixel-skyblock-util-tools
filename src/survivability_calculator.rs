@@ -27,6 +27,7 @@ use crate::utils::compare_f64;
 use crate::utils::f64_to_i32;
 use crate::utils::with_comma_separators;
 
+#[inline]
 pub(crate) fn survivability_calculator(
     start_without_user_input: &mut Option<Instant>,
 ) -> bool {
@@ -122,6 +123,7 @@ pub(crate) fn survivability_calculator(
     true
 }
 
+#[inline]
 fn find_needed_health(hp: i32, defense: i32, to_effective_health: i32) -> i32 {
     for new_hp in hp..=i32::MAX {
         let ehp = calculate_effective_health(new_hp, defense);
@@ -134,6 +136,7 @@ fn find_needed_health(hp: i32, defense: i32, to_effective_health: i32) -> i32 {
     -1
 }
 
+#[inline]
 fn find_needed_defense(
     hp: i32,
     defense: i32,
@@ -150,6 +153,7 @@ fn find_needed_defense(
     -1
 }
 
+#[inline]
 fn calculate_next_effective_health_milestone(
     effective_health: i32,
     enemy_damage_per_hit: i32,
@@ -175,6 +179,7 @@ fn calculate_next_effective_health_milestone(
     0
 }
 
+#[inline]
 fn calculate_hits_to_die(
     effective_health: i32,
     enemy_damage_per_hit: i32,
@@ -185,10 +190,12 @@ fn calculate_hits_to_die(
     )
 }
 
+#[inline]
 const fn calculate_effective_health(health: i32, defense: i32) -> i32 {
     health * (1 + defense / 100)
 }
 
+#[inline]
 fn get_enemy_damage_per_hit(selection: i32) -> i32 {
     match selection {
         1 | 2 => {

@@ -29,6 +29,7 @@ pub(crate) fn compare_f64(f64: f64, compare_to: f64) -> bool {
     (f64 - compare_to).abs() < f64::EPSILON
 }
 
+#[inline]
 pub(crate) fn has_unique_elements(vec: &[i32]) -> bool {
     let mut unique = IntSet::with_capacity_and_hasher(
         vec.len(),
@@ -46,6 +47,7 @@ pub(crate) const fn cap(number: f64, cap: f64) -> f64 {
     number
 }
 
+#[inline]
 pub(crate) fn f64_to_i32(f64: f64) -> i32 {
     i32::from_f64(f64).map_or_else(|| {
         eprintln!("{}{f64}", "warning: loss of precision while converting from f64 to i32, if this is intentional, call .trunc() on the value before calling this function. f64 value: ".yellow());
@@ -59,6 +61,7 @@ pub(crate) fn f64_to_i32(f64: f64) -> i32 {
     }, |i32| i32)
 }
 
+#[inline]
 pub(crate) fn u128_to_u64(u128: u128) -> u64 {
     u64::from_u128(u128).map_or_else(|| {
         eprintln!("{}{u128}", "warning: loss of precision due to overflow of u128 while converting to u64: ".yellow());
@@ -71,6 +74,7 @@ pub(crate) fn u128_to_u64(u128: u128) -> u64 {
     }, |u64| u64)
 }
 
+#[inline]
 pub(crate) fn usize_to_f64(usize: usize) -> f64 {
     f64::from_usize(usize).map_or_else(|| {
         eprintln!("{}{usize}", "warning: loss of precision due to overflow of usize while converting to f64: ".yellow());
@@ -83,6 +87,7 @@ pub(crate) fn usize_to_f64(usize: usize) -> f64 {
     }, |f64| f64)
 }
 
+#[inline]
 pub(crate) fn i64_to_f64(i64: i64) -> f64 {
     f64::from_i64(i64).map_or_else(
         || {
@@ -118,6 +123,7 @@ pub(crate) enum FunctionResult {
 
 // If the array size is not empty, but first value is None, returns None and
 // Success.
+#[inline]
 pub(crate) fn return_first_elem_if_only_one_elem(
     array: &Vec<i32>,
 ) -> (Option<f64>, FunctionResult) {
@@ -132,6 +138,7 @@ pub(crate) fn return_first_elem_if_only_one_elem(
     (None, Failure)
 }
 
+#[inline]
 pub(crate) fn mean(array: &Vec<i32>) -> Option<f64> {
     if array.is_empty() {
         return None;
@@ -163,6 +170,7 @@ pub(crate) fn mean(array: &Vec<i32>) -> Option<f64> {
 // This method sorts the array, and such, the array order will not be same
 // after this method is called. Returns None if the array is empty, and if
 // theres only one value in the array, returns that value.
+#[inline]
 pub(crate) fn median(array: &mut Vec<i32>) -> Option<f64> {
     if array.is_empty() {
         return None;
@@ -195,6 +203,7 @@ pub(crate) fn median(array: &mut Vec<i32>) -> Option<f64> {
 
 // Returns the most occurring value in an array.
 // Returns None if the array is empty.
+#[inline]
 pub(crate) fn mode(array: &Vec<i32>) -> Option<i32> {
     let mut occurrences = IntMap::with_capacity_and_hasher(
         array.len(),
@@ -210,6 +219,7 @@ pub(crate) fn mode(array: &Vec<i32>) -> Option<i32> {
 
 // Returns difference between maximum and minimum values in an array.
 // Returns None if the array is empty.
+#[inline]
 pub(crate) fn range(array: &[i32]) -> Option<i32> {
     if let Some(min) = array.iter().min() {
         if let Some(max) = array.iter().max() {
@@ -257,6 +267,7 @@ pub(crate) fn percentage_change(
         * 100.0
 }
 
+#[inline]
 pub(crate) fn nano_time() -> Option<u128> {
     match SystemTime::now().duration_since(SystemTime::UNIX_EPOCH) {
         Ok(duration) => Some(duration.as_nanos()),
@@ -272,6 +283,7 @@ pub(crate) fn nano_time() -> Option<u128> {
     }
 }
 
+#[inline]
 pub(crate) fn with_comma_separators(s: &str) -> Option<String> {
     let dot = s.bytes().position(|c| c == b'.').unwrap_or(s.len());
     let negative = s.bytes().next() == Some(b'-');
@@ -322,6 +334,7 @@ pub(crate) fn print(text: &str) {
     }
 }
 
+#[inline]
 pub(crate) fn ask_int_input(
     question: &str,
     min: Option<i32>,
@@ -337,6 +350,7 @@ pub(crate) fn ask_int_input(
     )
 }
 
+#[inline]
 pub(crate) fn convert_i32_option_to_f64_option(
     option: Option<i32>,
 ) -> Option<f64> {
@@ -355,6 +369,7 @@ pub(crate) fn convert_i32_option_to_f64_option(
     None
 }
 
+#[inline]
 pub(crate) async fn read_file(file: &Path) -> Option<String> {
     match fs::read_to_string(file).await {
         Ok(text) => Some(text),
@@ -371,6 +386,7 @@ pub(crate) async fn read_file(file: &Path) -> Option<String> {
     }
 }
 
+#[inline]
 pub(crate) async fn write_file(file: &Path, text: &str) -> bool {
     match fs::write(file, text).await {
         Ok(()) => true,
@@ -387,6 +403,7 @@ pub(crate) async fn write_file(file: &Path, text: &str) -> bool {
     }
 }
 
+#[inline]
 pub(crate) fn lines_from_file_from_end(
     file_path: &Path,
     limit: usize,
@@ -428,6 +445,7 @@ pub(crate) fn lines_from_file_from_end(
     }
 }
 
+#[inline]
 pub(crate) fn get_minecraft_dir() -> Option<PathBuf> {
     home::home_dir().map_or_else(
         || {
@@ -439,10 +457,12 @@ pub(crate) fn get_minecraft_dir() -> Option<PathBuf> {
     )
 }
 
+#[inline]
 pub(crate) fn get_minecraft_dir_from_home_path(home_path: &Path) -> PathBuf {
     home_path.join(".minecraft")
 }
 
+#[inline]
 pub(crate) async fn copy(from: &Path, to: &Path) -> bool {
     if let Err(e) = fs::copy(from, to).await {
         eprintln!("{}{e}", "error when copying: ".red());
@@ -453,6 +473,7 @@ pub(crate) async fn copy(from: &Path, to: &Path) -> bool {
     true
 }
 
+#[inline]
 pub(crate) fn is_same_file(
     file1: &Path,
     file2: &Path,
@@ -476,6 +497,7 @@ pub(crate) fn is_same_file(
     Ok(true)
 }
 
+#[inline]
 pub(crate) fn ask_float_input(
     question: &str,
     min: Option<f64>,

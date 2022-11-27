@@ -95,6 +95,7 @@ fn print_selections() {
 }
 
 #[tokio::main]
+#[inline]
 async fn main() -> ExitCode {
     pretty_env_logger::init();
     debug!(

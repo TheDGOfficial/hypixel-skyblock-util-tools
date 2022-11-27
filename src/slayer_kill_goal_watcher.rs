@@ -84,6 +84,7 @@ struct VoidgloomData {
     ender_slayer_tier_sevens: i32,
 }
 
+#[inline]
 fn duration_diff(duration1: Duration, duration2: Duration) -> Duration {
     if duration1 > duration2 {
         return duration1 - duration2;
@@ -92,6 +93,7 @@ fn duration_diff(duration1: Duration, duration2: Duration) -> Duration {
     duration2 - duration1
 }
 
+#[inline]
 fn print_values(data: &VoidgloomData) {
     println!();
 
@@ -179,6 +181,7 @@ fn print_values(data: &VoidgloomData) {
     );
 }
 
+#[inline]
 async fn print_statistics(label: &str, file: &Path) {
     if file.exists() {
         if let Some(json) = read_file(file).await {
@@ -193,6 +196,7 @@ async fn print_statistics(label: &str, file: &Path) {
     }
 }
 
+#[inline]
 fn load_data(json: &str) -> Option<VoidgloomData> {
     let data_result: Result<VoidgloomData, Error> = serde_json::from_str(json);
 
@@ -207,6 +211,7 @@ fn load_data(json: &str) -> Option<VoidgloomData> {
     }
 }
 
+#[inline]
 fn get_log_file_path() -> Option<PathBuf> {
     if let Some(minecraft_dir) = utils::get_minecraft_dir() {
         return Some(minecraft_dir.join("logs").join("latest.log"));
@@ -215,18 +220,22 @@ fn get_log_file_path() -> Option<PathBuf> {
     None
 }
 
+#[inline]
 fn get_data_dir() -> PathBuf {
     PathBuf::from(Path::new("data"))
 }
 
+#[inline]
 fn get_global_data_file() -> PathBuf {
     get_data_dir().join("global.json")
 }
 
+#[inline]
 fn get_last_session_data_file() -> PathBuf {
     get_data_dir().join("last_session.json")
 }
 
+#[inline]
 async fn get_unique_old_session_path() -> PathBuf {
     let previous_sessions_folder = get_data_dir().join("previous-sessions");
 
@@ -247,6 +256,7 @@ async fn get_unique_old_session_path() -> PathBuf {
     previous_sessions_folder.join("session-no-id.json")
 }
 
+#[inline]
 async fn ensure_created(path: &Path) -> bool {
     if let Err(e) = fs::create_dir_all(path).await {
         eprintln!("{}{e}", "error: can't create data directory: ".red());
@@ -257,6 +267,7 @@ async fn ensure_created(path: &Path) -> bool {
     true
 }
 
+#[inline]
 async fn get_last_session(
     last_session_file: &Path,
     session_data: &mut VoidgloomData,
@@ -287,6 +298,7 @@ async fn get_last_session(
     true
 }
 
+#[inline]
 async fn get_global_data(
     global_data: &mut VoidgloomData,
     print_warnings: bool,
@@ -313,6 +325,7 @@ async fn get_global_data(
     };
 }
 
+#[inline]
 fn print_selections() {
     println!();
     println!("Select what you want to do: ");
@@ -324,6 +337,7 @@ fn print_selections() {
     println!(" {}. View statistics", "4".bright_blue());
 }
 
+#[inline]
 pub(crate) async fn slayer_kill_goal_watcher(
     start_without_user_input: &mut Option<Instant>,
 ) -> bool {
@@ -450,6 +464,7 @@ pub(crate) async fn slayer_kill_goal_watcher(
     true
 }
 
+#[inline]
 fn register_watcher_with_new_clipboard(
     session_data: &mut VoidgloomData,
     global_data: &mut VoidgloomData,
@@ -468,6 +483,7 @@ fn register_watcher_with_new_clipboard(
     }
 }
 
+#[inline]
 fn register_watcher(
     session_data: &mut VoidgloomData,
     global_data: &mut VoidgloomData,
@@ -484,6 +500,7 @@ fn register_watcher(
     });
 }
 
+#[inline]
 async fn print_all_statistics(
     global_data_file: &Path,
     last_session_file: &Path,
@@ -544,6 +561,7 @@ async fn print_all_statistics(
     }
 }
 
+#[inline]
 async fn save_global_data_to_file(global_data: &VoidgloomData) -> bool {
     match serde_json::to_string_pretty(global_data) {
         Ok(json) =>
@@ -562,6 +580,7 @@ async fn save_global_data_to_file(global_data: &VoidgloomData) -> bool {
     true
 }
 
+#[inline]
 async fn save_session_data_to_file(data: &VoidgloomData) -> bool {
     match serde_json::to_string_pretty(data) {
         Ok(json) =>
@@ -580,6 +599,7 @@ async fn save_session_data_to_file(data: &VoidgloomData) -> bool {
 
 static PRINTED_MSG: AtomicBool = AtomicBool::new(false);
 
+#[inline]
 async fn save_data_to_file(
     data: &VoidgloomData,
     global_data: &VoidgloomData,
@@ -605,6 +625,7 @@ async fn save_data_to_file(
 
 static STOPPING: AtomicBool = AtomicBool::new(false);
 
+#[inline]
 fn remove_color_codes(text: &str) -> String {
     text.replace("\u{a7}a", "")
         .replace("\u{a7}b", "")
@@ -631,6 +652,7 @@ fn remove_color_codes(text: &str) -> String {
         .replace("\u{a7}r", "")
 }
 
+#[inline]
 fn crop_letters(s: &str, pos: usize) -> &str {
     match s.char_indices().nth(pos) {
         #[allow(clippy::indexing_slicing, clippy::string_slice)]
@@ -639,6 +661,7 @@ fn crop_letters(s: &str, pos: usize) -> &str {
     }
 }
 
+#[inline]
 fn crop_netty(mut s: String) -> String {
     for index in 0..=(num_cpus::get() * 2) {
         s = s.replace(
@@ -650,6 +673,7 @@ fn crop_netty(mut s: String) -> String {
     s
 }
 
+#[inline]
 fn remove_hook() {
     eprintln!(
         "{}",
@@ -675,12 +699,14 @@ fn remove_hook() {
     }
 }
 
+#[inline]
 fn copy_to_clipboard(clipboard: &mut Clipboard, text: &str) {
     if let Err(e) = clipboard.set_text(text) {
         eprintln!("{}{e}", "error while setting clipboard contents: ".red());
     }
 }
 
+#[inline]
 async fn refresh_data_from_logs(
     session_data: &mut VoidgloomData,
     global_data: &mut VoidgloomData,
@@ -747,6 +773,7 @@ async fn refresh_data_from_logs(
     }
 }
 
+#[inline]
 fn parse_log_line(
     session_data: &mut VoidgloomData,
     global_data: &mut VoidgloomData,
@@ -855,6 +882,7 @@ fn parse_log_line(
     }
 }
 
+#[inline]
 fn async_watcher(
 ) -> notify::Result<(RecommendedWatcher, Receiver<notify::Result<Event>>)> {
     let (mut tx, rx) = channel(1);
@@ -877,6 +905,7 @@ fn async_watcher(
     Ok((watcher, rx))
 }
 
+#[inline]
 async fn async_watch<P: AsRef<Path> + Send>(
     path: P,
     session_data: &mut VoidgloomData,
