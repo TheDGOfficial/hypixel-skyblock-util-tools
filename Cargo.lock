@@ -103,13 +103,13 @@ dependencies = [
 
 [[package]]
 name = "async-io"
-version = "1.10.0"
+version = "1.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e8121296a9f05be7f34aa4196b1747243b3b62e048bb7906f644f3fbfc490cf7"
+checksum = "6fe557ebe0829511ddff4ad3011d159c0e6f144e05e3e8c3ab5095a131900a7b"
 dependencies = [
  "async-lock",
  "autocfg",
- "concurrent-queue 1.2.4",
+ "concurrent-queue 2.0.0",
  "futures-lite",
  "libc",
  "log",
@@ -980,7 +980,6 @@ dependencies = [
  "notify-rust",
  "num",
  "num_cpus",
- "once_cell",
  "pretty_env_logger",
  "reqwest",
  "rev_buf_reader",
@@ -988,7 +987,6 @@ dependencies = [
  "serde_json",
  "sudo",
  "sysinfo",
- "thread_local",
  "tokio",
  "trust-dns-resolver 0.22.0",
 ]
@@ -2159,15 +2157,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
-]
-
-[[package]]
-name = "thread_local"
-version = "1.1.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5516c27b78311c50bf42c071425c560ac799b11c30b31f87e3081965fe5e0180"
-dependencies = [
- "once_cell",
 ]
 
 [[package]]
