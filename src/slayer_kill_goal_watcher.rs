@@ -1,5 +1,3 @@
-use core::cell::RefCell;
-use core::cell::RefMut;
 use core::sync::atomic::AtomicBool;
 use core::sync::atomic::Ordering;
 use core::time::Duration;
@@ -12,8 +10,6 @@ use colored::Colorize;
 use std::path::Path;
 use std::path::PathBuf;
 use std::time::Instant;
-
-use tokio::sync::Mutex;
 
 use serde::Deserialize;
 use serde::Serialize;
@@ -37,9 +33,7 @@ use notify::RecursiveMode;
 use notify::Watcher;
 use notify_rust::Notification;
 use notify_rust::Urgency;
-use once_cell::sync::Lazy;
 use serde_json::Error;
-use thread_local::ThreadLocal;
 
 // TODO
 // Make it count indiviual twilight arrow poison amount gained, currently it
@@ -51,7 +45,19 @@ use thread_local::ThreadLocal;
 // x64 dropped, otherwise it will append the amount like; RARE DROP! (62x
 // Twilight Arrow Poison) (+325% Magic Find!)
 
-#[derive(Debug, Default, Serialize, Deserialize, Clone, Copy, PartialEq)]
+#[derive(
+    Debug,
+    Default,
+    Serialize,
+    Deserialize,
+    Clone,
+    Copy,
+    PartialEq,
+    PartialOrd,
+    Eq,
+    Ord,
+    Hash,
+)]
 struct VoidgloomData {
     start_time: u128,
     end_time: u128,
@@ -345,10 +351,7 @@ pub(crate) async fn slayer_kill_goal_watcher(
         }
     } else if selection == 2 {
         if get_last_session(&last_session_file, session_data, false).await {
-            *session_data = VoidgloomData {
-                end_time: nano_time().unwrap_or(0),
-                ..*session_data
-            };
+            session_data.end_time = nano_time().unwrap_or(0);
 
             if !save_session_data_to_file(session_data).await {
                 eprintln!("{}", "warning: file save to end previous session failed, look above for possible errors".yellow());
@@ -442,7 +445,18 @@ pub(crate) async fn slayer_kill_goal_watcher(
         }
     }
 
-    register_watcher(session_data, global_data);
+    match Clipboard::new() {
+        Ok(mut clipboard) => {
+            register_watcher(session_data, global_data, &mut clipboard);
+        },
+
+        Err(e) => {
+            eprintln!(
+                "{}{e}",
+                "error while creating clipboard context: ".red()
+            );
+        },
+    }
 
     true
 }
@@ -450,10 +464,12 @@ pub(crate) async fn slayer_kill_goal_watcher(
 fn register_watcher(
     session_data: &mut VoidgloomData,
     global_data: &mut VoidgloomData,
+    clipboard: &mut Clipboard,
 ) {
     futures::executor::block_on(async {
         if let Some(path) = get_log_file_path() {
-            if let Err(e) = async_watch(path, session_data, global_data).await
+            if let Err(e) =
+                async_watch(path, session_data, global_data, clipboard).await
             {
                 eprintln!("{}{e}", "watch error: ".red());
             }
@@ -652,45 +668,16 @@ fn remove_hook() {
     }
 }
 
-static CLIPBOARD: Lazy<Mutex<PersistentClipboard>> =
-    Lazy::new(|| Mutex::new(PersistentClipboard::default()));
-
-#[derive(Default)]
-struct PersistentClipboard {
-    clipboard: ThreadLocal<Option<RefCell<Clipboard>>>,
-}
-
-impl PersistentClipboard {
-    fn set_contents(&mut self, contents: &str) {
-        if let Some(mut clipboard) = self.get() {
-            if let Err(err) = clipboard.set_text(contents.to_owned()) {
-                log::error!("Failed to set clipboard contents: {:?}", err);
-            }
-        }
-    }
-
-    fn get(&self) -> Option<RefMut<'_, Clipboard>> {
-        #[allow(non_exhaustive_omitted_patterns)]
-        self.clipboard
-            .get_or(|| {
-                Clipboard::new()
-                    .map(RefCell::new)
-                    .map_err(|err| {
-                        log::error!(
-                            "Failed to initialize clipboard: {:?}",
-                            err
-                        );
-                    })
-                    .ok()
-            })
-            .as_ref()
-            .map(RefCell::borrow_mut)
+fn copy_to_clipboard(clipboard: &mut Clipboard, text: &str) {
+    if let Err(e) = clipboard.set_text(text) {
+        eprintln!("{}{e}", "error while setting clipboard contents: ".red());
     }
 }
 
 async fn refresh_data_from_logs(
     session_data: &mut VoidgloomData,
     global_data: &mut VoidgloomData,
+    clipboard: &mut Clipboard,
 ) {
     if let Some(path) = get_log_file_path() {
         if let Some(added_log_message) =
@@ -716,23 +703,30 @@ async fn refresh_data_from_logs(
                     eprintln!("{}", "Save failed".red());
                 }
 
-                if added_log_message.contains("RARE DROP!")
+                if (added_log_message.contains("RARE DROP!")
+                    || added_log_message.contains("INSANE DROP!"))
                     && !added_log_message.contains("Enchanted Ender Pearl")
                     && !added_log_message.contains("Griffin Feather")
                     && !added_log_message.contains("Chimera")
                 // Copy the Enchanted Book one as it includes magic find
                 // and its cooler
                 {
-                    CLIPBOARD.lock().await.set_contents(&crop_netty(
-                        crop_letters(
-                            &remove_color_codes(added_log_message)
-                                .replace("] [Client thread/INFO]: [CHAT] ", "")
-                                .replace(['[', ':'], "")
-                                .replace("RARE DROP!  ", "RARE DROP! "),
-                            6,
-                        )
-                        .to_owned(),
-                    ));
+                    copy_to_clipboard(
+                        clipboard,
+                        &crop_netty(
+                            crop_letters(
+                                &remove_color_codes(added_log_message)
+                                    .replace(
+                                        "] [Client thread/INFO]: [CHAT] ",
+                                        "",
+                                    )
+                                    .replace(['[', ':'], "")
+                                    .replace("RARE DROP!  ", "RARE DROP! "),
+                                6,
+                            )
+                            .to_owned(),
+                        ),
+                    );
                 }
             }
         } else {
@@ -751,38 +745,21 @@ fn parse_log_line(
     global_data: &mut VoidgloomData,
     added_log_message: &str,
 ) {
+    #[allow(clippy::else_if_without_else)]
     if added_log_message.contains("SLAYER QUEST COMPLETE!") {
-        *session_data = VoidgloomData {
-            bosses_done: session_data.bosses_done + 1,
-            ..*session_data
-        };
-
-        *global_data = VoidgloomData {
-            bosses_done: global_data.bosses_done + 1,
-            ..*global_data
-        };
+        [session_data, global_data]
+            .iter_mut()
+            .for_each(|data| data.bosses_done += 1);
 
         PRINTED_MSG.store(false, Ordering::Relaxed);
     } else if added_log_message.contains("Twilight Arrow Poison") {
-        *session_data = VoidgloomData {
-            twilight_arrow_poisons: session_data.twilight_arrow_poisons + 1,
-            ..*session_data
-        };
-
-        *global_data = VoidgloomData {
-            twilight_arrow_poisons: global_data.twilight_arrow_poisons + 1,
-            ..*global_data
-        };
+        [session_data, global_data]
+            .iter_mut()
+            .for_each(|data| data.twilight_arrow_poisons += 1);
     } else if added_log_message.contains("Endersnake Rune") {
-        *session_data = VoidgloomData {
-            endersnake_runes: session_data.endersnake_runes + 1,
-            ..*session_data
-        };
-
-        *global_data = VoidgloomData {
-            endersnake_runes: global_data.endersnake_runes + 1,
-            ..*global_data
-        };
+        [session_data, global_data]
+            .iter_mut()
+            .for_each(|data| data.endersnake_runes += 1);
     }
     // The drop rarity of eye from boss can change depending on if
     // lootshare or own boss, or if it is  selected on meter,
@@ -803,189 +780,71 @@ fn parse_log_line(
             || (added_log_message.contains("VERY RARE DROP!")
                 || added_log_message.contains("CRAZY RARE DROP!")))
     {
-        *session_data = VoidgloomData {
-            summoning_eyes: session_data.summoning_eyes + 1,
-            ..*session_data
-        };
-
-        *global_data = VoidgloomData {
-            summoning_eyes: global_data.summoning_eyes + 1,
-            ..*global_data
-        };
+        [session_data, global_data]
+            .iter_mut()
+            .for_each(|data| data.summoning_eyes += 1);
     } else if added_log_message.contains("Mana Steal I") {
-        *session_data = VoidgloomData {
-            mana_steals: session_data.mana_steals + 1,
-            ..*session_data
-        };
-
-        *global_data = VoidgloomData {
-            mana_steals: global_data.mana_steals + 1,
-            ..*global_data
-        };
+        [session_data, global_data]
+            .iter_mut()
+            .for_each(|data| data.mana_steals += 1);
     } else if added_log_message.contains("Transmission Tuner") {
-        *session_data = VoidgloomData {
-            transmission_tuners: session_data.transmission_tuners + 1,
-            ..*session_data
-        };
-
-        *global_data = VoidgloomData {
-            transmission_tuners: global_data.transmission_tuners + 1,
-            ..*global_data
-        };
+        [session_data, global_data]
+            .iter_mut()
+            .for_each(|data| data.transmission_tuners += 1);
     } else if added_log_message.contains("Null Atom") {
-        *session_data = VoidgloomData {
-            null_atoms: session_data.null_atoms + 1,
-            ..*session_data
-        };
-
-        *global_data = VoidgloomData {
-            null_atoms: global_data.null_atoms + 1,
-            ..*global_data
-        };
+        [session_data, global_data]
+            .iter_mut()
+            .for_each(|data| data.null_atoms += 1);
     } else if added_log_message.contains("Hazmat Enderman") {
-        *session_data = VoidgloomData {
-            hazmat_endermans: session_data.hazmat_endermans + 1,
-            ..*session_data
-        };
-
-        *global_data = VoidgloomData {
-            hazmat_endermans: global_data.hazmat_endermans + 1,
-            ..*global_data
-        };
-    } else {
-        parse_log_line01(session_data, global_data, added_log_message);
-    }
-}
-
-fn parse_log_line01(
-    session_data: &mut VoidgloomData,
-    global_data: &mut VoidgloomData,
-    added_log_message: &str,
-) {
-    if added_log_message.contains("Pocket Espresso Machine") {
-        *session_data = VoidgloomData {
-            espressos: session_data.espressos + 1,
-            ..*session_data
-        };
-
-        *global_data = VoidgloomData {
-            espressos: global_data.espressos + 1,
-            ..*global_data
-        };
+        [session_data, global_data]
+            .iter_mut()
+            .for_each(|data| data.hazmat_endermans += 1);
+    } else if added_log_message.contains("Pocket Espresso Machine") {
+        [session_data, global_data]
+            .iter_mut()
+            .for_each(|data| data.espressos += 1);
     } else if added_log_message.contains("Smarty Pants I") {
-        *session_data = VoidgloomData {
-            smarty_pants: session_data.smarty_pants + 1,
-            ..*session_data
-        };
-
-        *global_data = VoidgloomData {
-            smarty_pants: global_data.smarty_pants + 1,
-            ..*global_data
-        };
+        [session_data, global_data]
+            .iter_mut()
+            .for_each(|data| data.smarty_pants += 1);
     } else if added_log_message.contains("End Rune") {
-        *session_data = VoidgloomData {
-            end_runes: session_data.end_runes + 1,
-            ..*session_data
-        };
-
-        *global_data = VoidgloomData {
-            end_runes: global_data.end_runes + 1,
-            ..*global_data
-        };
+        [session_data, global_data]
+            .iter_mut()
+            .for_each(|data| data.end_runes += 1);
     } else if added_log_message.contains("Handy Blood Chalice") {
-        *session_data = VoidgloomData {
-            handy_blood_chalices: session_data.handy_blood_chalices + 1,
-            ..*session_data
-        };
-
-        *global_data = VoidgloomData {
-            handy_blood_chalices: global_data.handy_blood_chalices + 1,
-            ..*global_data
-        };
+        [session_data, global_data]
+            .iter_mut()
+            .for_each(|data| data.handy_blood_chalices += 1);
     } else if added_log_message.contains("Sinful Dice") {
-        *session_data = VoidgloomData {
-            sinful_dices: session_data.sinful_dices + 1,
-            ..*session_data
-        };
-
-        *global_data = VoidgloomData {
-            sinful_dices: global_data.sinful_dices + 1,
-            ..*global_data
-        };
+        [session_data, global_data]
+            .iter_mut()
+            .for_each(|data| data.sinful_dices += 1);
     } else if added_log_message
         .contains("Exceedingly Rare Ender Artifact Upgrader")
     {
-        *session_data = VoidgloomData {
-            artifact_upgraders: session_data.artifact_upgraders + 1,
-            ..*session_data
-        };
-
-        *global_data = VoidgloomData {
-            artifact_upgraders: global_data.artifact_upgraders + 1,
-            ..*global_data
-        };
+        [session_data, global_data]
+            .iter_mut()
+            .for_each(|data| data.artifact_upgraders += 1);
     } else if added_log_message.contains("Etherwarp Merger") {
-        *session_data = VoidgloomData {
-            etherwarp_mergers: session_data.etherwarp_mergers + 1,
-            ..*session_data
-        };
-
-        *global_data = VoidgloomData {
-            etherwarp_mergers: global_data.etherwarp_mergers + 1,
-            ..*global_data
-        };
+        [session_data, global_data]
+            .iter_mut()
+            .for_each(|data| data.etherwarp_mergers += 1);
     } else if added_log_message.contains("Void Conqueror Enderman Skin") {
-        *session_data = VoidgloomData {
-            void_conqueror_skins: session_data.void_conqueror_skins + 1,
-            ..*session_data
-        };
-
-        *global_data = VoidgloomData {
-            void_conqueror_skins: global_data.void_conqueror_skins + 1,
-            ..*global_data
-        };
-    } else {
-        parse_log_line02(session_data, global_data, added_log_message);
-    }
-}
-
-fn parse_log_line02(
-    session_data: &mut VoidgloomData,
-    global_data: &mut VoidgloomData,
-    added_log_message: &str,
-) {
-    #[allow(clippy::else_if_without_else)]
-    if added_log_message.contains("Judgement Core") {
-        *session_data = VoidgloomData {
-            judgement_cores: session_data.judgement_cores + 1,
-            ..*session_data
-        };
-
-        *global_data = VoidgloomData {
-            judgement_cores: global_data.judgement_cores + 1,
-            ..*global_data
-        };
+        [session_data, global_data]
+            .iter_mut()
+            .for_each(|data| data.void_conqueror_skins += 1);
+    } else if added_log_message.contains("Judgement Core") {
+        [session_data, global_data]
+            .iter_mut()
+            .for_each(|data| data.judgement_cores += 1);
     } else if added_log_message.contains("Enchant Rune") {
-        *session_data = VoidgloomData {
-            enchant_runes: session_data.enchant_runes + 1,
-            ..*session_data
-        };
-
-        *global_data = VoidgloomData {
-            enchant_runes: global_data.enchant_runes + 1,
-            ..*global_data
-        };
+        [session_data, global_data]
+            .iter_mut()
+            .for_each(|data| data.enchant_runes += 1);
     } else if added_log_message.contains("Ender Slayer VII") {
-        *session_data = VoidgloomData {
-            ender_slayer_tier_sevens: session_data.ender_slayer_tier_sevens
-                + 1,
-            ..*session_data
-        };
-
-        *global_data = VoidgloomData {
-            ender_slayer_tier_sevens: global_data.ender_slayer_tier_sevens + 1,
-            ..*global_data
-        };
+        [session_data, global_data]
+            .iter_mut()
+            .for_each(|data| data.ender_slayer_tier_sevens += 1);
     }
 }
 
@@ -1015,6 +874,7 @@ async fn async_watch<P: AsRef<Path> + Send>(
     path: P,
     session_data: &mut VoidgloomData,
     global_data: &mut VoidgloomData,
+    clipboard: &mut Clipboard,
 ) -> notify::Result<()> {
     let (mut watcher, mut rx) = async_watcher()?;
     watcher.watch(path.as_ref(), RecursiveMode::Recursive)?;
@@ -1023,7 +883,12 @@ async fn async_watch<P: AsRef<Path> + Send>(
         match res {
             Ok(event) =>
                 if event.kind.is_modify() {
-                    refresh_data_from_logs(session_data, global_data).await;
+                    refresh_data_from_logs(
+                        session_data,
+                        global_data,
+                        clipboard,
+                    )
+                    .await;
                 } else if event.kind.is_remove() || event.kind.is_create() {
                     remove_hook();
                 } else if event.kind.is_access() {
