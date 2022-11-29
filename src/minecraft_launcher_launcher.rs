@@ -206,9 +206,9 @@ fn find_launcher_processes(mut sys: System, kill: bool) -> bool {
             false,
             Ordering::Relaxed,
             Ordering::Relaxed,
-        ) == Ok(true)
+        ) != Ok(true)
     {
-        notify_error("atomic operation failure (expected false, got true)");
+        notify_error("atomic operation failure (expected true, got false)");
     }
 
     found
