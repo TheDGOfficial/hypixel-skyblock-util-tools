@@ -1,4 +1,6 @@
 #!/bin/bash
+. ./shellcheck.sh
+
 if [ "$1" == "--offline" ] || [ "$2" == "--offline" ]; then
   echo "Running in offline mode"
 else
@@ -24,7 +26,7 @@ if [ "$1" == "--skip-extra-analyzers" ] || [ "$2" == "--skip-extra-analyzers" ];
   $MOLD_WRAPPER_CMD cargo run
 else
   . ./init_clippy_args.sh
-  $MOLD_WRAPPER_CMD cargo clippy "$CLIPPY_ARGS" && $MOLD_WRAPPER_CMD cargo run
+  $MOLD_WRAPPER_CMD cargo clippy "$CLIPPY_ARGS" && . ./test.sh && $MOLD_WRAPPER_CMD cargo run
   #MIRAI_FLAGS=--diag=paranoid cargo mirai
 fi
 

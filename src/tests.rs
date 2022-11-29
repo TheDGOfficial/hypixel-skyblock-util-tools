@@ -11,7 +11,6 @@ use std::path::PathBuf;
 use crate::rng_simulator::drop_rate_with_magic_find_and_looting;
 use crate::rng_simulator::get_minimum_magic_find_needed_to_succeed;
 use crate::rng_simulator::passes;
-use crate::utils;
 use crate::utils::cap;
 use crate::utils::compare_f64;
 use crate::utils::conditional_value_or_default;
@@ -20,6 +19,7 @@ use crate::utils::f64_to_i32;
 use crate::utils::get_odds;
 use crate::utils::has_unique_elements;
 use crate::utils::i64_to_f64;
+use crate::utils::lines_from_file_from_end;
 use crate::utils::mean;
 use crate::utils::median;
 use crate::utils::mode;
@@ -56,11 +56,8 @@ fn test_intellij_clippy_args_should_fail() {
 fn test_intellij_clippy_args0(args: &str) {
     let workspace_file_path = &get_workspace_path();
 
-    let workspace_file_contents = utils::lines_from_file_from_end(
-        workspace_file_path,
-        usize::MAX,
-        false,
-    );
+    let workspace_file_contents =
+        lines_from_file_from_end(workspace_file_path, usize::MAX, false);
 
     assert!(
         !workspace_file_contents.is_empty(),
@@ -269,7 +266,7 @@ fn test_get_odds() {
 
 #[test]
 fn test_drop_rate_with_magic_find_and_looting() {
-    let value = drop_rate_with_magic_find_and_looting(1.0, 50, 50);
+    let value = drop_rate_with_magic_find_and_looting(1.0, 50, 50.0);
     let expected_result = 2.25;
 
     assert!(
@@ -286,7 +283,7 @@ fn test_passes() {
     let magic_number = Random::default().next_f64();
 
     let magic_find = 900;
-    let looting_extra_chance = 75;
+    let looting_extra_chance = 75.0;
 
     let drop_rate = drop_rate_with_magic_find_and_looting(
         drop_chance,
@@ -317,7 +314,7 @@ fn test_get_minimum_magic_find_needed_to_succeed() {
         get_minimum_magic_find_needed_to_succeed(
             Random::default().next_f64(),
             100.0,
-            0,
+            0.0,
             None
         ),
         0
@@ -332,7 +329,7 @@ fn test_get_minimum_magic_find_needed_to_succeed() {
         get_minimum_magic_find_needed_to_succeed(
             0.174_911_835_457_161_56,
             12.0,
-            15,
+            15.0,
             Some(26)
         ),
         27

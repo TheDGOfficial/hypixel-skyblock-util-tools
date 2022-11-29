@@ -2,8 +2,11 @@ use core::sync::atomic::AtomicBool;
 use core::sync::atomic::Ordering;
 use core::time::Duration;
 
-use tokio::fs;
+extern crate alloc;
 
+use alloc::sync::Arc;
+
+use std::fs;
 use std::fs::File;
 
 use colored::Colorize;
@@ -14,8 +17,8 @@ use std::time::Instant;
 use serde::Deserialize;
 use serde::Serialize;
 
-use crate::utils;
 use crate::utils::ask_int_input;
+use crate::utils::get_minecraft_dir;
 use crate::utils::lines_from_file_from_end;
 use crate::utils::nano_time;
 use crate::utils::read_file;
@@ -33,6 +36,7 @@ use notify::RecursiveMode;
 use notify::Watcher;
 use notify_rust::Notification;
 use notify_rust::Urgency;
+use once_cell::sync::Lazy;
 use serde_json::Error;
 
 // TODO
@@ -182,9 +186,9 @@ fn print_values(data: &VoidgloomData) {
 }
 
 #[inline]
-async fn print_statistics(label: &str, file: &Path) {
+fn print_statistics(label: &str, file: &Path) {
     if file.exists() {
-        if let Some(json) = read_file(file).await {
+        if let Some(json) = read_file(file) {
             if let Some(data) = load_data(json.as_str()) {
                 println!();
                 println!("-- Statistics for {label}");
@@ -213,7 +217,7 @@ fn load_data(json: &str) -> Option<VoidgloomData> {
 
 #[inline]
 fn get_log_file_path() -> Option<PathBuf> {
-    if let Some(minecraft_dir) = utils::get_minecraft_dir() {
+    if let Some(minecraft_dir) = get_minecraft_dir() {
         return Some(minecraft_dir.join("logs").join("latest.log"));
     }
 
@@ -236,11 +240,11 @@ fn get_last_session_data_file() -> PathBuf {
 }
 
 #[inline]
-async fn get_unique_old_session_path() -> PathBuf {
+fn get_unique_old_session_path() -> PathBuf {
     let previous_sessions_folder = get_data_dir().join("previous-sessions");
 
     if previous_sessions_folder.exists()
-        || ensure_created(&previous_sessions_folder).await
+        || ensure_created(&previous_sessions_folder)
     {
         for index in 1..=i32::MAX {
             let path =
@@ -257,8 +261,8 @@ async fn get_unique_old_session_path() -> PathBuf {
 }
 
 #[inline]
-async fn ensure_created(path: &Path) -> bool {
-    if let Err(e) = fs::create_dir_all(path).await {
+fn ensure_created(path: &Path) -> bool {
+    if let Err(e) = fs::create_dir_all(path) {
         eprintln!("{}{e}", "error: can't create data directory: ".red());
 
         return false;
@@ -268,14 +272,14 @@ async fn ensure_created(path: &Path) -> bool {
 }
 
 #[inline]
-async fn get_last_session(
+fn get_last_session(
     last_session_file: &Path,
     session_data: &mut VoidgloomData,
     print_warnings: bool,
 ) -> bool {
     // Load last session
     if last_session_file.exists() {
-        if let Some(file_content) = read_file(last_session_file).await {
+        if let Some(file_content) = read_file(last_session_file) {
             if let Some(last_session_data) = load_data(file_content.as_str()) {
                 *session_data = last_session_data;
             } else {
@@ -299,22 +303,19 @@ async fn get_last_session(
 }
 
 #[inline]
-async fn get_global_data(
+fn get_global_data(
     global_data: &mut VoidgloomData,
     print_warnings: bool,
 ) -> bool {
     // Load global data
     return if get_global_data_file().exists() {
-        read_file(&get_global_data_file()).await.map_or(
-            false,
-            |file_content| {
-                load_data(file_content.as_str()).map_or(false, |data| {
-                    *global_data = data;
+        read_file(&get_global_data_file()).map_or(false, |file_content| {
+            load_data(file_content.as_str()).map_or(false, |data| {
+                *global_data = data;
 
-                    true
-                })
-            },
-        )
+                true
+            })
+        })
     } else {
         // Caller's problem, just emit a warning if desired
         if print_warnings {
@@ -338,7 +339,7 @@ fn print_selections() {
 }
 
 #[inline]
-pub(crate) async fn slayer_kill_goal_watcher(
+pub(crate) fn slayer_kill_goal_watcher(
     start_without_user_input: &mut Option<Instant>,
 ) -> bool {
     print_selections();
@@ -349,7 +350,7 @@ pub(crate) async fn slayer_kill_goal_watcher(
 
     let data_folder = get_data_dir();
 
-    if !ensure_created(&data_folder).await {
+    if !ensure_created(&data_folder) {
         return false;
     }
 
@@ -360,23 +361,20 @@ pub(crate) async fn slayer_kill_goal_watcher(
     let global_data = &mut VoidgloomData::default();
 
     if selection == 1 {
-        if !get_last_session(&last_session_file, session_data, true).await {
+        if !get_last_session(&last_session_file, session_data, true) {
             return false;
         }
     } else if selection == 2 {
-        if get_last_session(&last_session_file, session_data, false).await {
+        if get_last_session(&last_session_file, session_data, false) {
             session_data.end_time = nano_time().unwrap_or(0);
 
-            if !save_session_data_to_file(session_data).await {
+            if !save_session_data_to_file(session_data) {
                 eprintln!("{}", "warning: file save to end previous session failed, look above for possible errors".yellow());
             }
 
             // Save previous session
-            if let Err(e) = fs::copy(
-                last_session_file,
-                get_unique_old_session_path().await,
-            )
-            .await
+            if let Err(e) =
+                fs::copy(last_session_file, get_unique_old_session_path())
             {
                 eprintln!(
                     "{}{e}",
@@ -390,7 +388,7 @@ pub(crate) async fn slayer_kill_goal_watcher(
     } else if selection == 3 {
         // Reset global data
         if global_data_file.exists() {
-            match fs::remove_file(global_data_file).await {
+            match fs::remove_file(global_data_file) {
                 Ok(()) => {
                     println!(
                         "{}",
@@ -416,8 +414,7 @@ pub(crate) async fn slayer_kill_goal_watcher(
             &last_session_file,
             session_data,
             global_data,
-        )
-        .await;
+        );
 
         return true;
     } else {
@@ -429,7 +426,7 @@ pub(crate) async fn slayer_kill_goal_watcher(
             eprintln!("{}{e}", "error: can't create global data file: ".red());
         }
 
-        if !save_global_data_to_file(global_data).await {
+        if !save_global_data_to_file(global_data) {
             eprintln!("{}", "warning: initialization of newly created global data file with default values failed, look above for possible errors".yellow());
         }
     }
@@ -440,20 +437,19 @@ pub(crate) async fn slayer_kill_goal_watcher(
             // time
             session_data.start_time = epoch;
 
-            if !save_session_data_to_file(session_data).await {
+            if !save_session_data_to_file(session_data) {
                 eprintln!("{}", "warning: saving of session data to reflect session start time failed, look above for possible errors".yellow());
             }
         }
     }
 
-    if get_global_data(global_data, true).await && global_data.start_time == 0
-    {
+    if get_global_data(global_data, true) && global_data.start_time == 0 {
         if let Some(epoch) = nano_time() {
             // Warning will be written by the util method if we can't get the
             // time
             global_data.start_time = epoch;
 
-            if !save_global_data_to_file(global_data).await {
+            if !save_global_data_to_file(global_data) {
                 eprintln!("{}", "warning: saving of global data to reflect start time failed, look above for possible errors".yellow());
             }
         }
@@ -501,7 +497,7 @@ fn register_watcher(
 }
 
 #[inline]
-async fn print_all_statistics(
+fn print_all_statistics(
     global_data_file: &Path,
     last_session_file: &Path,
     session_data: &mut VoidgloomData,
@@ -509,7 +505,7 @@ async fn print_all_statistics(
 ) {
     // Print statistics about last session and all sessions from global
     // data.
-    if get_last_session(last_session_file, session_data, false).await {
+    if get_last_session(last_session_file, session_data, false) {
         let mut changed = false;
 
         if session_data.end_time == 0 && get_last_session_data_file().exists()
@@ -519,23 +515,23 @@ async fn print_all_statistics(
                 session_data.end_time = epoch;
                 changed = true;
 
-                if !save_session_data_to_file(session_data).await {
+                if !save_session_data_to_file(session_data) {
                     eprintln!("{}", "warning: saving of session data to reflect end time failed, look above for possible errors".yellow());
                 }
             };
         }
 
-        print_statistics("Last session", last_session_file).await;
+        print_statistics("Last session", last_session_file);
 
         if changed {
             session_data.end_time = 0;
-            if !save_session_data_to_file(session_data).await {
+            if !save_session_data_to_file(session_data) {
                 eprintln!("{}", "warning: saving of session data to revert end time failed, look above for possible errors".yellow());
             }
         }
     }
 
-    if get_global_data(global_data, false).await {
+    if get_global_data(global_data, false) {
         let mut global_changed = false;
 
         if global_data.end_time == 0 && global_data_file.exists() {
@@ -544,17 +540,17 @@ async fn print_all_statistics(
                 global_data.end_time = epoch;
                 global_changed = true;
 
-                if !save_global_data_to_file(global_data).await {
+                if !save_global_data_to_file(global_data) {
                     eprintln!("{}", "warning: saving of global data to reflect end time failed, look above for possible errors".yellow());
                 }
             };
         }
 
-        print_statistics("Global", global_data_file).await;
+        print_statistics("Global", global_data_file);
 
         if global_changed {
             global_data.end_time = 0;
-            if !save_global_data_to_file(global_data).await {
+            if !save_global_data_to_file(global_data) {
                 eprintln!("{}", "warning: saving of global data to revert end time failed, look above for possible errors".yellow());
             }
         }
@@ -562,10 +558,10 @@ async fn print_all_statistics(
 }
 
 #[inline]
-async fn save_global_data_to_file(global_data: &VoidgloomData) -> bool {
+fn save_global_data_to_file(global_data: &VoidgloomData) -> bool {
     match serde_json::to_string_pretty(global_data) {
         Ok(json) =>
-            if !write_file(&get_global_data_file(), json.as_str()).await {
+            if !write_file(&get_global_data_file(), json.as_str()) {
                 return false;
             },
 
@@ -581,11 +577,10 @@ async fn save_global_data_to_file(global_data: &VoidgloomData) -> bool {
 }
 
 #[inline]
-async fn save_session_data_to_file(data: &VoidgloomData) -> bool {
+fn save_session_data_to_file(data: &VoidgloomData) -> bool {
     match serde_json::to_string_pretty(data) {
         Ok(json) =>
-            if !write_file(&get_last_session_data_file(), json.as_str()).await
-            {
+            if !write_file(&get_last_session_data_file(), json.as_str()) {
                 return false;
             },
 
@@ -597,20 +592,21 @@ async fn save_session_data_to_file(data: &VoidgloomData) -> bool {
     true
 }
 
-static PRINTED_MSG: AtomicBool = AtomicBool::new(false);
+static PRINTED_MSG: Lazy<Arc<AtomicBool>> =
+    Lazy::new(|| Arc::new(AtomicBool::new(false)));
 
 #[inline]
-async fn save_data_to_file(
+fn save_data_to_file(
     data: &VoidgloomData,
     global_data: &VoidgloomData,
 ) -> bool {
     // println!("Saving session and global data as changes occurred");
 
-    if !save_session_data_to_file(data).await {
+    if !save_session_data_to_file(data) {
         return false;
     }
 
-    if !save_global_data_to_file(global_data).await {
+    if !save_global_data_to_file(global_data) {
         return false;
     }
 
@@ -622,8 +618,6 @@ async fn save_data_to_file(
 
     true
 }
-
-static STOPPING: AtomicBool = AtomicBool::new(false);
 
 #[inline]
 fn remove_color_codes(text: &str) -> String {
@@ -680,22 +674,12 @@ fn remove_hook() {
         "warning: log file seems to be removed, this usually happens when the log is gzipping, stopping program..".yellow()
     );
 
-    if STOPPING.compare_exchange(
-        false,
-        true,
-        Ordering::Relaxed,
-        Ordering::Relaxed,
-    ) == Ok(false)
-    {
-        if let Err(e) = Notification::new()
-            .summary("Watcher is stopping")
-            .body("Please restart it manually if you want to continue watching slayer drops.")
-            .urgency(Urgency::Critical)
-            .show() {
-            eprintln!("{}{e}", "error: can't send desktop notification: ".red());
-        }
-    } else {
-        eprintln!("{}", "warning: atomic operation condition fail, can't recover from broken file watcher, app will most likely not work from now on, consider stopping it manually".yellow());
+    if let Err(e) = Notification::new()
+        .summary("Watcher is stopping")
+        .body("Please restart it manually if you want to continue watching slayer drops.")
+        .urgency(Urgency::Critical)
+        .show() {
+        eprintln!("{}{e}", "error: can't send desktop notification: ".red());
     }
 }
 
@@ -707,70 +691,91 @@ fn copy_to_clipboard(clipboard: &mut Clipboard, text: &str) {
 }
 
 #[inline]
-async fn refresh_data_from_logs(
+fn refresh_data_from_logs(
     session_data: &mut VoidgloomData,
     global_data: &mut VoidgloomData,
     clipboard: &mut Clipboard,
-) {
-    if let Some(path) = get_log_file_path() {
-        if let Some(added_log_message) =
-            lines_from_file_from_end(&path, 1, false).first()
-        {
-            if !added_log_message.contains("\u{a7}7:")
-                && !added_log_message.contains("\u{a7}f:")
-                && !added_log_message.contains("To")
-                && !added_log_message.contains("From")
-                && (added_log_message.contains("SLAYER QUEST COMPLETE!")
-                    || added_log_message
-                        .replace("DROP!  ", "DROP! ")
-                        .contains("DROP! "))
-            {
-                let session_data_orig = *session_data;
-                parse_log_line(session_data, global_data, added_log_message);
+) -> bool {
+    get_log_file_path().map_or_else(
+        || {
+            eprintln!("{}", "can't get log file path".yellow());
 
-                let modified = *session_data != session_data_orig;
-
-                if modified
-                    && !save_data_to_file(session_data, global_data).await
-                {
-                    eprintln!("{}", "Save failed".red());
-                }
-
-                if (added_log_message.contains("RARE DROP!")
-                    || added_log_message.contains("INSANE DROP!"))
-                    && !added_log_message.contains("Enchanted Ender Pearl")
-                    && !added_log_message.contains("Griffin Feather")
-                    && !added_log_message.contains("Chimera")
-                // Copy the Enchanted Book one as it includes magic find
-                // and its cooler
-                {
-                    copy_to_clipboard(
-                        clipboard,
-                        &crop_netty(
-                            crop_letters(
-                                &remove_color_codes(added_log_message)
-                                    .replace(
-                                        "] [Client thread/INFO]: [CHAT] ",
-                                        "",
-                                    )
-                                    .replace(['[', ':'], "")
-                                    .replace("RARE DROP!  ", "RARE DROP! "),
-                                6,
-                            )
-                            .to_owned(),
-                        ),
+            false
+        },
+        |path| {
+            lines_from_file_from_end(&path, 1, false).first().map_or_else(
+                || {
+                    eprintln!(
+                        "{}",
+                        "warning: can't get the added line from log file"
+                            .yellow()
                     );
-                }
-            }
-        } else {
-            eprintln!(
-                "{}",
-                "warning: can't get the added line from log file".yellow()
-            );
 
-            remove_hook();
-        }
-    }
+                    false
+                },
+                |added_log_message| {
+                    if !added_log_message.contains("\u{a7}7:")
+                        && !added_log_message.contains("\u{a7}f:")
+                        && !added_log_message.contains("To")
+                        && !added_log_message.contains("From")
+                        && (added_log_message
+                            .contains("SLAYER QUEST COMPLETE!")
+                            || added_log_message
+                                .replace("DROP!  ", "DROP! ")
+                                .contains("DROP! "))
+                    {
+                        let session_data_orig = *session_data;
+                        parse_log_line(
+                            session_data,
+                            global_data,
+                            added_log_message,
+                        );
+
+                        let modified = *session_data != session_data_orig;
+
+                        if modified
+                            && !save_data_to_file(session_data, global_data)
+                        {
+                            eprintln!("{}", "Save failed".red());
+                        }
+
+                        if (added_log_message.contains("RARE DROP!")
+                            || added_log_message.contains("INSANE DROP!")
+                            || added_log_message.contains("PET DROP!"))
+                            && !added_log_message
+                                .contains("Enchanted Ender Pearl")
+                            && !added_log_message.contains("Griffin Feather")
+                            && !added_log_message.contains("Chimera")
+                        // Copy the Enchanted Book one as it includes magic
+                        // find and its cooler
+                        {
+                            copy_to_clipboard(
+                            clipboard,
+                            &crop_netty(
+                                crop_letters(
+                                    &remove_color_codes(added_log_message)
+                                        .replace(
+                                            "] [Client thread/INFO]: [CHAT] ",
+                                            "",
+                                        )
+                                        .replace(['[', ':'], "")
+                                        .replace(
+                                            "RARE DROP!  ",
+                                            "RARE DROP! ",
+                                        ),
+                                    6,
+                                )
+                                .to_owned(),
+                            ),
+                        );
+                        }
+                    }
+
+                    true
+                },
+            )
+        },
+    )
 }
 
 #[inline]
@@ -913,40 +918,48 @@ async fn async_watch<P: AsRef<Path> + Send>(
     clipboard: &mut Clipboard,
 ) -> notify::Result<()> {
     let (mut watcher, mut rx) = async_watcher()?;
-    watcher.watch(path.as_ref(), RecursiveMode::Recursive)?;
+    watcher.watch(path.as_ref(), RecursiveMode::NonRecursive)?;
 
-    while let Some(res) = rx.next().await {
-        match res {
-            Ok(event) =>
-                if event.kind.is_modify() {
-                    refresh_data_from_logs(
-                        session_data,
-                        global_data,
-                        clipboard,
-                    )
-                    .await;
-                } else if event.kind.is_remove() || event.kind.is_create() {
-                    remove_hook();
-                } else if event.kind.is_access() {
-                    // Do nothing if not modified
-                } else if event.kind.is_other() {
-                    eprintln!(
-                        "{}{:#?}",
-                        "warning: unsupported event received".yellow(),
-                        event
-                    );
-                } else {
-                    eprintln!(
-                        "{}{:#?}",
-                        "warning: unknown event received".yellow(),
-                        event
-                    );
-                },
-            Err(e) => eprintln!("{}{e}", "watch error: ".red()),
-        }
+    loop {
+        if let Some(res) = rx.next().await {
+            match res {
+                Ok(event) =>
+                    if event.kind.is_modify() {
+                        if !refresh_data_from_logs(
+                            session_data,
+                            global_data,
+                            clipboard,
+                        ) {
+                            remove_hook();
 
-        if STOPPING.load(Ordering::Relaxed) {
-            println!("stopping watching as requested");
+                            println!("stopping watching as requested");
+                            break;
+                        }
+                    } else if event.kind.is_remove() || event.kind.is_create()
+                    {
+                        remove_hook();
+                        break;
+                    } else if event.kind.is_access() {
+                        // Do nothing if not modified
+                    } else if event.kind.is_other() {
+                        eprintln!(
+                            "{}{:#?}",
+                            "warning: unsupported event received".yellow(),
+                            event
+                        );
+                    } else {
+                        eprintln!(
+                            "{}{:#?}",
+                            "warning: unknown event received".yellow(),
+                            event
+                        );
+                    },
+                Err(e) => eprintln!("{}{e}", "watch error: ".red()),
+            }
+        } else {
+            remove_hook();
+
+            eprintln!("{}", "no events left to receive, breaking".yellow());
             break;
         }
     }

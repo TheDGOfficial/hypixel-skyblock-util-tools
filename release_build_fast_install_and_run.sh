@@ -8,21 +8,25 @@ get_executable_location() {
 }
 
 EXECUTABLE_LOCATION="$(get_executable_location release)"
-BUILD_AND_INSTALL_CMD=". ./release_build.sh --no-pgo && $EXECUTABLE_LOCATION install-minecraft-launcher-launcher"
 
-if [[ "$1" == "--profile" ]]; then
+BUILD_CMD=". ./release_build.sh --no-pgo"
+INSTALL_CMD="$EXECUTABLE_LOCATION install-minecraft-launcher-launcher"
+
+if [[ "$1" == "--profile" ]] || [[ "$2" == "--profile" ]]; then
  sudo sh -c 'echo 1 > /proc/sys/kernel/perf_event_paranoid'
  sudo sh -c 'echo 0 > /proc/sys/kernel/kptr_restrict'
 
  EXECUTABLE_LOCATION="$(get_executable_location profiling)"
 
- PROFILING_PROFILE=true $BUILD_AND_INSTALL_CMD && perf record --freq=1000 --call-graph dwarf -q -o perf.data "$EXECUTABLE_LOCATION"
+ PROFILING_PROFILE=true $BUILD_CMD && $INSTALL_CMD && perf record --freq=1000 --call-graph dwarf -q -o perf.data "$EXECUTABLE_LOCATION"
 
  perf report
 
  [ ! -e perf.data ] || rm perf.data
  [ ! -e perf.data.old ] || rm perf.data.old
+elif [[ "$1" == "--trace" ]] || [[ "$2" == "--trace" ]]; then
+ $BUILD_CMD && $INSTALL_CMD && RUST_LOG=trace "$EXECUTABLE_LOCATION"
 else
- $BUILD_AND_INSTALL_CMD && "$EXECUTABLE_LOCATION"
+ $BUILD_CMD && $INSTALL_CMD && "$EXECUTABLE_LOCATION"
 fi
 

@@ -222,10 +222,7 @@ pub(crate) fn drop_rate_with_magic_find_and_looting(
         drop_chance + percent_of(drop_chance, f64::from(magic_find));
 
     drop_rate_with_magic_find
-        + percent_of(
-            drop_rate_with_magic_find,
-            looting_extra_chance,
-        )
+        + percent_of(drop_rate_with_magic_find, looting_extra_chance)
 }
 
 #[inline]
@@ -305,8 +302,7 @@ fn do_rolls_and_get_drops(
     let original_rng_meter_progress =
         percent_of(odds, original_rng_meter_percent);
 
-    let lock = io::stdout().lock();
-    let mut buf = BufWriter::new(lock);
+    let mut buf = BufWriter::new(io::stdout().lock());
 
     let do_printing = rolls < 100_000;
 
@@ -335,13 +331,12 @@ fn do_rolls_and_get_drops(
         let final_drop_chance = if rng_meter_percent >= 100.0 {
             100.0
         } else {
-            let multiplier = if compare_f64(original_rng_meter_percent, -1.0) {
-                1.0
-            } else {
-                1.0 + ((2.0 * rng_meter_percent) / 100.0)
-            };
-
-            original_drop_chance * multiplier
+            original_drop_chance
+                * if compare_f64(original_rng_meter_percent, -1.0) {
+                    1.0
+                } else {
+                    1.0 + ((2.0 * rng_meter_percent) / 100.0)
+                }
         };
 
         let drop_rate_with_magic_find = final_drop_chance
@@ -351,7 +346,7 @@ fn do_rolls_and_get_drops(
             drop_rate_with_magic_find
                 + percent_of(
                     drop_rate_with_magic_find,
-                    f64::from(looting_extra_chance),
+                    looting_extra_chance_f64,
                 );
 
         let magic_number = rand.next_f64(); // future perf ref: this call is basically free, main bottleneck is io

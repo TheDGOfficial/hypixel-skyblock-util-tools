@@ -1,12 +1,16 @@
 use std::env;
+use std::fs;
 use std::process;
-use tokio::fs;
 
 use core::sync::atomic::AtomicBool;
 use core::sync::atomic::Ordering;
 use std::path::Path;
 use std::process::Command;
 use std::process::ExitCode;
+
+extern crate alloc;
+
+use alloc::sync::Arc;
 
 use crate::utils;
 use colored::Colorize;
@@ -28,11 +32,34 @@ use cnproc::PidMonitor;
 #[cfg(target_os = "linux")]
 use cnproc::PidEvent;
 
+use once_cell::sync::Lazy;
+
+use notify_rust::Notification;
+use notify_rust::Urgency;
+
+// Since this program will be most likely not called with a (visible) terminal,
+// send desktop notifications if any errors occur to not let a silent failure
+// happen.
+fn notify_error(description: &str) {
+    if let Err(e) = Notification::new()
+        .summary("Error")
+        .body(description)
+        .urgency(Urgency::Critical)
+        .show()
+    {
+        // Hopefully we have a visible terminal or the user re launches the app
+        // with one.
+        eprintln!(
+            "{}{e}: {description}",
+            "error: can't send desktop notification to notify error: ".red()
+        );
+    }
+}
+
 #[cfg(not(target_os = "linux"))]
 #[inline]
-#[allow(clippy::unused_async)]
-pub(crate) async fn launch() -> ExitCode {
-    eprintln!("Minecraft Launcher launcher is only supported on Linux");
+pub(crate) fn launch() -> ExitCode {
+    notify_error("Minecraft Launcher launcher is only supported on Linux");
 
     ExitCode::FAILURE
 }
@@ -68,7 +95,7 @@ pub(crate) async fn launch() -> ExitCode {
 // TODO Future plans include checking for Bootstrap launcher updates.
 #[inline]
 #[cfg(target_os = "linux")]
-pub(crate) async fn launch() -> ExitCode {
+pub(crate) fn launch() -> ExitCode {
     let user = sudo::check() == RunningAs::User;
 
     if user && find_launcher_processes(System::new(), false) {
@@ -78,7 +105,7 @@ pub(crate) async fn launch() -> ExitCode {
     }
 
     if user {
-        remove_javacheck().await;
+        remove_javacheck();
 
         launch_launcher();
     }
@@ -92,14 +119,19 @@ pub(crate) async fn launch() -> ExitCode {
     ExitCode::SUCCESS
 }
 
-static KILLING_IN_PROGRESS: AtomicBool = AtomicBool::new(false);
+static KILLING_IN_PROGRESS: Lazy<Arc<AtomicBool>> =
+    Lazy::new(|| Arc::new(AtomicBool::new(false)));
 
 #[inline]
 fn kill_launcher_process(launcher_process: &Process) {
     if launcher_process.kill() {
         println!("Killed process successfully");
     } else {
-        eprintln!("can't kill Minecraft Launcher process");
+        notify_error(&format!(
+            "couldn't kill Minecraft Launcher process named {} with PID {}",
+            launcher_process.name(),
+            launcher_process.pid()
+        ));
     }
 }
 
@@ -113,7 +145,7 @@ fn find_launcher_processes(mut sys: System, kill: bool) -> bool {
             Ordering::Relaxed,
         ) != Ok(false)
     {
-        eprintln!("atomic operation failure");
+        notify_error("atomic operation failure (expected false, got true)");
     }
 
     sys.refresh_processes();
@@ -176,7 +208,7 @@ fn find_launcher_processes(mut sys: System, kill: bool) -> bool {
             Ordering::Relaxed,
         ) == Ok(true)
     {
-        eprintln!("atomic operation failure");
+        notify_error("atomic operation failure (expected false, got true)");
     }
 
     found
@@ -239,7 +271,10 @@ fn start_watching_java_process() {
                             },
                         }
                     } else {
-                        eprintln!("{}", "no events to receive".yellow());
+                        notify_error(&format!(
+                            "{}",
+                            "no events to receive".yellow()
+                        ));
                     }
                 }
 
@@ -247,11 +282,11 @@ fn start_watching_java_process() {
             },
 
             Err(e) => {
-                eprintln!(
+                notify_error(&format!(
                     "{}{e}",
                     "error while trying to create process event watcher: "
                         .red()
-                );
+                ));
 
                 ExitCode::FAILURE
             },
@@ -260,9 +295,12 @@ fn start_watching_java_process() {
 }
 
 #[inline]
-pub(crate) async fn remove_javacheck() {
-    match home::home_dir() {
-        Some(home_folder) => {
+pub(crate) fn remove_javacheck() {
+    home::home_dir().map_or_else(
+        || {
+            notify_error(&format!("{}", "can't find home directory: ".red()));
+        },
+        |home_folder| {
             let javacheck_path = utils::get_minecraft_dir_from_home_path(
                 Path::new(&home_folder),
             )
@@ -272,19 +310,15 @@ pub(crate) async fn remove_javacheck() {
             if javacheck_path.exists() {
                 println!("Removing JavaCheck.jar");
 
-                if let Err(e) = fs::remove_file(javacheck_path).await {
-                    eprintln!(
+                if let Err(e) = fs::remove_file(javacheck_path) {
+                    notify_error(&format!(
                         "{}{e}",
                         "error while removing JavaCheck.jar: ".red()
-                    );
+                    ));
                 }
             }
         },
-
-        None => {
-            println!("{}", "can't find home directory: ".red());
-        },
-    }
+    );
 }
 
 #[inline]
@@ -305,10 +339,10 @@ fn launch_launcher() {
             ])
             .spawn()
         {
-            eprintln!(
-                "{}{e}",
+            notify_error(
+                &format!("{}{e}",
                 "error while trying to start Minecraft Launcher: ".red()
-            );
+            ));
         }
     });
 }
@@ -317,10 +351,7 @@ fn launch_launcher() {
 fn escalate_if_needed() -> bool {
     #[allow(box_pointers)]
     if let Err(e) = sudo::escalate_if_needed() {
-        eprintln!("{}{e}", "error while trying to escalate to root permissions automatically: ".red());
-        eprintln!(
-            "you might need to use sudo manually and re-run the program"
-        );
+        notify_error(&format!("{}{e}", "error while trying to escalate to root permissions automatically: ".red()));
 
         return false;
     }
@@ -330,9 +361,8 @@ fn escalate_if_needed() -> bool {
 
 #[inline]
 #[cfg(not(target_os = "linux"))]
-#[allow(clippy::unused_async)]
-pub(crate) async fn install(_: &str, _: &[String]) -> ExitCode {
-    eprintln!("Minecraft Launcher launcher is only supported on Linux");
+pub(crate) fn install(_: &str, _: &[String]) -> ExitCode {
+    notify_error("Minecraft Launcher launcher is only supported on Linux");
 
     ExitCode::FAILURE
 }
@@ -341,10 +371,7 @@ pub(crate) async fn install(_: &str, _: &[String]) -> ExitCode {
 // /usr/bin/minecraft-launcher.
 #[inline]
 #[cfg(target_os = "linux")]
-pub(crate) async fn install(
-    binary_file_name: &str,
-    args: &[String],
-) -> ExitCode {
+pub(crate) fn install(binary_file_name: &str, args: &[String]) -> ExitCode {
     if !escalate_if_needed() {
         return ExitCode::FAILURE;
     }
@@ -419,7 +446,7 @@ pub(crate) async fn install(
 
                     if args.contains(&"--upgrade".to_owned()) {
                         if let Err(e) =
-                            fs::remove_file(real_launcher_path.clone()).await
+                            fs::remove_file(real_launcher_path.clone())
                         {
                             eprintln!(
                                 "{}{e}",
@@ -431,7 +458,6 @@ pub(crate) async fn install(
                     if real_launcher_path.exists() {
                         println!("Real launcher already exists, will skip. If you've re-installed the launcher (bootstrap), please re-install again and then run the program with the --upgrade argument.");
                     } else if !utils::copy(&launcher_path, &real_launcher_path)
-                        .await
                     {
                         eprintln!("{}", "Install failed".red());
 
@@ -444,7 +470,7 @@ pub(crate) async fn install(
                         );
                     }
 
-                    if !utils::copy(&self_path, &launcher_path).await {
+                    if !utils::copy(&self_path, &launcher_path) {
                         eprintln!("{}", "Install failed".red());
 
                         return ExitCode::FAILURE;

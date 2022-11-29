@@ -980,6 +980,7 @@ dependencies = [
  "notify-rust",
  "num",
  "num_cpus",
+ "once_cell",
  "pretty_env_logger",
  "reqwest",
  "rev_buf_reader",

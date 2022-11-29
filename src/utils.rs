@@ -1,3 +1,4 @@
+use std::fs;
 use std::fs::File;
 use std::io;
 use std::io::BufRead;
@@ -7,7 +8,6 @@ use std::io::Write;
 use std::path::Path;
 use std::path::PathBuf;
 use std::time::SystemTime;
-use tokio::fs;
 
 use colored::Colorize;
 use nohash_hasher::BuildNoHashHasher;
@@ -370,8 +370,8 @@ pub(crate) fn convert_i32_option_to_f64_option(
 }
 
 #[inline]
-pub(crate) async fn read_file(file: &Path) -> Option<String> {
-    match fs::read_to_string(file).await {
+pub(crate) fn read_file(file: &Path) -> Option<String> {
+    match fs::read_to_string(file) {
         Ok(text) => Some(text),
 
         Err(e) => {
@@ -387,8 +387,8 @@ pub(crate) async fn read_file(file: &Path) -> Option<String> {
 }
 
 #[inline]
-pub(crate) async fn write_file(file: &Path, text: &str) -> bool {
-    match fs::write(file, text).await {
+pub(crate) fn write_file(file: &Path, text: &str) -> bool {
+    match fs::write(file, text) {
         Ok(()) => true,
 
         Err(e) => {
@@ -463,8 +463,8 @@ pub(crate) fn get_minecraft_dir_from_home_path(home_path: &Path) -> PathBuf {
 }
 
 #[inline]
-pub(crate) async fn copy(from: &Path, to: &Path) -> bool {
-    if let Err(e) = fs::copy(from, to).await {
+pub(crate) fn copy(from: &Path, to: &Path) -> bool {
+    if let Err(e) = fs::copy(from, to) {
         eprintln!("{}{e}", "error when copying: ".red());
 
         return false;

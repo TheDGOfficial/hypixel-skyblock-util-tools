@@ -121,8 +121,7 @@ async fn main() -> ExitCode {
                     return minecraft_launcher_launcher::install(
                         &binary_file_name.to_string_lossy(),
                         &args,
-                    )
-                    .await;
+                    );
                 }
 
                 eprintln!("{}{argument}", "invalid argument: ".red());
@@ -134,7 +133,7 @@ async fn main() -> ExitCode {
             if binary_file_name == "minecraft-launcher" {
                 // I'm too lazy to maintain 2 projects so this goes here even
                 // though its basically another project
-                return minecraft_launcher_launcher::launch().await;
+                return minecraft_launcher_launcher::launch();
             } // Binary name is not minecraft-launcher so
               // assume user wants the hypixel skyblock tools and
               // fall through
@@ -196,7 +195,6 @@ async fn main() -> ExitCode {
         && !slayer_kill_goal_watcher::slayer_kill_goal_watcher(
             start_without_user_input,
         )
-        .await
     {
         eprintln!("Exiting with failure exit code");
         return ExitCode::FAILURE;
