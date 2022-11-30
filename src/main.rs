@@ -97,7 +97,7 @@ fn print_selections() {
 #[tokio::main]
 #[inline]
 async fn main() -> ExitCode {
-    pretty_env_logger::init();
+    env_logger::init();
     debug!(
         "program version is {}",
         option_env!("CARGO_PKG_VERSION").unwrap_or("unknown")
