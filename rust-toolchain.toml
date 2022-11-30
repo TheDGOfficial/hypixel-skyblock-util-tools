@@ -1,3 +1,5 @@
 [toolchain]
-channel = "nightly"
+#TODO encoding-rs fails to compile with nightly >=2022-11-27, fails with https://pastebin.ubuntu.com/p/YBCs4ZBpzn/
+channel = "nightly-2022-11-26"
+components = [ "rust-src" ]
 
