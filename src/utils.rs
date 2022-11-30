@@ -1,3 +1,4 @@
+use std::env;
 use std::fs;
 use std::fs::File;
 use std::io;
@@ -476,7 +477,7 @@ pub(crate) fn get_minecraft_dir() -> Option<PathBuf> {
 
 #[inline]
 pub(crate) fn get_minecraft_dir_from_home_path(home_path: &Path) -> PathBuf {
-    home_path.join(".minecraft")
+    home_path.join(env::var("MC_GAME_FOLDER").unwrap_or(".minecraft".to_string()))
 }
 
 #[inline]

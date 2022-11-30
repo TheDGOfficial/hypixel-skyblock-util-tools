@@ -184,7 +184,7 @@ fn find_launcher_processes(mut sys: System, kill: bool) -> bool {
             && possible_stealth_launcher_process
                 .cmd()
                 .iter()
-                .any(|element| element.contains(".minecraft"))
+                .any(|element| element.contains("--launcherui"))
         {
             println!(
                 "Found stealth launcher process {}. PID: {}",
@@ -241,7 +241,7 @@ fn start_watching_java_process() {
                                             && process.cmd().iter().any(
                                                 |element| {
                                                     element
-                                                        .contains(".minecraft")
+                                                        .contains("-Dminecraft.launcher.brand=minecraft-launcher")
                                                 },
                                             )
                                         {
