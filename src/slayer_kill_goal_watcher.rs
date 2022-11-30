@@ -759,6 +759,7 @@ fn refresh_data_from_logs(
                                             "] [Client thread/INFO]: [CHAT] ",
                                             "",
                                         )
+                                        .replace("] [main/INFO]: [CHAT] ", "")
                                         .replace(['[', ':'], "")
                                         .replace(
                                             "RARE DROP!  ",
