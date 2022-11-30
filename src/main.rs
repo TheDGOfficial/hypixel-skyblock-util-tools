@@ -52,9 +52,7 @@ use std::process::ExitCode;
 use std::time::Instant;
 
 use colored::Colorize;
-use cookie_store as _;
 use mimalloc::MiMalloc;
-use trust_dns_resolver as _;
 
 use log::debug;
 

@@ -16,8 +16,7 @@ general: use sccache for compiler cache, see https://github.com/mozilla/sccache
 
 # Dependencies
 
-Cargo.toml: reqwest stable doesn't have HTTP/3 support, so we are using a fork, but that fork is based on 1 release
-behind than stable
+Cargo.toml: reqwest doesn't have HTTP/3 support
 
 # Making release build smaller (might decrease execution or startup speed plus there are sayings that UPX makes antivirus software flag the executable)
 
