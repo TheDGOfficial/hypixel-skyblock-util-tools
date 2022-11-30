@@ -21,6 +21,7 @@ use crate::utils::ask_int_input;
 use crate::utils::get_minecraft_dir;
 use crate::utils::lines_from_file_from_end;
 use crate::utils::nano_time;
+use crate::utils::num_cpus;
 use crate::utils::read_file;
 use crate::utils::u128_to_u64;
 use crate::utils::write_file;
@@ -657,7 +658,7 @@ fn crop_letters(s: &str, pos: usize) -> &str {
 
 #[inline]
 fn crop_netty(mut s: String) -> String {
-    for index in 0..=(num_cpus::get() * 2) {
+    for index in 0..=(num_cpus() * 2) {
         s = s.replace(
             &format!("] Netty Epoll Client IO #{index}/INFO] CHAT] "),
             "",

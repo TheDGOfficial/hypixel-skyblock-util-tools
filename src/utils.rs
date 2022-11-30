@@ -7,6 +7,7 @@ use std::io::Read;
 use std::io::Write;
 use std::path::Path;
 use std::path::PathBuf;
+use std::thread::available_parallelism;
 use std::time::SystemTime;
 
 use colored::Colorize;
@@ -27,6 +28,22 @@ pub(crate) const fn get_odds(percentage_chance: f64) -> f64 {
 #[inline]
 pub(crate) fn compare_f64(f64: f64, compare_to: f64) -> bool {
     (f64 - compare_to).abs() < f64::EPSILON
+}
+
+#[inline]
+pub(crate) fn num_cpus() -> usize {
+    match available_parallelism() {
+        Ok(usize) => usize.get(),
+
+        Err(e) => {
+            eprintln!(
+                "{}{e} - using default of 1",
+                "error while getting available parallelism: ".red()
+            );
+
+            1
+        },
+    }
 }
 
 #[inline]
