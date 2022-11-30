@@ -20,7 +20,7 @@ exclude = ["/.github/*"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-tokio = { version = "1.21.2", features = ["full"] }
+tokio = { version = "1.22.0", features = ["full"] }
 reqwest = { version = "0.11.11", default-features = false, features = ["brotli", "http3", "rustls", "trust-dns"] }
 
 cookie_store = "0.19.0"
@@ -28,11 +28,11 @@ trust-dns-resolver = { version = "0.22.0", features = ["dns-over-https-rustls"] 
 
 futures = "0.3.25"
 
-serde = "1.0.147"
-serde_json = "1.0.87"
+serde = "1.0.148"
+serde_json = "1.0.89"
 
 #jemallocator = "0.5.0"
-mimalloc = { version = "0.1.30", default-features = false }
+mimalloc = { version = "0.1.32", default-features = false }
 
 nohash-hasher = "0.2.0"
 
@@ -64,7 +64,7 @@ sudo = "0.6.0"
 
 cnproc = "0.2.1"
 
-sysinfo = "0.26.7"
+sysinfo = "0.26.8"
 
 num_cpus = "1.14.0"
 
