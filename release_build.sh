@@ -124,8 +124,16 @@ if [ "$PGO_FLAG" != "" ]; then
   RUSTFLAGS="$NORMAL_FLAGS -Cprofile-use=/tmp/pgo-data/merged.profdata -Cllvm-args=-pgo-warn-missing-function" $CARGO_CMD
 fi
 
+BINARY=target/$TARGET/release/hypixel-skyblock-util-tools
+
+while [ -n "$(lsof "$BINARY")" ]
+do
+  echo "Generated binary is still in use.. Will check again in a second.."
+  sleep 1
+done
+
 if [[ -z "$PROFILING_PROFILE" ]]; then
- strip target/$TARGET/release/hypixel-skyblock-util-tools
- #upx --best target/$TARGET/release/hypixel-skyblock-util-tools
+ strip "$BINARY"
+ #upx --best "$BINARY"
 fi
 
