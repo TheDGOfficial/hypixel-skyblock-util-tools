@@ -4,6 +4,7 @@ use std::process;
 
 use core::sync::atomic::AtomicBool;
 use core::sync::atomic::Ordering;
+use std::collections::HashMap;
 use std::path::Path;
 use std::process::Command;
 use std::process::ExitCode;
@@ -325,22 +326,39 @@ pub(crate) fn remove_javacheck() {
 #[allow(unused_results)]
 fn launch_launcher() {
     tokio::spawn(async move {
-        if let Err(e) = Command::new("minecraft-launcher-real")
-            .envs([
-                ("vblank_mode", "0"), // Improves performance
-                ("ALSOFT_DRIVERS", "pulse"), // Fixes audio delay when using pipewire
-                ("LIBGL_DRI2_DISABLE", "true"), // Force use of DRI3 if available
-                ("MESA_NO_ERROR", "true"), // Disable error checking for performance
-                ("MESA_GL_VERSION_OVERRIDE", "4.3"), // Force increase advertised GL version for performance
-                ("MESA_GLES_VERSION_OVERRIDE", "3.2"), // ^^
-                ("MESA_SHADER_CACHE_DISABLE", "false"), // Force enable Shader Cache
-                ("MESA_SHADER_CACHE_MAX_SIZE", "4G"), // Use a big value as limit for Shader Cache
-                ("LD_PRELOAD", "/usr/local/lib/libmimalloc.so.2"), // Use mimalloc to increase memory/GC performance
-            ])
-            .spawn()
+        let mut envs = HashMap::from([
+            ("vblank_mode", "0"),                // Improves performance
+            ("ALSOFT_DRIVERS", "pulse"),         /* Fixes audio delay when
+                                                  * using pipewire */
+            ("LIBGL_DRI2_DISABLE", "true"), // Force use of DRI3 if available
+            ("MESA_NO_ERROR", "true"),      /* Disable error checking for
+                                             * performance */
+            ("MESA_GL_VERSION_OVERRIDE", "4.3"), /* Force increase
+                                                  * advertised GL version
+                                                  * for performance */
+            ("MESA_GLES_VERSION_OVERRIDE", "3.2"), // ^^
+            ("MESA_SHADER_CACHE_DISABLE", "false"), /* Force enable Shader
+                                                    * Cache */
+            ("MESA_SHADER_CACHE_MAX_SIZE", "4G"), /* Use a big value as limit for Shader Cache */
+            ("LD_PRELOAD", "/usr/local/lib/libmimalloc.so.2"), /* Use mimalloc to increase memory/GC performance */
+        ]);
+
+        if let Ok(value) =
+            env::var("MC_LAUNCHER_LAUNCHER_NO_GL_VERSION_OVERRIDE")
         {
-            notify_error(
-                &format!("{}{e}",
+            if value == "true" {
+                println!("Not overriding advertised GL versions.");
+
+                envs.remove("MESA_GL_VERSION_OVERRIDE");
+                envs.remove("MESA_GLES_VERSION_OVERRIDE");
+            }
+        }
+
+        if let Err(e) =
+            Command::new("minecraft-launcher-real").envs(envs).spawn()
+        {
+            notify_error(&format!(
+                "{}{e}",
                 "error while trying to start Minecraft Launcher: ".red()
             ));
         }
