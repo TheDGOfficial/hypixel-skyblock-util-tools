@@ -1,7 +1,9 @@
 use std::env;
 use std::fs;
 use std::process;
+use std::thread;
 
+use core::time::Duration;
 use core::sync::atomic::AtomicBool;
 use core::sync::atomic::Ordering;
 use std::collections::HashMap;
@@ -33,10 +35,18 @@ use cnproc::PidMonitor;
 #[cfg(target_os = "linux")]
 use cnproc::PidEvent;
 
+#[cfg(target_os = "linux")]
+use procfs::process::Process as ProcfsProcess;
+
+#[cfg(target_os = "linux")]
+use procfs::process::FDTarget::Path as ProcfsPath;
+
 use once_cell::sync::Lazy;
 
 use notify_rust::Notification;
 use notify_rust::Urgency;
+
+use log::debug;
 
 // Since this program will be most likely not called with a (visible) terminal,
 // send desktop notifications if any errors occur to not let a silent failure
@@ -53,6 +63,22 @@ fn notify_error(description: &str) {
         eprintln!(
             "{}{e}: {description}",
             "error: can't send desktop notification to notify error: ".red()
+        );
+    }
+}
+
+fn notify_status(description: &str) {
+    if let Err(e) = Notification::new()
+        .summary("Status")
+        .body(description)
+        .urgency(Urgency::Low)
+        .show()
+    {
+        // Hopefully we have a visible terminal or the user re launches the app
+        // with one.
+        eprintln!(
+            "{}{e}: {description}",
+            "error: can't send desktop notification to notify status: ".red()
         );
     }
 }
@@ -123,8 +149,71 @@ pub(crate) fn launch() -> ExitCode {
 static KILLING_IN_PROGRESS: Lazy<Arc<AtomicBool>> =
     Lazy::new(|| Arc::new(AtomicBool::new(false)));
 
+#[cfg(not(target_os = "linux"))]
+#[inline]
+fn is_launcher_profiles_file_open_in_process(_: &Process) -> bool {
+    false
+}
+
+#[cfg(target_os = "linux")]
+#[inline]
+fn is_launcher_profiles_file_open_in_process(process: &Process) -> bool {
+    if let Some(home_folder) = home::home_dir() {
+        let launcher_profiles_path = utils::get_minecraft_dir_from_home_path(
+            Path::new(&home_folder),
+        )
+        .join("launcher_profiles.json");
+
+        if launcher_profiles_path.exists() {
+            if let Ok(procfs_process) = ProcfsProcess::new(process.pid().into()) {
+                if let Ok(open_file_list) = procfs_process.fd() {
+                    for file in open_file_list {
+                        if let Ok(file_info) = file {
+                            if let ProcfsPath(target) = file_info.target {
+                                if target == launcher_profiles_path {
+                                    return true;
+                                } else if target.to_string_lossy().contains("launcher_profiles.json") {
+                                    notify_error(&format!("process has file {} open that is not detected by the Eq operator, comparing to {}", target.to_string_lossy(), launcher_profiles_path.to_string_lossy()));
+                                } else {
+                                    debug!("process has file {} open", target.to_string_lossy());
+                                }
+                            } else {
+                                debug!("{}", "Process has a non-file or file without a path (such as in RAM) open, skipping".yellow());
+                            }
+                        } else {
+                            notify_error(&format!("Couldn't get details about an open file owned by process named {} with PID {}", process.name(), process.pid()));
+                        }
+                    }
+
+                    println!("Process doesn't have launcher_profiles.json file open.");
+                } else {
+                    notify_error(&format!("Couldn't get procfs list of open files for process named {} with PID {}", process.name(), process.pid()));
+                }
+            } else {
+                notify_error(&format!("Couldn't get procfs process for process named {} with PID {}", process.name(), process.pid()));
+            }
+        } else {
+            notify_error("can't find launcher_profiles.json, ignore if this the first start of the launcher");
+        }
+    } else {
+        notify_error("can't find home directory");
+    }
+
+    false
+}
+
+#[inline]
+fn await_launcher_profile_save_in_process(process: &Process) {
+    while is_launcher_profiles_file_open_in_process(process) {
+        notify_status("Waiting for launcher profile save..");
+        thread::sleep(Duration::from_millis(500));
+    }
+}
+
 #[inline]
 fn kill_launcher_process(launcher_process: &Process) {
+    await_launcher_profile_save_in_process(launcher_process);
+
     if launcher_process.kill() {
         println!("Killed process successfully");
     } else {
@@ -272,10 +361,7 @@ fn start_watching_java_process() {
                             },
                         }
                     } else {
-                        notify_error(&format!(
-                            "{}",
-                            "no events to receive".yellow()
-                        ));
+                        notify_error("no events to receive");
                     }
                 }
 
@@ -284,9 +370,7 @@ fn start_watching_java_process() {
 
             Err(e) => {
                 notify_error(&format!(
-                    "{}{e}",
-                    "error while trying to create process event watcher: "
-                        .red()
+                    "error while trying to create process event watcher: {e}"
                 ));
 
                 ExitCode::FAILURE
@@ -299,7 +383,7 @@ fn start_watching_java_process() {
 pub(crate) fn remove_javacheck() {
     home::home_dir().map_or_else(
         || {
-            notify_error(&format!("{}", "can't find home directory: ".red()));
+            notify_error("can't find home directory");
         },
         |home_folder| {
             let javacheck_path = utils::get_minecraft_dir_from_home_path(
@@ -313,8 +397,7 @@ pub(crate) fn remove_javacheck() {
 
                 if let Err(e) = fs::remove_file(javacheck_path) {
                     notify_error(&format!(
-                        "{}{e}",
-                        "error while removing JavaCheck.jar: ".red()
+                        "error while removing JavaCheck.jar: {e}"
                     ));
                 }
             }
@@ -358,8 +441,7 @@ fn launch_launcher() {
             Command::new("minecraft-launcher-real").envs(envs).spawn()
         {
             notify_error(&format!(
-                "{}{e}",
-                "error while trying to start Minecraft Launcher: ".red()
+                "error while trying to start Minecraft Launcher: {e}"
             ));
         }
     });
@@ -369,7 +451,7 @@ fn launch_launcher() {
 fn escalate_if_needed() -> bool {
     #[allow(box_pointers)]
     if let Err(e) = sudo::escalate_if_needed() {
-        notify_error(&format!("{}{e}", "error while trying to escalate to root permissions automatically: ".red()));
+        notify_error(&format!("error while trying to escalate to root permissions automatically: {e}"));
 
         return false;
     }
