@@ -19,6 +19,9 @@ pub(crate) const NECRONS_HANDLE_DROP_CHANCE: f64 = 0.0964;
 // Source: In-game RNG Meter base chance.
 pub(crate) const NECRONS_HANDLE_MASTER_MODE_DROP_CHANCE: f64 = 0.1106;
 
+// Source: In-game RNG Meter base chance.
+pub(crate) const DARK_CLAYMORE_DROP_CHANCE: f64 = 0.0737;
+
 // Shadow Assassin
 // Source: https://wiki.hypixel.net/Shadow_Assassin#Stats
 pub(crate) const F3_SHADOW_ASSASSIN_DAMAGE: i32 = 3280;

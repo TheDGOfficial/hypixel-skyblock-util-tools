@@ -7,6 +7,7 @@ use colored::Colorize;
 use jandom::Random;
 
 use crate::constants::CHIMERA_DROP_CHANCE;
+use crate::constants::DARK_CLAYMORE_DROP_CHANCE;
 use crate::constants::JUDGEMENT_CORE_DROP_CHANCE;
 use crate::constants::MAXIMUM_MAGIC_FIND;
 use crate::constants::NECRONS_HANDLE_DROP_CHANCE;
@@ -60,7 +61,12 @@ fn print_drops_selection() {
         get_odds(NECRONS_HANDLE_DROP_CHANCE)
     );
     println!(" {}. Necron's Handle (Master Mode) (%{NECRONS_HANDLE_MASTER_MODE_DROP_CHANCE}) [1/{}]", "6".bright_blue(), get_odds(NECRONS_HANDLE_MASTER_MODE_DROP_CHANCE));
-    println!(" {}. Custom", "7".bright_blue());
+    println!(
+        " {}. Dark Claymore (%{DARK_CLAYMORE_DROP_CHANCE}%) [1/{}]",
+        "7".bright_blue(),
+        get_odds(DARK_CLAYMORE_DROP_CHANCE)
+    );
+    println!(" {}. Custom", "8".bright_blue());
 
     println!();
 }
@@ -78,7 +84,8 @@ fn get_drop_chance(selection: i32, no_looting: &mut bool) -> f64 {
         4 => OVERFLUX_CAPACITOR_DROP_CHANCE,
         5 => NECRONS_HANDLE_DROP_CHANCE,
         6 => NECRONS_HANDLE_MASTER_MODE_DROP_CHANCE,
-        7 => {
+        7 => DARK_CLAYMORE_DROP_CHANCE,
+        8 => {
             *no_looting = false;
 
             ask_float_input("Enter custom drop chance: ", None, None)
@@ -108,7 +115,7 @@ pub(crate) fn rng_simulator(
     let original_drop_chance = drop_chance;
     let mut rng_meter_percent = -1.0;
 
-    if selection != 1 && selection != 7 {
+    if selection != 1 && selection != 8 {
         rng_meter_percent = ask_float_input(
             "Enter your current RNG meter completion percentage for this drop: ",
             Some(0.0),
@@ -124,11 +131,15 @@ pub(crate) fn rng_simulator(
         }
     }
 
-    let magic_find = ask_int_input(
-        "What is your Magic Find? (0-900): ",
-        Some(0),
-        Some(900),
-    );
+    let magic_find = if selection == 5 || selection == 6 || selection == 7 {
+        0
+    } else {
+        ask_int_input(
+            "What is your Magic Find? (0-900): ",
+            Some(0),
+            Some(900),
+        )
+    };
 
     let looting_extra_chance = 15
         * conditional_value_or_default(
