@@ -160,9 +160,11 @@ fn calculate_next_effective_health_milestone(
 ) -> i32 {
     let original_hits_to_die =
         calculate_hits_to_die(effective_health, enemy_damage_per_hit);
-    let mut hits_to_die = original_hits_to_die;
+    let mut hits_to_die;
 
     for ehp in effective_health..=i32::MAX {
+        hits_to_die = calculate_hits_to_die(ehp, enemy_damage_per_hit);
+
         if !compare_f64(original_hits_to_die, original_hits_to_die.ceil())
             && compare_f64(hits_to_die, original_hits_to_die.ceil())
         {
@@ -172,8 +174,6 @@ fn calculate_next_effective_health_milestone(
         if compare_f64(hits_to_die, original_hits_to_die + 1.0) {
             return ehp;
         }
-
-        hits_to_die = calculate_hits_to_die(ehp, enemy_damage_per_hit);
     }
 
     0
