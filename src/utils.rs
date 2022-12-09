@@ -478,7 +478,7 @@ pub(crate) fn get_minecraft_dir() -> Option<PathBuf> {
 #[inline]
 pub(crate) fn get_minecraft_dir_from_home_path(home_path: &Path) -> PathBuf {
     home_path
-        .join(env::var("MC_GAME_FOLDER").unwrap_or(".minecraft".to_string()))
+        .join(env::var("MC_GAME_FOLDER").unwrap_or_else(|_| ".minecraft".to_owned()))
 }
 
 #[inline]

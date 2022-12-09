@@ -2,10 +2,6 @@ use core::sync::atomic::AtomicBool;
 use core::sync::atomic::Ordering;
 use core::time::Duration;
 
-extern crate alloc;
-
-use alloc::sync::Arc;
-
 use std::fs;
 use std::fs::File;
 
@@ -593,8 +589,7 @@ fn save_session_data_to_file(data: &VoidgloomData) -> bool {
     true
 }
 
-static PRINTED_MSG: Lazy<Arc<AtomicBool>> =
-    Lazy::new(|| Arc::new(AtomicBool::new(false)));
+static PRINTED_MSG: Lazy<AtomicBool> = Lazy::new(|| AtomicBool::new(false));
 
 #[inline]
 fn save_data_to_file(

@@ -3,17 +3,13 @@ use std::fs;
 use std::process;
 use std::thread;
 
-use core::time::Duration;
 use core::sync::atomic::AtomicBool;
 use core::sync::atomic::Ordering;
+use core::time::Duration;
 use std::collections::HashMap;
 use std::path::Path;
 use std::process::Command;
 use std::process::ExitCode;
-
-extern crate alloc;
-
-use alloc::sync::Arc;
 
 use crate::utils;
 use colored::Colorize;
@@ -146,8 +142,8 @@ pub(crate) fn launch() -> ExitCode {
     ExitCode::SUCCESS
 }
 
-static KILLING_IN_PROGRESS: Lazy<Arc<AtomicBool>> =
-    Lazy::new(|| Arc::new(AtomicBool::new(false)));
+static KILLING_IN_PROGRESS: Lazy<AtomicBool> =
+    Lazy::new(|| AtomicBool::new(false));
 
 #[cfg(not(target_os = "linux"))]
 #[inline]
@@ -159,38 +155,50 @@ fn is_launcher_profiles_file_open_in_process(_: &Process) -> bool {
 #[inline]
 fn is_launcher_profiles_file_open_in_process(process: &Process) -> bool {
     if let Some(home_folder) = home::home_dir() {
-        let launcher_profiles_path = utils::get_minecraft_dir_from_home_path(
-            Path::new(&home_folder),
-        )
-        .join("launcher_profiles.json");
+        let launcher_profiles_path =
+            utils::get_minecraft_dir_from_home_path(Path::new(&home_folder))
+                .join("launcher_profiles.json");
 
         if launcher_profiles_path.exists() {
-            if let Ok(procfs_process) = ProcfsProcess::new(process.pid().into()) {
-                if let Ok(open_file_list) = procfs_process.fd() {
-                    for file in open_file_list {
-                        if let Ok(file_info) = file {
-                            if let ProcfsPath(target) = file_info.target {
-                                if target == launcher_profiles_path {
-                                    return true;
-                                } else if target.to_string_lossy().contains("launcher_profiles.json") {
-                                    notify_error(&format!("process has file {} open that is not detected by the Eq operator, comparing to {}", target.to_string_lossy(), launcher_profiles_path.to_string_lossy()));
+            if let Ok(i32_pid) = i32::try_from(process.pid().as_u32()) {
+                if let Ok(procfs_process) = ProcfsProcess::new(i32_pid) {
+                    if let Ok(open_file_list) = procfs_process.fd() {
+                        for file in open_file_list {
+                            if let Ok(file_info) = file {
+                                if let ProcfsPath(target) = file_info.target {
+                                    if target == launcher_profiles_path {
+                                        return true;
+                                    } else if target
+                                        .to_string_lossy()
+                                        .contains("launcher_profiles.json")
+                                    {
+                                        notify_error(&format!("process has file {} open that is not detected by the Eq operator, comparing to {}", target.to_string_lossy(), launcher_profiles_path.to_string_lossy()));
+                                    } else {
+                                        debug!(
+                                            "process has file {} open",
+                                            target.to_string_lossy()
+                                        );
+                                    }
                                 } else {
-                                    debug!("process has file {} open", target.to_string_lossy());
+                                    debug!("{}", "Process has a non-file or file without a path (such as in RAM) open, skipping".yellow());
                                 }
                             } else {
-                                debug!("{}", "Process has a non-file or file without a path (such as in RAM) open, skipping".yellow());
+                                notify_error(&format!("Couldn't get details about an open file owned by process named {} with PID {}", process.name(), process.pid()));
                             }
-                        } else {
-                            notify_error(&format!("Couldn't get details about an open file owned by process named {} with PID {}", process.name(), process.pid()));
                         }
-                    }
 
-                    println!("Process doesn't have launcher_profiles.json file open.");
+                        println!("Process doesn't have launcher_profiles.json file open.");
+                    } else {
+                        notify_error(&format!("Couldn't get procfs list of open files for process named {} with PID {}", process.name(), process.pid()));
+                    }
                 } else {
-                    notify_error(&format!("Couldn't get procfs list of open files for process named {} with PID {}", process.name(), process.pid()));
+                    notify_error(&format!("Couldn't get procfs process for process named {} with PID {}", process.name(), process.pid()));
                 }
             } else {
-                notify_error(&format!("Couldn't get procfs process for process named {} with PID {}", process.name(), process.pid()));
+                notify_error(&format!(
+                    "Can't convert usize PID to i32 PID: {}",
+                    process.pid()
+                ));
             }
         } else {
             notify_error("can't find launcher_profiles.json, ignore if this the first start of the launcher");
@@ -318,42 +326,51 @@ fn start_watching_java_process() {
                     if let Some(e) = monitor.recv() {
                         match e {
                             PidEvent::Exec(id) => {
-                                let pid = Pid::from(id);
+                                if let Ok(id_u32) = u32::try_from(id) {
+                                    let pid = Pid::from_u32(id_u32);
 
-                                if sys.refresh_process_specifics(
-                                    pid,
-                                    ProcessRefreshKind::new(),
-                                ) {
-                                    if let Some(process) = sys.process(pid) {
-                                        let name = process.name();
-
-                                        if name == "java"
-                                            && process.cmd().iter().any(
-                                                |element| {
-                                                    element
-                                                        .contains("-Dminecraft.launcher.brand=minecraft-launcher")
-                                                },
-                                            )
+                                    if sys.refresh_process_specifics(
+                                        pid,
+                                        ProcessRefreshKind::new(),
+                                    ) {
+                                        if let Some(process) = sys.process(pid)
                                         {
-                                            find_launcher_processes(sys, true);
-                                            break;
+                                            let name = process.name();
+
+                                            if name == "java"
+                                                && process.cmd().iter().any(
+                                                    |element| {
+                                                        element
+                                                            .contains("-Dminecraft.launcher.brand=minecraft-launcher")
+                                                    },
+                                                )
+                                            {
+                                                find_launcher_processes(sys, true);
+                                                break;
+                                            }
                                         }
                                     }
+                                } else {
+                                    notify_error(&format!("Can't convert i32 PID to usize PID: {id}"));
                                 }
                             },
 
                             PidEvent::Exit(id) => {
-                                let pid = Pid::from(id);
+                                if let Ok(id_u32) = u32::try_from(id) {
+                                    let pid = Pid::from_u32(id_u32);
 
-                                if let Some(process) = sys.process(pid) {
-                                    let name = process.name();
+                                    if let Some(process) = sys.process(pid) {
+                                        let name = process.name();
 
-                                    if name == "minecraft-launc"
-                                        && !KILLING_IN_PROGRESS
-                                            .load(Ordering::Relaxed)
-                                    {
-                                        break;
+                                        if name == "minecraft-launc"
+                                            && !KILLING_IN_PROGRESS
+                                                .load(Ordering::Relaxed)
+                                        {
+                                            break;
+                                        }
                                     }
+                                } else {
+                                    notify_error(&format!("Can't convert i32 PID to usize PID: {id}"));
                                 }
                             },
 
@@ -410,9 +427,9 @@ pub(crate) fn remove_javacheck() {
 fn launch_launcher() {
     tokio::spawn(async move {
         let mut envs = HashMap::from([
-            ("vblank_mode", "0"),                // Improves performance
-            ("ALSOFT_DRIVERS", "pulse"),         /* Fixes audio delay when
-                                                  * using pipewire */
+            ("vblank_mode", "0"), // Improves performance
+            ("ALSOFT_DRIVERS", "pulse"), /* Fixes audio delay when
+                                   * using pipewire */
             ("LIBGL_DRI2_DISABLE", "true"), // Force use of DRI3 if available
             ("MESA_NO_ERROR", "true"),      /* Disable error checking for
                                              * performance */
