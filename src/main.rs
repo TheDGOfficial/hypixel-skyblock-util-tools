@@ -92,6 +92,18 @@ fn print_selections() {
     println!();
 }
 
+#[inline]
+async fn handle_selection(selection: i32, start_without_user_input: &mut Option<Instant>) -> bool {
+    return match selection {
+        1 => master_skull_upgrade_helper::upgrade_calculator_for_master_skulls(start_without_user_input).await,
+        2 => catacombs_stat_boost_calculator::catacombs_stat_boost_calculator(start_without_user_input),
+        3 => rng_simulator::rng_simulator(start_without_user_input),
+        4 => survivability_calculator::survivability_calculator(start_without_user_input),
+        5 => slayer_kill_goal_watcher::slayer_kill_goal_watcher(start_without_user_input),
+        _ => { eprintln!("{}", "warning: ask_int_input returned out of range value".yellow()); true } // ask_int_input can't return invalid selection
+    }
+}
+
 #[tokio::main]
 #[inline]
 async fn main() -> ExitCode {
@@ -152,48 +164,9 @@ async fn main() -> ExitCode {
     print_selections();
 
     let selection =
-        utils::ask_int_input("Enter a number to select: ", Some(1), Some(5));
+        utils::ask_int_input("Enter a number to select: ", Some(1), Some(6));
 
-    if selection == 1
-        && !master_skull_upgrade_helper::upgrade_calculator_for_master_skulls(
-            start_without_user_input,
-        )
-        .await
-    {
-        eprintln!("Exiting with failure exit code");
-        return ExitCode::FAILURE;
-    }
-
-    if selection == 2
-        && !catacombs_stat_boost_calculator::catacombs_stat_boost_calculator(
-            start_without_user_input,
-        )
-    {
-        eprintln!("Exiting with failure exit code");
-        return ExitCode::FAILURE;
-    }
-
-    if selection == 3
-        && !rng_simulator::rng_simulator(start_without_user_input)
-    {
-        eprintln!("Exiting with failure exit code");
-        return ExitCode::FAILURE;
-    }
-
-    if selection == 4
-        && !survivability_calculator::survivability_calculator(
-            start_without_user_input,
-        )
-    {
-        eprintln!("Exiting with failure exit code");
-        return ExitCode::FAILURE;
-    }
-
-    if selection == 5
-        && !slayer_kill_goal_watcher::slayer_kill_goal_watcher(
-            start_without_user_input,
-        )
-    {
+    if !handle_selection(selection, start_without_user_input).await {
         eprintln!("Exiting with failure exit code");
         return ExitCode::FAILURE;
     }

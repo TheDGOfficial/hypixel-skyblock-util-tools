@@ -173,6 +173,7 @@ fn is_launcher_profiles_file_open_in_process(process: &Process) -> bool {
                                         .contains("launcher_profiles.json")
                                     {
                                         notify_error(&format!("process has file {} open that is not detected by the Eq operator, comparing to {}", target.to_string_lossy(), launcher_profiles_path.to_string_lossy()));
+                                        return true;
                                     } else {
                                         debug!(
                                             "process has file {} open",

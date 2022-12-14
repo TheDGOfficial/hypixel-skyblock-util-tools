@@ -134,11 +134,7 @@ pub(crate) fn rng_simulator(
     let magic_find = if selection == 5 || selection == 6 || selection == 7 {
         0
     } else {
-        ask_int_input(
-            "What is your Magic Find? (0-900): ",
-            Some(0),
-            Some(900),
-        )
+        ask_int_input("What is your Magic Find? (0-900): ", Some(0), Some(900))
     };
 
     let looting_extra_chance = 15
