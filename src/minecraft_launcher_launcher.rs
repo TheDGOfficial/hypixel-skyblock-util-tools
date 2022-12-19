@@ -316,85 +316,81 @@ fn find_launcher_processes(mut sys: System, kill: bool) -> bool {
 #[inline]
 #[allow(unused_results)]
 fn start_watching_java_process() {
-    tokio::spawn(async move {
-        println!("Starting monitoring");
+    println!("Starting monitoring");
 
-        match PidMonitor::new() {
-            Ok(mut monitor) => {
-                let mut sys = System::new();
+    match PidMonitor::new() {
+        Ok(mut monitor) => {
+            let mut sys = System::new();
 
-                loop {
-                    if let Some(e) = monitor.recv() {
-                        match e {
-                            PidEvent::Exec(id) => {
-                                if let Ok(id_u32) = u32::try_from(id) {
-                                    let pid = Pid::from_u32(id_u32);
+            loop {
+                if let Some(e) = monitor.recv() {
+                    match e {
+                        PidEvent::Exec(id) => {
+                            if let Ok(id_u32) = u32::try_from(id) {
+                                let pid = Pid::from_u32(id_u32);
 
-                                    if sys.refresh_process_specifics(
-                                        pid,
-                                        ProcessRefreshKind::new(),
-                                    ) {
-                                        if let Some(process) = sys.process(pid)
-                                        {
-                                            let name = process.name();
-
-                                            if name == "java"
-                                                && process.cmd().iter().any(
-                                                    |element| {
-                                                        element
-                                                            .contains("-Dminecraft.launcher.brand=minecraft-launcher")
-                                                    },
-                                                )
-                                            {
-                                                find_launcher_processes(sys, true);
-                                                break;
-                                            }
-                                        }
-                                    }
-                                } else {
-                                    notify_error(&format!("Can't convert i32 PID to usize PID: {id}"));
-                                }
-                            },
-
-                            PidEvent::Exit(id) => {
-                                if let Ok(id_u32) = u32::try_from(id) {
-                                    let pid = Pid::from_u32(id_u32);
-
+                                if sys.refresh_process_specifics(
+                                    pid,
+                                    ProcessRefreshKind::new(),
+                                ) {
                                     if let Some(process) = sys.process(pid) {
                                         let name = process.name();
 
-                                        if name == "minecraft-launc"
-                                            && !KILLING_IN_PROGRESS
-                                                .load(Ordering::Relaxed)
+                                        if name == "java"
+                                            && process.cmd().iter().any(
+                                                |element| {
+                                                    element
+                                                        .contains("-Dminecraft.launcher.brand=minecraft-launcher")
+                                                },
+                                            )
                                         {
+                                            find_launcher_processes(sys, true);
                                             break;
                                         }
                                     }
-                                } else {
-                                    notify_error(&format!("Can't convert i32 PID to usize PID: {id}"));
                                 }
-                            },
+                            } else {
+                                notify_error(&format!(
+                                    "Can't convert i32 PID to usize PID: {id}"
+                                ));
+                            }
+                        },
 
-                            PidEvent::Fork { .. } | PidEvent::Coredump(_) => {
-                            },
-                        }
-                    } else {
-                        notify_error("no events to receive");
+                        PidEvent::Exit(id) => {
+                            if let Ok(id_u32) = u32::try_from(id) {
+                                let pid = Pid::from_u32(id_u32);
+
+                                if let Some(process) = sys.process(pid) {
+                                    let name = process.name();
+
+                                    if name == "minecraft-launc"
+                                        && !KILLING_IN_PROGRESS
+                                            .load(Ordering::Relaxed)
+                                    {
+                                        break;
+                                    }
+                                }
+                            } else {
+                                notify_error(&format!(
+                                    "Can't convert i32 PID to usize PID: {id}"
+                                ));
+                            }
+                        },
+
+                        PidEvent::Fork { .. } | PidEvent::Coredump(_) => {},
                     }
+                } else {
+                    notify_error("no events to receive");
                 }
+            }
+        },
 
-                ExitCode::SUCCESS
-            },
-
-            Err(e) => {
-                notify_error(&format!(
-                    "error while trying to create process event watcher: {e}"
-                ));
-
-                ExitCode::FAILURE
-            },
-        }
-    });
+        Err(e) => {
+            notify_error(&format!(
+                "error while trying to create process event watcher: {e}"
+            ));
+        },
+    }
 }
 
 #[inline]
