@@ -189,12 +189,12 @@ fn is_launcher_profiles_file_open_in_process(process: &Process) -> bool {
                                     {
                                         notify_error(&format!("process has file {} open that is not detected by the Eq operator, comparing to {}", target.to_string_lossy(), launcher_profiles_path.to_string_lossy()));
                                         return true;
-                                    } else {
-                                        debug!(
-                                            "process has file {} open",
-                                            target.to_string_lossy()
-                                        );
                                     }
+
+                                    debug!(
+                                        "process has file {} open",
+                                        target.to_string_lossy()
+                                    );
                                 } else {
                                     debug!("{}", "Process has a non-file or file without a path (such as in RAM) open, skipping".yellow());
                                 }
