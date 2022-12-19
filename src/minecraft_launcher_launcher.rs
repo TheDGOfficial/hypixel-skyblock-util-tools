@@ -208,7 +208,7 @@ fn is_launcher_profiles_file_open_in_process(process: &Process) -> bool {
                         notify_error(&format!("Couldn't get procfs list of open files for process named {} with PID {}", process.name(), process.pid()));
                     }
                 } else {
-                    notify_error(&format!("Couldn't get procfs process for process named {} with PID {}", process.name(), process.pid()));
+                    eprintln!("Couldn't get procfs process for process named {} with PID {}. Killed?", process.name(), process.pid()); // Process might be already quit, not a fatal error
                 }
             } else {
                 notify_error(&format!(
@@ -241,11 +241,7 @@ fn kill_launcher_process(launcher_process: &Process) {
     if launcher_process.kill() {
         println!("Killed process successfully");
     } else {
-        notify_error(&format!(
-            "couldn't kill Minecraft Launcher process named {} with PID {}",
-            launcher_process.name(),
-            launcher_process.pid()
-        ));
+        eprintln!("Couldn't kill Minecraft Launcher process named {} with PID {}. Already killed?", launcher_process.name(), launcher_process.pid()); // Can happen if already killed, not a fatal error.
     }
 }
 
