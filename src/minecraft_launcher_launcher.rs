@@ -54,6 +54,21 @@ fn notify_error(description: &str) {
         .urgency(Urgency::Critical)
         .show()
     {
+        // Try sending a backup notification, in case sending of the first one
+        // fails because description contained invalid characters or was at the
+        // description limit
+        if let Err(other_e) = Notification::new()
+            .summary("Error")
+            .body("Couldn't send a notification about an error")
+            .urgency(Urgency::Critical)
+            .show()
+        {
+            eprintln!(
+                "{}{e}: {other_e}: {description}",
+                "error: backup notification failed to send: ".red()
+            );
+        }
+
         // Hopefully we have a visible terminal or the user re launches the app
         // with one.
         eprintln!(
