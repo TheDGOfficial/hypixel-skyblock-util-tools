@@ -70,6 +70,8 @@ mod survivability_calculator;
 
 mod slayer_kill_goal_watcher;
 
+mod skill_average_helper;
+
 #[cfg(test)]
 mod tests;
 
@@ -88,20 +90,43 @@ fn print_selections() {
     println!(" {}. RNG simulator", "3".bright_blue());
     println!(" {}. Survivability Calculator", "4".bright_blue());
     println!(" {}. Slayer kill goal watcher", "5".bright_blue());
+    println!(" {}. Skill average helper", "6".bright_blue());
 
     println!();
 }
 
 #[inline]
-async fn handle_selection(selection: i32, start_without_user_input: &mut Option<Instant>) -> bool {
+async fn handle_selection(
+    selection: i32,
+    start_without_user_input: &mut Option<Instant>,
+) -> bool {
     return match selection {
-        1 => master_skull_upgrade_helper::upgrade_calculator_for_master_skulls(start_without_user_input).await,
-        2 => catacombs_stat_boost_calculator::catacombs_stat_boost_calculator(start_without_user_input),
+        1 =>
+            master_skull_upgrade_helper::upgrade_calculator_for_master_skulls(
+                start_without_user_input,
+            )
+            .await,
+        2 => catacombs_stat_boost_calculator::catacombs_stat_boost_calculator(
+            start_without_user_input,
+        ),
         3 => rng_simulator::rng_simulator(start_without_user_input),
-        4 => survivability_calculator::survivability_calculator(start_without_user_input),
-        5 => slayer_kill_goal_watcher::slayer_kill_goal_watcher(start_without_user_input),
-        _ => { eprintln!("{}", "warning: ask_int_input returned out of range value".yellow()); true } // ask_int_input can't return invalid selection
-    }
+        4 => survivability_calculator::survivability_calculator(
+            start_without_user_input,
+        ),
+        5 => slayer_kill_goal_watcher::slayer_kill_goal_watcher(
+            start_without_user_input,
+        ),
+        6 => skill_average_helper::skill_average_helper(
+            start_without_user_input,
+        ),
+        _ => {
+            eprintln!(
+                "{}",
+                "warning: ask_int_input returned out of range value".yellow()
+            );
+            true
+        }, // ask_int_input can't return invalid selection
+    };
 }
 
 #[tokio::main]
