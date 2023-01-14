@@ -103,6 +103,8 @@ pub(crate) fn survivability_calculator(
     println!();
     println!("To afford to take another hit, you need {needed_health} more Health or {needed_defense} more Defense.");
 
+    let needed_health_with_wither_shield = find_needed_health(total_health_with_wither_shield, defense, next_effective_health_milestone_with_wither_shield);
+
     let needed_crit_damage = f64_to_i32(
         (f64::from(find_needed_health(
             total_health_with_wither_shield,
@@ -118,7 +120,7 @@ pub(crate) fn survivability_calculator(
         next_effective_health_milestone_with_wither_shield,
     );
 
-    println!("To afford to take another hit with Wither Shield, you need {needed_crit_damage} more Crit Damage or {needed_defense_with_wither_shield} more Defense.");
+    println!("To afford to take another hit with Wither Shield, you need {needed_health_with_wither_shield} more Health, {needed_crit_damage} more Crit Damage or {needed_defense_with_wither_shield} more Defense.");
 
     true
 }
