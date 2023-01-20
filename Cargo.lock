@@ -2041,8 +2041,8 @@ dependencies = [
 
 [[package]]
 name = "sysinfo"
-version = "0.27.2"
-source = "git+https://github.com/TheDGOfficial/sysinfo/?branch=fix-lto#926d29a00167f36d29fa136b053b3be41d5b2066"
+version = "0.27.7"
+source = "git+https://github.com/TheDGOfficial/sysinfo/?branch=fix-lto#7288a7e056364d479bbc873daba7ca023ce336e9"
 dependencies = [
  "cfg-if",
  "core-foundation-sys",
