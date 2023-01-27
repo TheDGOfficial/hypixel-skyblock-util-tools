@@ -162,12 +162,14 @@ static KILLING_IN_PROGRESS: Lazy<AtomicBool> =
 
 #[cfg(not(target_os = "linux"))]
 #[inline]
+#[must_use]
 fn is_launcher_profiles_file_open_in_process(_: &Process) -> bool {
     false
 }
 
 #[cfg(target_os = "linux")]
 #[inline]
+#[must_use]
 fn is_launcher_profiles_file_open_in_process(process: &Process) -> bool {
     if let Some(home_folder) = home::home_dir() {
         let launcher_profiles_path =
@@ -241,7 +243,8 @@ fn kill_launcher_process(launcher_process: &Process) {
     if launcher_process.kill() {
         println!("Killed process successfully");
     } else {
-        eprintln!("Couldn't kill Minecraft Launcher process named {} with PID {}. Already killed?", launcher_process.name(), launcher_process.pid()); // Can happen if already killed, not a fatal error.
+        eprintln!("Couldn't kill Minecraft Launcher process named {} with PID {}. Already killed?", launcher_process.name(), launcher_process.pid());
+        // Can happen if already killed, not a fatal error.
     }
 }
 

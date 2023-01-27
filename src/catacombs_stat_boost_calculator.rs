@@ -81,6 +81,7 @@ pub(crate) fn catacombs_stat_boost_calculator(
 }
 
 #[inline]
+#[must_use]
 fn get_cata_stat_boost(catacombs_level: i32) -> i32 {
     let mut cata_stat_boost = 0;
 

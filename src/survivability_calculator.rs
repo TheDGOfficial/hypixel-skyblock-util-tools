@@ -103,7 +103,11 @@ pub(crate) fn survivability_calculator(
     println!();
     println!("To afford to take another hit, you need {needed_health} more Health or {needed_defense} more Defense.");
 
-    let needed_health_with_wither_shield = find_needed_health(total_health_with_wither_shield, defense, next_effective_health_milestone_with_wither_shield);
+    let needed_health_with_wither_shield = find_needed_health(
+        total_health_with_wither_shield,
+        defense,
+        next_effective_health_milestone_with_wither_shield,
+    );
 
     let needed_crit_damage = f64_to_i32(
         (f64::from(find_needed_health(
@@ -126,6 +130,7 @@ pub(crate) fn survivability_calculator(
 }
 
 #[inline]
+#[must_use]
 fn find_needed_health(hp: i32, defense: i32, to_effective_health: i32) -> i32 {
     for new_hp in hp..=i32::MAX {
         let ehp = calculate_effective_health(new_hp, defense);
@@ -139,6 +144,7 @@ fn find_needed_health(hp: i32, defense: i32, to_effective_health: i32) -> i32 {
 }
 
 #[inline]
+#[must_use]
 fn find_needed_defense(
     hp: i32,
     defense: i32,
@@ -156,6 +162,7 @@ fn find_needed_defense(
 }
 
 #[inline]
+#[must_use]
 fn calculate_next_effective_health_milestone(
     effective_health: i32,
     enemy_damage_per_hit: i32,
@@ -182,6 +189,7 @@ fn calculate_next_effective_health_milestone(
 }
 
 #[inline]
+#[must_use]
 fn calculate_hits_to_die(
     effective_health: i32,
     enemy_damage_per_hit: i32,
@@ -193,11 +201,13 @@ fn calculate_hits_to_die(
 }
 
 #[inline]
+#[must_use]
 const fn calculate_effective_health(health: i32, defense: i32) -> i32 {
     health * (1 + defense / 100)
 }
 
 #[inline]
+#[must_use]
 fn get_enemy_damage_per_hit(selection: i32) -> i32 {
     match selection {
         1 | 2 => {
@@ -231,7 +241,7 @@ fn get_enemy_damage_per_hit(selection: i32) -> i32 {
             let floor_selection =
                 ask_int_input("Select floor: ", Some(1), Some(total_index));
 
-            let mob_damage = match (selection, floor_selection) {
+            match (selection, floor_selection) {
                 (1, 1) => F3_SHADOW_ASSASSIN_DAMAGE,
                 (1, 2) => F4_SHADOW_ASSASSIN_DAMAGE,
                 (1, 3) => F5_SHADOW_ASSASSIN_DAMAGE,
@@ -260,9 +270,7 @@ fn get_enemy_damage_per_hit(selection: i32) -> i32 {
 
                     0
                 },
-            };
-
-            mob_damage
+            }
         },
 
         3 => {
@@ -276,7 +284,7 @@ fn get_enemy_damage_per_hit(selection: i32) -> i32 {
             let tier_selection =
                 ask_int_input("Enter a number to select: ", Some(1), Some(4));
 
-            let mob_damage = match tier_selection {
+            match tier_selection {
                 1 => VOIDGLOOM_SERAPH_TIER_1_TOTAL_DAMAGE,
                 2 => VOIDGLOOM_SERAPH_TIER_2_TOTAL_DAMAGE,
                 3 => {
@@ -300,9 +308,7 @@ fn get_enemy_damage_per_hit(selection: i32) -> i32 {
 
                     0
                 },
-            };
-
-            mob_damage
+            }
         },
 
         4 => ask_int_input("Enter your enemy's damage: ", Some(0), None),

@@ -38,10 +38,7 @@ pub(crate) fn skill_average_helper(
         utils::mean(&skills.iter().map(|skill| skill.level).collect())
             .unwrap_or(0.0);
 
-    println!(
-        "Your Skill Average is {}. Max Skill Average is {}.",
-        skill_average, max_skill_average
-    );
+    println!("Your Skill Average is {skill_average}. Max Skill Average is {max_skill_average}.");
     println!();
 
     let skill_levels_required_for_target_average =
@@ -120,6 +117,7 @@ pub(crate) fn skill_average_helper(
 }
 
 #[inline]
+#[must_use]
 fn get_skill_levels_required_for_target_average(
     skills: &[Skill],
     target_skill_average: f64,
@@ -175,6 +173,7 @@ impl Skill {
     const TAMING: Self = Self::new("Taming", 0, 50);
 
     #[inline]
+    #[must_use]
     const fn new(name: &'static str, level: i32, max_level: i32) -> Self {
         Self { name, level, max_level }
     }

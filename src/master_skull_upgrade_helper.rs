@@ -119,6 +119,7 @@ pub(crate) async fn upgrade_calculator_for_master_skulls(
 }
 
 #[inline]
+#[must_use]
 pub(crate) fn get_total_required_amount(
     starting_tier: usize,
     ending_tier: i32,

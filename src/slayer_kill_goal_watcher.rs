@@ -86,6 +86,7 @@ struct VoidgloomData {
 }
 
 #[inline]
+#[must_use]
 fn duration_diff(duration1: Duration, duration2: Duration) -> Duration {
     if duration1 > duration2 {
         return duration1 - duration2;
@@ -198,6 +199,7 @@ fn print_statistics(label: &str, file: &Path) {
 }
 
 #[inline]
+#[must_use]
 fn load_data(json: &str) -> Option<VoidgloomData> {
     let data_result: Result<VoidgloomData, Error> = serde_json::from_str(json);
 
@@ -213,6 +215,7 @@ fn load_data(json: &str) -> Option<VoidgloomData> {
 }
 
 #[inline]
+#[must_use]
 fn get_log_file_path() -> Option<PathBuf> {
     if let Some(minecraft_dir) = get_minecraft_dir() {
         return Some(minecraft_dir.join("logs").join("latest.log"));
@@ -222,21 +225,25 @@ fn get_log_file_path() -> Option<PathBuf> {
 }
 
 #[inline]
+#[must_use]
 fn get_data_dir() -> PathBuf {
     PathBuf::from(Path::new("data"))
 }
 
 #[inline]
+#[must_use]
 fn get_global_data_file() -> PathBuf {
     get_data_dir().join("global.json")
 }
 
 #[inline]
+#[must_use]
 fn get_last_session_data_file() -> PathBuf {
     get_data_dir().join("last_session.json")
 }
 
 #[inline]
+#[must_use]
 fn get_unique_old_session_path() -> PathBuf {
     let previous_sessions_folder = get_data_dir().join("previous-sessions");
 
@@ -305,7 +312,7 @@ fn get_global_data(
     print_warnings: bool,
 ) -> bool {
     // Load global data
-    return if get_global_data_file().exists() {
+    if get_global_data_file().exists() {
         read_file(&get_global_data_file()).map_or(false, |file_content| {
             load_data(file_content.as_str()).map_or(false, |data| {
                 *global_data = data;
@@ -320,7 +327,7 @@ fn get_global_data(
         }
 
         false
-    };
+    }
 }
 
 #[inline]
@@ -616,6 +623,7 @@ fn save_data_to_file(
 }
 
 #[inline]
+#[must_use]
 fn remove_color_codes(text: &str) -> String {
     text.replace("\u{a7}a", "")
         .replace("\u{a7}b", "")
@@ -643,6 +651,7 @@ fn remove_color_codes(text: &str) -> String {
 }
 
 #[inline]
+#[must_use]
 fn crop_letters(s: &str, pos: usize) -> &str {
     match s.char_indices().nth(pos) {
         #[allow(clippy::indexing_slicing, clippy::string_slice)]
@@ -652,6 +661,7 @@ fn crop_letters(s: &str, pos: usize) -> &str {
 }
 
 #[inline]
+#[must_use]
 fn crop_netty(mut s: String) -> String {
     for index in 0..=(num_cpus() * 2) {
         s = s.replace(

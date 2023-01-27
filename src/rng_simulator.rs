@@ -72,6 +72,7 @@ fn print_drops_selection() {
 }
 
 #[inline]
+#[must_use]
 fn get_drop_chance(selection: i32, no_looting: &mut bool) -> f64 {
     match selection {
         1 => {
@@ -220,6 +221,7 @@ pub(crate) fn rng_simulator(
 }
 
 #[inline]
+#[must_use]
 pub(crate) fn drop_rate_with_magic_find_and_looting(
     drop_chance: f64,
     magic_find: i32,
@@ -233,6 +235,7 @@ pub(crate) fn drop_rate_with_magic_find_and_looting(
 }
 
 #[inline]
+#[must_use]
 pub(crate) fn passes(
     magic_number: f64,
     drop_chance: f64,
@@ -248,6 +251,7 @@ pub(crate) fn passes(
 }
 
 #[inline]
+#[must_use]
 pub(crate) fn get_minimum_magic_find_needed_to_succeed(
     magic_number: f64,
     final_drop_chance: f64,
@@ -290,6 +294,7 @@ fn unlikely_to_be_called() -> i32 {
 }
 
 #[inline]
+#[must_use]
 fn do_rolls_and_get_drops(
     original_drop_chance: f64,
     original_rng_meter_percent: f64,

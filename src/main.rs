@@ -100,7 +100,7 @@ async fn handle_selection(
     selection: i32,
     start_without_user_input: &mut Option<Instant>,
 ) -> bool {
-    return match selection {
+    match selection {
         1 =>
             master_skull_upgrade_helper::upgrade_calculator_for_master_skulls(
                 start_without_user_input,
@@ -126,7 +126,7 @@ async fn handle_selection(
             );
             true
         }, // ask_int_input can't return invalid selection
-    };
+    }
 }
 
 #[tokio::main]
@@ -204,10 +204,7 @@ async fn main() -> ExitCode {
     }
 
     println!();
-    println!(
-        "Program finished, took {:.2?} (without user input {:.2?}), exiting..",
-        elapsed, elapsed_without_user_input
-    );
+    println!("Program finished, took {elapsed:.2?} (without user input {elapsed_without_user_input:.2?}), exiting..");
 
     ExitCode::SUCCESS
 }
