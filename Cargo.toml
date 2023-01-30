@@ -20,7 +20,7 @@ exclude = ["/.github/*"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-tokio = { version = "1.24.2", features = ["full"] }
+tokio = { version = "1.25.0", features = ["full"] }
 reqwest = { version = "0.11.14", default-features = false, features = ["brotli", "rustls-tls"] }
 
 futures = "0.3.25"
@@ -43,7 +43,7 @@ jandom = "0.3.4"
 
 home = "0.5.4"
 
-notify = "5.0.0"
+notify = "5.1.0"
 
 rev_buf_reader = "0.3.0"
 
