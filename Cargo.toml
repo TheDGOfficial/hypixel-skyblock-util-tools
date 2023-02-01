@@ -72,9 +72,6 @@ sysinfo = { git = "https://github.com/TheDGOfficial/sysinfo/", branch = "fix-lto
 
 cnproc = { git = "https://github.com/yorodm/cnproc-rs" } # makes it so recv only returns when an event happens
 
-[registries.crates-io]
-protocol = "sparse"
-
 [profile.release]
 debug = false
 strip = "debuginfo"  # Automatically strip symbols from the binary.

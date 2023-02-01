@@ -6,3 +6,7 @@ rustflags = ["-C", "target-feature=+crt-static"]
 [target.i686-pc-windows-msvc]
 rustflags = ["-C", "target-feature=+crt-static"]
 
+# https://blog.rust-lang.org/inside-rust/2023/01/30/cargo-sparse-protocol.html
+[registries.crates-io]
+protocol = "sparse"
+
