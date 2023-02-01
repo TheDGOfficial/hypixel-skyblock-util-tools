@@ -1,6 +1,6 @@
 #!/bin/bash
 if [[ -z "$SKIP_RUST_UPDATES" ]]; then
- git fetch && git pull
+ git fetch & git stash & git pull & git stash pop
 
  rustup self update
  rustup update
