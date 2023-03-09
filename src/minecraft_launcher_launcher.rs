@@ -439,6 +439,7 @@ fn launch_launcher() {
     tokio::spawn(async move {
         let mut envs = HashMap::from([
             ("vblank_mode", "0"), // Improves performance
+            ("__GL_SYNC_TO_VBLANK", "0"), // Same as the above environment variable, but also works on NVIDIA closed source drivers.
             ("ALSOFT_DRIVERS", "pulse"), /* Fixes audio delay when
                                    * using pipewire */
             ("LIBGL_DRI2_DISABLE", "true"), // Force use of DRI3 if available
