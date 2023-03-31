@@ -724,6 +724,9 @@ fn refresh_data_from_logs(
                         && !added_log_message.contains("\u{a7}f:")
                         && !added_log_message.contains("To")
                         && !added_log_message.contains("From")
+                        && !added_log_message
+                            .replace("CRAZY ", "")
+                            .contains(": RARE DROP!")
                         && (added_log_message
                             .contains("SLAYER QUEST COMPLETE!")
                             || added_log_message
