@@ -467,7 +467,12 @@ fn launch_launcher() {
         }
 
         if let Err(e) =
-            Command::new("minecraft-launcher-real").envs(envs).spawn()
+            Command::new("nice")
+                .envs(envs)
+                .arg("-n")
+                .arg("-6")
+                .arg("minecraft-launcher-real")
+                .spawn()
         {
             notify_error(&format!(
                 "error while trying to start Minecraft Launcher: {e}"
