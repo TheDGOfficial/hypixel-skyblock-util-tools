@@ -18,6 +18,8 @@ if [[ -z "$SKIP_RUST_UPDATES" ]]; then
 
  cargo binstall -y --disable-strategies quick-install cargo-update
  cargo install-update --git --all
+ 
+ curl -LsSf https://get.nexte.st/latest/linux | tar zxf - -C ${CARGO_HOME:-~/.cargo}/bin
 
  podman image ls --format "{{.Repository}}:{{.Tag}}" | while read -r container ; do
   podman pull "$container"
