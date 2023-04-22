@@ -1,11 +1,9 @@
 use std::env;
 use std::fs;
 use std::process;
-use std::thread;
 
 use core::sync::atomic::AtomicBool;
 use core::sync::atomic::Ordering;
-use core::time::Duration;
 use std::collections::HashMap;
 use std::path::Path;
 use std::process::Command;
@@ -32,17 +30,18 @@ use cnproc::PidMonitor;
 use cnproc::PidEvent;
 
 #[cfg(target_os = "linux")]
-use procfs::process::Process as ProcfsProcess;
+use nix::unistd::Pid as NixPid;
 
 #[cfg(target_os = "linux")]
-use procfs::process::FDTarget::Path as ProcfsPath;
+use nix::sys::signal::Signal;
+
+#[cfg(target_os = "linux")]
+use nix::sys::signal;
 
 use once_cell::sync::Lazy;
 
 use notify_rust::Notification;
 use notify_rust::Urgency;
-
-use log::debug;
 
 // Since this program will be most likely not called with a (visible) terminal,
 // send desktop notifications if any errors occur to not let a silent failure
@@ -54,42 +53,9 @@ fn notify_error(description: &str) {
         .urgency(Urgency::Critical)
         .show()
     {
-        // Try sending a backup notification, in case sending of the first one
-        // fails because description contained invalid characters or was at the
-        // description limit
-        if let Err(other_e) = Notification::new()
-            .summary("Error")
-            .body("Couldn't send a notification about an error")
-            .urgency(Urgency::Critical)
-            .show()
-        {
-            eprintln!(
-                "{}{e}: {other_e}: {description}",
-                "error: backup notification failed to send: ".red()
-            );
-        }
-
-        // Hopefully we have a visible terminal or the user re launches the app
-        // with one.
         eprintln!(
             "{}{e}: {description}",
             "error: can't send desktop notification to notify error: ".red()
-        );
-    }
-}
-
-fn notify_status(description: &str) {
-    if let Err(e) = Notification::new()
-        .summary("Status")
-        .body(description)
-        .urgency(Urgency::Low)
-        .show()
-    {
-        // Hopefully we have a visible terminal or the user re launches the app
-        // with one.
-        eprintln!(
-            "{}{e}: {description}",
-            "error: can't send desktop notification to notify status: ".red()
         );
     }
 }
@@ -162,89 +128,27 @@ static KILLING_IN_PROGRESS: Lazy<AtomicBool> =
 
 #[cfg(not(target_os = "linux"))]
 #[inline]
-#[must_use]
-fn is_launcher_profiles_file_open_in_process(_: &Process) -> bool {
-    false
-}
-
-#[cfg(target_os = "linux")]
-#[inline]
-#[must_use]
-fn is_launcher_profiles_file_open_in_process(process: &Process) -> bool {
-    if let Some(home_folder) = home::home_dir() {
-        let launcher_profiles_path =
-            utils::get_minecraft_dir_from_home_path(Path::new(&home_folder))
-                .join("launcher_profiles.json");
-
-        if launcher_profiles_path.exists() {
-            if let Ok(i32_pid) = i32::try_from(process.pid().as_u32()) {
-                if let Ok(procfs_process) = ProcfsProcess::new(i32_pid) {
-                    if let Ok(open_file_list) = procfs_process.fd() {
-                        for file in open_file_list {
-                            if let Ok(file_info) = file {
-                                if let ProcfsPath(target) = file_info.target {
-                                    if target == launcher_profiles_path {
-                                        return true;
-                                    } else if target
-                                        .to_string_lossy()
-                                        .contains("launcher_profiles.json")
-                                    {
-                                        notify_error(&format!("process has file {} open that is not detected by the Eq operator, comparing to {}", target.to_string_lossy(), launcher_profiles_path.to_string_lossy()));
-                                        return true;
-                                    }
-
-                                    debug!(
-                                        "process has file {} open",
-                                        target.to_string_lossy()
-                                    );
-                                } else {
-                                    debug!("{}", "Process has a non-file or file without a path (such as in RAM) open, skipping".yellow());
-                                }
-                            } else {
-                                notify_error(&format!("Couldn't get details about an open file owned by process named {} with PID {}", process.name(), process.pid()));
-                            }
-                        }
-
-                        println!("Process doesn't have launcher_profiles.json file open.");
-                    } else {
-                        notify_error(&format!("Couldn't get procfs list of open files for process named {} with PID {}", process.name(), process.pid()));
-                    }
-                } else {
-                    eprintln!("Couldn't get procfs process for process named {} with PID {}. Killed?", process.name(), process.pid()); // Process might be already quit, not a fatal error
-                }
-            } else {
-                notify_error(&format!(
-                    "Can't convert usize PID to i32 PID: {}",
-                    process.pid()
-                ));
-            }
-        } else {
-            notify_error("can't find launcher_profiles.json, ignore if this the first start of the launcher");
-        }
-    } else {
-        notify_error("can't find home directory");
-    }
-
-    false
-}
-
-#[inline]
-fn await_launcher_profile_save_in_process(process: &Process) {
-    while is_launcher_profiles_file_open_in_process(process) {
-        notify_status("Waiting for launcher profile save..");
-        thread::sleep(Duration::from_millis(500));
-    }
-}
-
-#[inline]
 fn kill_launcher_process(launcher_process: &Process) {
-    await_launcher_profile_save_in_process(launcher_process);
-
     if launcher_process.kill() {
         println!("Killed process successfully");
     } else {
         eprintln!("Couldn't kill Minecraft Launcher process named {} with PID {}. Already killed?", launcher_process.name(), launcher_process.pid());
         // Can happen if already killed, not a fatal error.
+    }
+}
+
+#[cfg(target_os = "linux")]
+#[inline]
+fn kill_launcher_process(launcher_process: &Process) {
+    let pid = i32::try_from(launcher_process.pid().as_u32());
+
+    if let Ok(pid_i32) = pid {
+        if signal::kill(NixPid::from_raw(pid_i32), Signal::SIGTERM).is_ok() {
+            println!("Killed process successfully");
+        } else {
+            eprintln!("Couldn't kill Minecraft Launcher process named {} with PID {}. Already killed?", launcher_process.name(), launcher_process.pid());
+            // Can happen if already killed, not a fatal error.
+        }
     }
 }
 
@@ -438,10 +342,10 @@ pub(crate) fn remove_javacheck() {
 fn launch_launcher() {
     tokio::spawn(async move {
         let mut envs = HashMap::from([
-            ("vblank_mode", "0"), // Improves performance
-            ("__GL_SYNC_TO_VBLANK", "0"), // Same as the above environment variable, but also works on NVIDIA closed source drivers.
-            ("ALSOFT_DRIVERS", "pulse"), /* Fixes audio delay when
-                                   * using pipewire */
+            ("vblank_mode", "0"),         // Improves performance
+            ("__GL_SYNC_TO_VBLANK", "0"), /* Same as the above environment variable, but also works on NVIDIA closed source drivers. */
+            ("ALSOFT_DRIVERS", "pulse"),  /* Fixes audio delay when
+                                           * using pipewire */
             ("LIBGL_DRI2_DISABLE", "true"), // Force use of DRI3 if available
             ("MESA_NO_ERROR", "true"),      /* Disable error checking for
                                              * performance */
@@ -452,7 +356,7 @@ fn launch_launcher() {
             ("MESA_SHADER_CACHE_DISABLE", "false"), /* Force enable Shader
                                                     * Cache */
             ("MESA_SHADER_CACHE_MAX_SIZE", "4G"), /* Use a big value as limit for Shader Cache */
-            ("LD_PRELOAD", "/usr/local/lib/libmimalloc.so.2"), /* Use mimalloc to increase memory/GC performance */
+            ("LD_PRELOAD", "/usr/local/lib/libmimalloc.so.2.1"), /* Use mimalloc to increase memory/GC performance */
         ]);
 
         if let Ok(value) =
@@ -466,13 +370,12 @@ fn launch_launcher() {
             }
         }
 
-        if let Err(e) =
-            Command::new("nice")
-                .envs(envs)
-                .arg("-n")
-                .arg("-6")
-                .arg("minecraft-launcher-real")
-                .spawn()
+        if let Err(e) = Command::new("nice")
+            .envs(envs)
+            .arg("-n")
+            .arg("-6")
+            .arg("minecraft-launcher-real")
+            .spawn()
         {
             notify_error(&format!(
                 "error while trying to start Minecraft Launcher: {e}"

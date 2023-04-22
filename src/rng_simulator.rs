@@ -4,7 +4,11 @@ use std::io::Write;
 use std::time::Instant;
 
 use colored::Colorize;
-use jandom::Random;
+
+use rand::Rng;
+
+use rand::rngs::ThreadRng;
+use rand::thread_rng;
 
 use crate::constants::CHIMERA_DROP_CHANCE;
 use crate::constants::DARK_CLAYMORE_DROP_CHANCE;
@@ -222,6 +226,18 @@ pub(crate) fn rng_simulator(
 
 #[inline]
 #[must_use]
+pub(crate) fn new_rng() -> ThreadRng {
+    thread_rng()
+}
+
+#[inline]
+#[must_use]
+pub(crate) fn rand_f64(rng: &mut ThreadRng) -> f64 {
+    rng.gen()
+}
+
+#[inline]
+#[must_use]
 pub(crate) fn drop_rate_with_magic_find_and_looting(
     drop_chance: f64,
     magic_find: i32,
@@ -305,7 +321,7 @@ fn do_rolls_and_get_drops(
     meter_succeeded_rolls: &mut Vec<i32>,
 ) -> i32 {
     let mut drops = 0;
-    let mut rand = Random::default();
+    let mut rand = new_rng();
 
     let mut reset_meter_at_least_once = false;
     let mut last_reset_at = 0;
@@ -361,9 +377,8 @@ fn do_rolls_and_get_drops(
                     looting_extra_chance_f64,
                 );
 
-        let magic_number = rand.next_f64(); // future perf ref: this call is basically free, main bottleneck is io
-                                            // on the println! and
-                                            // other code
+        let magic_number = rand_f64(&mut rand); // future perf ref: this call is basically free, main bottleneck is io
+                                                // on the println! and other code
         let success = if magic_number
             < new_drop_rate_with_magic_find_and_looting / 100.0
         {

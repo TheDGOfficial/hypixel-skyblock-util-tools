@@ -3,11 +3,11 @@
 #![allow(clippy::panic)]
 
 use crate::master_skull_upgrade_helper::get_total_required_amount;
-use jandom::Random;
 use std::env;
 use std::path::Path;
 use std::path::PathBuf;
 
+use crate::rng_simulator;
 use crate::rng_simulator::drop_rate_with_magic_find_and_looting;
 use crate::rng_simulator::get_minimum_magic_find_needed_to_succeed;
 use crate::rng_simulator::passes;
@@ -35,17 +35,23 @@ fn get_workspace_path() -> PathBuf {
     Path::new(".idea").join("workspace.xml")
 }
 
+fn should_test_intellij_clippy_args() -> bool {
+    return get_workspace_path().exists() && env::var("CLIPPY_ARGS").is_ok();
+}
+
 #[test]
 fn test_intellij_clippy_args() {
-    if get_workspace_path().exists() {
-        test_intellij_clippy_args0(&env::var("CLIPPY_ARGS").unwrap());
+    if should_test_intellij_clippy_args() {
+        if let Ok(clippy_args) = env::var("CLIPPY_ARGS") {
+            test_intellij_clippy_args0(&clippy_args);
+        }
     }
 }
 
 #[test]
 #[should_panic(expected = "assertion failed: `(left == right)`")]
 fn test_intellij_clippy_args_should_fail() {
-    if get_workspace_path().exists() {
+    if should_test_intellij_clippy_args() {
         test_intellij_clippy_args0("whatever");
     } else {
         panic!("assertion failed: `(left == right)`"); // workaround to not
@@ -280,7 +286,7 @@ fn test_drop_rate_with_magic_find_and_looting() {
 #[test]
 fn test_passes() {
     let drop_chance = 6.0;
-    let magic_number = Random::default().next_f64();
+    let magic_number = rng_simulator::rand_f64(&mut rng_simulator::new_rng());
 
     let magic_find = 900;
     let looting_extra_chance = 75.0;
@@ -312,7 +318,7 @@ fn test_passes() {
 fn test_get_minimum_magic_find_needed_to_succeed() {
     assert_eq!(
         get_minimum_magic_find_needed_to_succeed(
-            Random::default().next_f64(),
+            rng_simulator::rand_f64(&mut rng_simulator::new_rng()),
             100.0,
             0.0,
             None
