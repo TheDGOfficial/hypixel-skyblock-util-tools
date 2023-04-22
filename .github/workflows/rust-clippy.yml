@@ -53,7 +53,7 @@ jobs:
 
       - name: Install required cargo
         #if: steps.cache-cargo-packages.outputs.cache-hit != 'true'
-        run: cargo install clippy-sarif sarif-fmt
+        run: cargo install clippy-sarif sarif-fmt || true
         continue-on-error: true
 
       - name: Run rust-clippy
