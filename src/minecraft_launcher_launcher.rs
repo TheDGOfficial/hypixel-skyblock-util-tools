@@ -6,6 +6,7 @@ use core::sync::atomic::AtomicBool;
 use core::sync::atomic::Ordering;
 use std::collections::HashMap;
 use std::path::Path;
+use std::path::PathBuf;
 use std::process::Command;
 use std::process::ExitCode;
 
@@ -125,6 +126,60 @@ pub(crate) fn launch() -> ExitCode {
 
 static KILLING_IN_PROGRESS: Lazy<AtomicBool> =
     Lazy::new(|| AtomicBool::new(false));
+    
+const LAUNCHER_PROFILES_MLLBACKUP_FILE: &str = "launcher_profiles.json.mllbackup";
+
+fn get_launcher_profiles_path() -> Option<PathBuf> {
+    match home::home_dir() {
+        Some(home_folder) => {
+            // not using utils::get_minecraft_dir_from_home_path as that can be overriden to return a different folder specific to a installation, but the launcher files will always be in the .minecraft foler.
+            let launcher_profiles_path = Path::new(&home_folder).join(".minecraft").join("launcher_profiles.json");
+
+            Some(launcher_profiles_path)
+        }
+        
+        None => {
+            notify_error("can't find home directory");
+            
+            None
+        }
+    }
+}
+
+fn backup_launcher_profiles() {
+    println!("Backing up launcher profiles...");
+    if let Some(path) = get_launcher_profiles_path() {
+        if let Some(contents) = utils::read_file(&path) {
+            if let Some(parent) = &path.parent() {
+                if utils::write_file(&parent.join(LAUNCHER_PROFILES_MLLBACKUP_FILE), &contents) {
+                    println!("Backed up launcher profiles.");
+                } // Error will be printed by the util method if write fails.
+            } else {
+                notify_error(&format!("no parent for {}", path.to_string_lossy()));
+            }
+        } // error will be printed by the read method if None
+    } // error will be printed by the get method if None
+}
+
+fn restore_launcher_profiles() {
+    println!("Restoring launcher profiles from backup...");
+    if let Some(path) = get_launcher_profiles_path() {
+        if let Some(parent) = &path.parent() {
+            let backup_file_path = parent.join(LAUNCHER_PROFILES_MLLBACKUP_FILE);
+            if let Some(contents) = utils::read_file(&backup_file_path) {
+                if utils::write_file(&path, &contents) {
+                    println!("Restored launcher profiles from backup.");
+                } // Error will be printed by the util method if write fails.
+
+                if let Err(e) = fs::remove_file(backup_file_path) {
+                    notify_error(&format!("error while removing {}: {e}", LAUNCHER_PROFILES_MLLBACKUP_FILE));
+                }
+            } // error will be printed by the read method if None
+        } else {
+            notify_error(&format!("no parent for {}", path.to_string_lossy()));
+        }
+    } // error will be printed by the get method if None
+}
 
 #[cfg(not(target_os = "linux"))]
 #[inline]
@@ -262,7 +317,9 @@ fn start_watching_java_process() {
                                                 },
                                             )
                                         {
+                                            backup_launcher_profiles();
                                             find_launcher_processes(sys, true);
+                                            restore_launcher_profiles();
                                             break;
                                         }
                                     }
@@ -474,9 +531,11 @@ pub(crate) fn install(binary_file_name: &str, args: &[String]) -> ExitCode {
                         return ExitCode::SUCCESS;
                     }
 
+                    backup_launcher_profiles();
                     if find_launcher_processes(System::new(), true) {
                         println!("Killed launcher to proceed with install. Please restart it after install if desired.");
                     }
+                    restore_launcher_profiles();
 
                     let real_launcher_path =
                         bin_dir.join("minecraft-launcher-real");
