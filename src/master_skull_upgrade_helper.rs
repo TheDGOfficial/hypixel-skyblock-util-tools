@@ -171,10 +171,18 @@ async fn do_requests_and_extract_prices(
                         .header("Accept", "application/json; charset=utf-8")
                         .header("Accept-Encoding", "br")
                         .header("Accept-Language", "en-US")
+                        .header("Alt-Used", "api.slothpixel.me")
                         .header("Connection", "keep-alive")
                         .header("DNT", "1")
+                        .header("Host", "api.slothpixel.me")
+                        .header("Sec-Fetch-Dest", "document")
+                        .header("Sec-Fetch-Mode", "navigate")
+                        .header("Sec-Fetch-Site", "none")
+                        .header("Sec-Fetch-User", "?1")
+                        .header("Sec-GPC", "1")
+                        .header("TE", "trailers")
                         .header("Upgrade-Insecure-Requests", "1")
-                        .header("User-Agent", "Mozilla/5.0")
+                        .header("User-Agent", "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/112.0")
                         .send(),
                 );
             },
@@ -225,6 +233,7 @@ async fn parse_request_and_insert_prices(
         Ok(response) => {
             match response.text().await {
                 Ok(response_body) => {
+                    //println!("Received response: {response_body}");
                     match serde_json::from_str::<Value>(&response_body) {
                         Ok(json) => {
                             json.get("matching_query").map_or_else(|| {
@@ -268,7 +277,7 @@ async fn parse_request_and_insert_prices(
 
                         Err(e) => {
                             eprintln!(
-                                "{}{e}",
+                                "{}{e}: {response_body}",
                                 "Error when parsing JSON: ".red()
                             );
 
