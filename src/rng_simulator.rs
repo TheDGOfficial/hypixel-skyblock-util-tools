@@ -6,9 +6,9 @@ use std::time::Instant;
 use colored::Colorize;
 
 use rand::Rng;
+use rand::SeedableRng;
 
-use rand::rngs::ThreadRng;
-use rand::thread_rng;
+use rand::rngs::SmallRng;
 
 use crate::constants::CHIMERA_DROP_CHANCE;
 use crate::constants::DARK_CLAYMORE_DROP_CHANCE;
@@ -226,13 +226,13 @@ pub(crate) fn rng_simulator(
 
 #[inline]
 #[must_use]
-pub(crate) fn new_rng() -> ThreadRng {
-    thread_rng()
+pub(crate) fn new_rng() -> impl Rng {
+    SmallRng::from_entropy()
 }
 
 #[inline]
 #[must_use]
-pub(crate) fn rand_f64(rng: &mut ThreadRng) -> f64 {
+pub(crate) fn rand_f64(rng: &mut impl Rng) -> f64 {
     rng.gen()
 }
 
