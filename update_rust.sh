@@ -25,5 +25,10 @@ if [[ -z "$SKIP_RUST_UPDATES" ]]; then
   podman pull "$container"
  done
  podman image prune -f
+ 
+ cargo binstall -y cargo-sweep
+ 
+ # Prevent target folder from growing to a gigantic size
+ cargo sweep --toolchains nightly
 fi
 
