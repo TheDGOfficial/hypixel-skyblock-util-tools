@@ -43,7 +43,7 @@ rand = { version = "0.8.5", features = ["small_rng"] }
 
 home = "0.5.5"
 
-notify = "5.1.0"
+notify = "6.0.0"
 
 rev_buf_reader = "0.3.0"
 
