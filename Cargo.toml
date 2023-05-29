@@ -14,7 +14,7 @@ categories = ["command-line-utilities"]
 
 edition = "2021"
 #TODO bump with every Rust version
-rust-version = "1.71.0"
+rust-version = "1.72.0"
 exclude = ["/.github/*"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -63,7 +63,7 @@ cnproc = "0.2.1"
 
 sysinfo = "0.29.0"
 
-once_cell = "1.17.1"
+once_cell = "1.17.2"
 
 nix = "0.26.2"
 
