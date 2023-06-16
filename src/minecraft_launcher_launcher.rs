@@ -427,6 +427,8 @@ fn launch_launcher() {
             }
         }
 
+        envs.remove("LD_PRELOAD"); // Temporary; mimalloc causes launcher to never load.
+
         if let Err(e) = Command::new("nice")
             .envs(envs)
             .arg("-n")
