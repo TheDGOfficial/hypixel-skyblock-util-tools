@@ -14,13 +14,13 @@ pub(crate) const WARDEN_HEART_DROP_CHANCE: f64 = 0.0130;
 pub(crate) const OVERFLUX_CAPACITOR_DROP_CHANCE: f64 = 0.0406;
 
 // Source: In-game RNG Meter base chance.
-pub(crate) const NECRONS_HANDLE_DROP_CHANCE: f64 = 0.0964;
+pub(crate) const NECRONS_HANDLE_DROP_CHANCE: f64 = 0.1094;
 
 // Source: In-game RNG Meter base chance.
-pub(crate) const NECRONS_HANDLE_MASTER_MODE_DROP_CHANCE: f64 = 0.1106;
+pub(crate) const NECRONS_HANDLE_MASTER_MODE_DROP_CHANCE: f64 = 0.1295;
 
 // Source: In-game RNG Meter base chance.
-pub(crate) const DARK_CLAYMORE_DROP_CHANCE: f64 = 0.0737;
+pub(crate) const DARK_CLAYMORE_DROP_CHANCE: f64 = 0.072;
 
 // Shadow Assassin
 // Source: https://wiki.hypixel.net/Shadow_Assassin#Stats
