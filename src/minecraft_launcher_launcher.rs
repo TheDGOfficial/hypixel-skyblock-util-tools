@@ -410,6 +410,8 @@ fn launch_launcher() {
                                                   * advertised GL version
                                                   * for performance */
             ("MESA_GLES_VERSION_OVERRIDE", "3.2"), // ^^
+            ("MESA_GLSL_VERSION_OVERRIDE", "4.30"), // ^^
+            ("DRI_NO_MSAA", "true"), // Disable MSAA for performance
             ("MESA_SHADER_CACHE_DISABLE", "false"), /* Force enable Shader
                                                     * Cache */
             ("MESA_SHADER_CACHE_MAX_SIZE", "4G"), /* Use a big value as limit for Shader Cache */
