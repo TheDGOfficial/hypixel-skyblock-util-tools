@@ -410,7 +410,7 @@ fn launch_launcher() {
                                                   * advertised GL version
                                                   * for performance */
             ("MESA_GLES_VERSION_OVERRIDE", "3.2"), // ^^
-            ("MESA_GLSL_VERSION_OVERRIDE", "4.30"), // ^^
+            ("MESA_GLSL_VERSION_OVERRIDE", "430"), // ^^
             ("DRI_NO_MSAA", "true"), // Disable MSAA for performance
             ("MESA_SHADER_CACHE_DISABLE", "false"), /* Force enable Shader
                                                     * Cache */
@@ -426,6 +426,7 @@ fn launch_launcher() {
 
                 envs.remove("MESA_GL_VERSION_OVERRIDE");
                 envs.remove("MESA_GLES_VERSION_OVERRIDE");
+                envs.remove("MESA_GLSL_VERSION_OVERRIDE");
             }
         }
 
