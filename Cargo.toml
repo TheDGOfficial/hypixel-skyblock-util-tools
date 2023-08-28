@@ -65,7 +65,7 @@ sysinfo = "0.29.8"
 
 once_cell = "1.18.0"
 
-nix = "0.26.2"
+nix = "0.27.0"
 
 [patch.crates-io]
 cnproc = { git = "https://github.com/yorodm/cnproc-rs" } # makes it so recv only returns when an event happens
