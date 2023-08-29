@@ -55,7 +55,7 @@ notify-rust = "4.9.0"
 
 # TODO fails with fullscreen-shell-v1_client_api.rs:714:1 unexpected closing delimiter while compiling wayland-protocols
 #arboard = { version = "3.2.0", features = ["wayland-data-control"] }
-arboard = "3.2.0"
+arboard = "3.2.1"
 
 sudo = "0.6.0"
 
