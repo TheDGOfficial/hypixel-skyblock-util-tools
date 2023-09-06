@@ -12,7 +12,7 @@ pub(crate) fn catacombs_stat_boost_calculator(
     let catacombs_boost = get_cata_stat_boost(ask_int_input(
         "Enter your current Catacombs level: ",
         Some(0),
-        Some(50),
+        Some(i32::MAX),
     ));
 
     let normal_stars_boost = 10
@@ -31,7 +31,7 @@ pub(crate) fn catacombs_stat_boost_calculator(
     let planned_catacombs_level_boost = get_cata_stat_boost(ask_int_input(
         "Enter your planned Catacombs Level: ",
         Some(0),
-        Some(50),
+        Some(i32::MAX),
     ));
 
     let planned_normal_stars_boost = 10
@@ -104,6 +104,7 @@ fn get_cata_stat_boost(catacombs_level: i32) -> i32 {
             48 => 18,
             49 => 19,
             50 => 20,
+            51..=i32::MAX => 0,
 
             _ => {
                 eprintln!(
