@@ -648,6 +648,8 @@ fn remove_color_codes(text: &str) -> String {
         .replace("\u{a7}n", "")
         .replace("\u{a7}o", "")
         .replace("\u{a7}r", "")
+        // Rainbow (provided by mods)
+        .replace("\u{a7}z", "")
 }
 
 #[inline]
