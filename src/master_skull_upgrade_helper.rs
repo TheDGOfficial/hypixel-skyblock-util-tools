@@ -225,7 +225,7 @@ async fn do_requests_and_extract_prices(
 
 #[inline]
 async fn parse_request_and_insert_prices(
-    prices: &mut IntMap<usize, i64>,
+    prices: &IntMap<usize, i64>,
     i: usize,
     result_of_request: Result<Response, Error>,
 ) -> bool {
