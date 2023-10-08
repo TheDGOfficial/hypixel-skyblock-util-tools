@@ -29,6 +29,6 @@ if [[ -z "$SKIP_RUST_UPDATES" ]]; then
  cargo binstall -y cargo-sweep
  
  # Prevent target folder from growing to a gigantic size
- cargo sweep --toolchains nightly
+ cargo sweep --toolchains nightly-x86_64-unknown-linux-gnu
 fi
 
