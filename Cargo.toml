@@ -51,7 +51,7 @@ log = { version = "0.4.20", features = ["release_max_level_warn"] }
 
 env_logger = "0.10.0"
 
-notify-rust = "4.9.0"
+notify-rust = "4.10.0"
 
 # TODO fails with fullscreen-shell-v1_client_api.rs:714:1 unexpected closing delimiter while compiling wayland-protocols
 #arboard = { version = "3.2.0", features = ["wayland-data-control"] }
