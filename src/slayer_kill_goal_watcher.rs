@@ -5,6 +5,8 @@ use core::time::Duration;
 use std::fs;
 use std::fs::File;
 
+use std::thread;
+
 use colored::Colorize;
 use std::path::Path;
 use std::path::PathBuf;
@@ -469,17 +471,47 @@ fn register_watcher_with_new_clipboard(
     session_data: &mut VoidgloomData,
     global_data: &mut VoidgloomData,
 ) {
-    match Clipboard::new() {
-        Ok(mut clipboard) => {
-            register_watcher(session_data, global_data, &mut clipboard);
-        },
+    let mut should_retry = true;
 
-        Err(e) => {
-            eprintln!(
-                "{}{e}",
-                "error while creating clipboard context: ".red()
-            );
-        },
+    let mut retries = 1;
+    let mut retry_cooldown = 0;
+
+    while should_retry {
+        match Clipboard::new() {
+            Ok(mut clipboard) => {
+                println!("successfully created clipboard instance");
+                register_watcher(session_data, global_data, &mut clipboard);
+
+                should_retry = false;
+            },
+
+            Err(e) => {
+                eprintln!(
+                    "{}{e}",
+                    "error while creating clipboard context: ".red()
+                );
+
+                if retries > 10 {
+                    eprintln!(
+                        "tried {} times with no luck, exiting.",
+                        retries
+                    );
+
+                    should_retry = false;
+                } else {
+                    should_retry = true;
+                    retry_cooldown += 10;
+
+                    eprintln!(
+                        "tried {} times so far, will retry again in {}s.",
+                        retries, retry_cooldown
+                    );
+                    thread::sleep(Duration::from_secs(retry_cooldown));
+
+                    retries += 1;
+                }
+            },
+        }
     }
 }
 
