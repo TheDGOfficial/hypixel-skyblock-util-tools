@@ -49,12 +49,12 @@ fn test_intellij_clippy_args() {
 }
 
 #[test]
-#[should_panic(expected = "assertion failed: `(left == right)`")]
+#[should_panic(expected = "assertion `left == right` failed")]
 fn test_intellij_clippy_args_should_fail() {
     if should_test_intellij_clippy_args() {
         test_intellij_clippy_args0("whatever");
     } else {
-        panic!("assertion failed: `(left == right)`"); // workaround to not
+        panic!("assertion `left == right` failed"); // workaround to not
                                                        // fail the test
     }
 }
