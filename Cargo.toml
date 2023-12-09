@@ -17,8 +17,6 @@ edition = "2021"
 rust-version = "1.76.0"
 exclude = ["/.github/*"]
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
 tokio = { version = "1.35.0", features = ["full"] }
 reqwest = { version = "0.11.22", default-features = false, features = ["brotli", "rustls-tls"] }
@@ -53,9 +51,7 @@ env_logger = "0.10.1"
 
 notify-rust = "4.10.0"
 
-# TODO fails with fullscreen-shell-v1_client_api.rs:714:1 unexpected closing delimiter while compiling wayland-protocols
-#arboard = { version = "3.2.0", features = ["wayland-data-control"] }
-arboard = "3.3.0"
+arboard = { version = "3.3.0", features = ["wayland-data-control"] }
 
 sudo = "0.6.0"
 
