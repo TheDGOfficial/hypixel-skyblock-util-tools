@@ -233,7 +233,7 @@ async fn parse_request_and_insert_prices(
         Ok(response) => {
             match response.text().await {
                 Ok(response_body) => {
-                    //println!("Received response: {response_body}");
+                    // println!("Received response: {response_body}");
                     match serde_json::from_str::<Value>(&response_body) {
                         Ok(json) => {
                             json.get("matching_query").map_or_else(|| {

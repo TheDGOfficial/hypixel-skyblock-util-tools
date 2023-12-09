@@ -77,7 +77,11 @@ fn print_drops_selection() {
 
 #[inline]
 #[must_use]
-fn get_drop_chance(selection: i32, no_looting: &mut bool, has_bestiary: &mut bool) -> f64 {
+fn get_drop_chance(
+    selection: i32,
+    no_looting: &mut bool,
+    has_bestiary: &mut bool,
+) -> f64 {
     match selection {
         1 => {
             *no_looting = false;
@@ -117,7 +121,8 @@ pub(crate) fn rng_simulator(
     let mut no_looting = true;
     let mut has_bestiary = false;
 
-    let mut drop_chance = get_drop_chance(selection, &mut no_looting, &mut has_bestiary);
+    let mut drop_chance =
+        get_drop_chance(selection, &mut no_looting, &mut has_bestiary);
 
     let original_drop_chance = drop_chance;
     let mut rng_meter_percent = -1.0;
@@ -138,10 +143,15 @@ pub(crate) fn rng_simulator(
         }
     }
 
-    let mut magic_find = if selection == 5 || selection == 6 || selection == 7 {
+    let mut magic_find = if selection == 5 || selection == 6 || selection == 7
+    {
         0
     } else {
-        ask_int_input("What is your Magic Find? (0-900, as shown in stat menu): ", Some(0), Some(900))
+        ask_int_input(
+            "What is your Magic Find? (0-900, as shown in stat menu): ",
+            Some(0),
+            Some(900),
+        )
     };
 
     let looting_extra_chance = 15
@@ -156,7 +166,11 @@ pub(crate) fn rng_simulator(
     magic_find += conditional_value_or_default(
         has_bestiary,
         || {
-            ask_int_input("What is your extra Magic Find from Bestiary?: ", Some(0), Some(70))
+            ask_int_input(
+                "What is your extra Magic Find from Bestiary?: ",
+                Some(0),
+                Some(70),
+            )
         },
         0,
     );

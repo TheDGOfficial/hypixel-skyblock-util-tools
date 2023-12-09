@@ -126,23 +126,29 @@ pub(crate) fn launch() -> ExitCode {
 
 static KILLING_IN_PROGRESS: Lazy<AtomicBool> =
     Lazy::new(|| AtomicBool::new(false));
-    
-const LAUNCHER_PROFILES_MLLBACKUP_FILE: &str = "launcher_profiles.json.mllbackup";
+
+const LAUNCHER_PROFILES_MLLBACKUP_FILE: &str =
+    "launcher_profiles.json.mllbackup";
 
 fn get_launcher_profiles_path() -> Option<PathBuf> {
     match home::home_dir() {
         Some(home_folder) => {
-            // not using utils::get_minecraft_dir_from_home_path as that can be overriden to return a different folder specific to a installation, but the launcher files will always be in the .minecraft foler.
-            let launcher_profiles_path = Path::new(&home_folder).join(".minecraft").join("launcher_profiles.json");
+            // not using utils::get_minecraft_dir_from_home_path as that can be
+            // overriden to return a different folder specific to a
+            // installation, but the launcher files will always be in the
+            // .minecraft foler.
+            let launcher_profiles_path = Path::new(&home_folder)
+                .join(".minecraft")
+                .join("launcher_profiles.json");
 
             Some(launcher_profiles_path)
-        }
-        
+        },
+
         None => {
             notify_error("can't find home directory");
-            
+
             None
-        }
+        },
     }
 }
 
@@ -151,11 +157,17 @@ fn backup_launcher_profiles() {
     if let Some(path) = get_launcher_profiles_path() {
         if let Some(contents) = utils::read_file(&path) {
             if let Some(parent) = &path.parent() {
-                if utils::write_file(&parent.join(LAUNCHER_PROFILES_MLLBACKUP_FILE), &contents) {
+                if utils::write_file(
+                    &parent.join(LAUNCHER_PROFILES_MLLBACKUP_FILE),
+                    &contents,
+                ) {
                     println!("Backed up launcher profiles.");
                 } // Error will be printed by the util method if write fails.
             } else {
-                notify_error(&format!("no parent for {}", path.to_string_lossy()));
+                notify_error(&format!(
+                    "no parent for {}",
+                    path.to_string_lossy()
+                ));
             }
         } // error will be printed by the read method if None
     } // error will be printed by the get method if None
@@ -165,14 +177,18 @@ fn restore_launcher_profiles() {
     println!("Restoring launcher profiles from backup...");
     if let Some(path) = get_launcher_profiles_path() {
         if let Some(parent) = &path.parent() {
-            let backup_file_path = parent.join(LAUNCHER_PROFILES_MLLBACKUP_FILE);
+            let backup_file_path =
+                parent.join(LAUNCHER_PROFILES_MLLBACKUP_FILE);
             if let Some(contents) = utils::read_file(&backup_file_path) {
                 if utils::write_file(&path, &contents) {
                     println!("Restored launcher profiles from backup.");
                 } // Error will be printed by the util method if write fails.
 
                 if let Err(e) = fs::remove_file(backup_file_path) {
-                    notify_error(&format!("error while removing {}: {e}", LAUNCHER_PROFILES_MLLBACKUP_FILE));
+                    notify_error(&format!(
+                        "error while removing {}: {e}",
+                        LAUNCHER_PROFILES_MLLBACKUP_FILE
+                    ));
                 }
             } // error will be printed by the read method if None
         } else {
@@ -411,9 +427,10 @@ fn launch_launcher() {
                                                   * for performance */
             ("MESA_GLES_VERSION_OVERRIDE", "3.2"), // ^^
             ("MESA_GLSL_VERSION_OVERRIDE", "430"), // ^^
-            ("DRI_NO_MSAA", "true"), // Disable MSAA for performance
+            ("DRI_NO_MSAA", "true"),               /* Disable MSAA for
+                                                    * performance */
             ("MESA_SHADER_CACHE_DISABLE", "false"), /* Force enable Shader
-                                                    * Cache */
+                                                     * Cache */
             ("MESA_SHADER_CACHE_MAX_SIZE", "4G"), /* Use a big value as limit for Shader Cache */
             ("LD_PRELOAD", "/usr/local/lib/libmimalloc.so.2.1"), /* Use mimalloc to increase memory/GC performance */
         ]);
