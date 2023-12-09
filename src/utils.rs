@@ -153,7 +153,7 @@ pub(crate) enum FunctionResult {
 #[inline]
 #[must_use]
 pub(crate) fn return_first_elem_if_only_one_elem(
-    array: &Vec<i32>,
+    array: &[i32],
 ) -> (Option<f64>, FunctionResult) {
     if array.len() == 1 {
         if let Some(first) = array.first() {
@@ -201,7 +201,7 @@ pub(crate) fn mean(array: &Vec<i32>) -> Option<f64> {
 // theres only one value in the array, returns that value.
 #[inline]
 #[must_use]
-pub(crate) fn median(array: &mut Vec<i32>) -> Option<f64> {
+pub(crate) fn median(array: &mut [i32]) -> Option<f64> {
     if array.is_empty() {
         return None;
     }
@@ -395,15 +395,7 @@ pub(crate) fn convert_i32_option_to_f64_option(
     option: Option<i32>,
 ) -> Option<f64> {
     if let Some(value) = option {
-        match f64::try_from(value) {
-            Ok(float) => {
-                return Some(float);
-            },
-
-            Err(e) => {
-                eprintln!("{}{e}", "Error converting i32 to f64: ".red());
-            },
-        }
+        return Some(From::from(value));
     }
 
     None

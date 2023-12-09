@@ -56,26 +56,8 @@ pub(crate) fn catacombs_stat_boost_calculator(
         + planned_normal_stars_boost
         + planned_master_stars_boost;
 
-    match f64::try_from(total_stat_boost) {
-        Ok(total_now) => match f64::try_from(planned_total_stat_boost) {
-            Ok(total_planned) => {
-                println!();
-                println!("{}{}{}", "Difference between your current and planned Catacombs level and Stars/Master Stars in percent is %".bright_green(), percentage_change(total_now, total_planned).to_string().bright_yellow(), ".".white());
-            },
-
-            Err(e) => {
-                eprintln!("{}{e}", "Error converting i32 to f64: ".red());
-
-                return false;
-            },
-        },
-
-        Err(e) => {
-            eprintln!("{}{e}", "Error converting i32 to f64: ".red());
-
-            return false;
-        },
-    }
+    println!();
+    println!("{}{}{}", "Difference between your current and planned Catacombs level and Stars/Master Stars in percent is %".bright_green(), percentage_change(From::from(total_stat_boost), From::from(planned_total_stat_boost)).to_string().bright_yellow(), ".".white());
 
     true
 }

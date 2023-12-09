@@ -55,7 +55,7 @@ fn test_intellij_clippy_args_should_fail() {
         test_intellij_clippy_args0("whatever");
     } else {
         panic!("assertion `left == right` failed"); // workaround to not
-                                                       // fail the test
+                                                    // fail the test
     }
 }
 

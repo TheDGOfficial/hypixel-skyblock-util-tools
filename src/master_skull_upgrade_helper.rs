@@ -249,7 +249,7 @@ async fn parse_request_and_insert_prices(
                                             auctions.as_array().map_or_else(|| {
                                                 eprintln!("{}{auctions}", "error: auctions field is not an array: ".red());
                                             }, |auctions_array| {
-                                                auctions_array.get(0).map_or_else(|| {
+                                                auctions_array.first().map_or_else(|| {
                                                     eprintln!("{}{response_body}", "error: can't find the first auction in the auctions list while matching_query was >= 1: ".red());
                                                 }, |auction| {
                                                     auction.as_object().map_or_else(|| {
