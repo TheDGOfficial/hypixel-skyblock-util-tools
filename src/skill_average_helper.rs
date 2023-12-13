@@ -170,7 +170,7 @@ impl Skill {
     const FISHING: Self = Self::new("Fishing", 0, 50);
     const FORAGING: Self = Self::new("Foraging", 0, 50);
     const MINING: Self = Self::new("Mining", 0, 60);
-    const TAMING: Self = Self::new("Taming", 0, 50);
+    const TAMING: Self = Self::new("Taming", 0, 60);
 
     #[inline]
     #[must_use]
