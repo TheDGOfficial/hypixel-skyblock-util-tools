@@ -21,7 +21,7 @@ exclude = ["/.github/*"]
 tokio = { version = "1.35.0", features = ["full"] }
 reqwest = { version = "0.11.23", default-features = false, features = ["brotli", "rustls-tls"] }
 
-futures = "0.3.29"
+futures = "0.3.30"
 
 serde = "1.0.193"
 serde_json = "1.0.108"
