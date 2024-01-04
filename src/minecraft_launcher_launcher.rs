@@ -16,6 +16,7 @@ use colored::Colorize;
 use sysinfo::Pid;
 use sysinfo::Process;
 use sysinfo::ProcessRefreshKind;
+use sysinfo::UpdateKind;
 use sysinfo::System;
 
 #[cfg(target_os = "linux")]
@@ -318,7 +319,7 @@ fn start_watching_java_process() {
 
                                 if sys.refresh_process_specifics(
                                     pid,
-                                    ProcessRefreshKind::new(),
+                                    ProcessRefreshKind::new().with_cmd(UpdateKind::OnlyIfNotSet),
                                 ) {
                                     if let Some(process) = sys.process(pid) {
                                         let name = process.name();
