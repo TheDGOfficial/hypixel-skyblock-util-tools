@@ -14,12 +14,9 @@ use crate::utils;
 use colored::Colorize;
 
 use sysinfo::Pid;
-use sysinfo::PidExt;
 use sysinfo::Process;
-use sysinfo::ProcessExt;
 use sysinfo::ProcessRefreshKind;
 use sysinfo::System;
-use sysinfo::SystemExt;
 
 #[cfg(target_os = "linux")]
 use sudo::RunningAs;

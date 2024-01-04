@@ -14,7 +14,7 @@ categories = ["command-line-utilities"]
 
 edition = "2021"
 #TODO bump with every Rust version
-rust-version = "1.76.0"
+rust-version = "1.77.0"
 exclude = ["/.github/*"]
 
 [dependencies]
