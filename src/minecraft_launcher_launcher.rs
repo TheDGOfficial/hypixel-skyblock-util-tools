@@ -16,8 +16,9 @@ use colored::Colorize;
 use sysinfo::Pid;
 use sysinfo::Process;
 use sysinfo::ProcessRefreshKind;
-use sysinfo::UpdateKind;
 use sysinfo::System;
+use sysinfo::Uid;
+use sysinfo::UpdateKind;
 
 #[cfg(target_os = "linux")]
 use sudo::RunningAs;
@@ -222,7 +223,11 @@ fn kill_launcher_process(launcher_process: &Process) {
 }
 
 #[inline]
-fn find_launcher_processes(mut sys: System, kill: bool, check_parent: bool) -> bool {
+fn find_launcher_processes(
+    mut sys: System,
+    kill: bool,
+    check_parent: bool,
+) -> bool {
     if kill
         && KILLING_IN_PROGRESS.compare_exchange(
             false,
@@ -236,72 +241,101 @@ fn find_launcher_processes(mut sys: System, kill: bool, check_parent: bool) -> b
 
     sys.refresh_processes_specifics(
         ProcessRefreshKind::new()
-	    .with_cmd(UpdateKind::OnlyIfNotSet)
+            .with_cmd(UpdateKind::OnlyIfNotSet)
+            .with_user(UpdateKind::OnlyIfNotSet),
     );
 
     let mut found = false;
     let self_pid = Pid::from_u32(process::id());
 
-    #[allow(box_pointers)]
-    for launcher_process in sys.processes_by_name(
-        "minecraft-launc", /* Not a typo, process names are limited to 15
-                            * characters in Linux as docs on the
-                            * processes_by_name method suggests. */
-    ) {
-        if launcher_process.pid() != self_pid && (!check_parent || launcher_process.parent() != Some(self_pid)) {
-            println!(
-                "Found launcher process {}. PID: {}",
-                launcher_process.name(),
-                launcher_process.pid()
-            );
+    let root_result = &Uid::try_from(0);
 
-            if kill {
-                kill_launcher_process(launcher_process);
+    match root_result {
+        Ok(root) => {
+            #[allow(box_pointers)]
+            for launcher_process in sys.processes_by_name(
+                "minecraft-launc", /* Not a typo, process names are limited
+                                    * to 15
+                                    * characters in Linux as docs on the
+                                    * processes_by_name method suggests. */
+            ) {
+                if launcher_process.pid() != self_pid
+                    && (!check_parent
+                        || launcher_process.parent() != Some(self_pid))
+                    && **launcher_process.effective_user_id().unwrap_or(root)
+                        != 0
+                {
+                    println!(
+                        "Found launcher process {}. PID: {}",
+                        launcher_process.name(),
+                        launcher_process.pid(),
+                    );
+
+                    if kill {
+                        kill_launcher_process(launcher_process);
+                    }
+
+                    found = true;
+                }
             }
 
-            found = true;
-        }
-    }
+            // Workaround to also kill that one
+            // process remaining that doesn't
+            // use minecraft-launc name, but
+            // uses exe
+            for possible_stealth_launcher_process in sys.processes().values() {
+                if possible_stealth_launcher_process.name() == "exe"
+                    && possible_stealth_launcher_process.pid() != self_pid
+                    && (!check_parent
+                        || possible_stealth_launcher_process.parent()
+                            != Some(self_pid))
+                    && **possible_stealth_launcher_process
+                        .effective_user_id()
+                        .unwrap_or(root)
+                        != 0
+                    && possible_stealth_launcher_process
+                        .cmd()
+                        .iter()
+                        .any(|element| element.contains("--launcherui"))
+                {
+                    println!(
+                        "Found stealth launcher process {}. PID: {}",
+                        possible_stealth_launcher_process.name(),
+                        possible_stealth_launcher_process.pid(),
+                    );
 
-    // Workaround to also kill that one
-    // process remaining that doesn't
-    // use minecraft-launc name, but
-    // uses exe
-    for possible_stealth_launcher_process in sys.processes().values() {
-        if possible_stealth_launcher_process.name() == "exe"
-            && possible_stealth_launcher_process.pid() != self_pid
-            && (!check_parent || possible_stealth_launcher_process.parent() != Some(self_pid))
-            && possible_stealth_launcher_process
-                .cmd()
-                .iter()
-                .any(|element| element.contains("--launcherui"))
-        {
-            println!(
-                "Found stealth launcher process {}. PID: {}",
-                possible_stealth_launcher_process.name(),
-                possible_stealth_launcher_process.pid()
-            );
+                    if kill {
+                        kill_launcher_process(
+                            possible_stealth_launcher_process,
+                        );
+                    }
 
-            if kill {
-                kill_launcher_process(possible_stealth_launcher_process);
+                    found = true;
+                }
             }
 
-            found = true;
-        }
-    }
+            if kill
+                && KILLING_IN_PROGRESS.compare_exchange(
+                    true,
+                    false,
+                    Ordering::Relaxed,
+                    Ordering::Relaxed,
+                ) != Ok(true)
+            {
+                notify_error(
+                    "atomic operation failure (expected true, got false)",
+                );
+            }
 
-    if kill
-        && KILLING_IN_PROGRESS.compare_exchange(
-            true,
-            false,
-            Ordering::Relaxed,
-            Ordering::Relaxed,
-        ) != Ok(true)
-    {
-        notify_error("atomic operation failure (expected true, got false)");
-    }
+            found
+        },
 
-    found
+        Err(error) => {
+            eprintln!("Error while constructing user ID: {}", error);
+
+            false
+        },
+    }
 }
 
 #[inline]
@@ -322,7 +356,8 @@ fn start_watching_java_process() {
 
                                 if sys.refresh_process_specifics(
                                     pid,
-                                    ProcessRefreshKind::new().with_cmd(UpdateKind::OnlyIfNotSet),
+                                    ProcessRefreshKind::new()
+                                        .with_cmd(UpdateKind::OnlyIfNotSet),
                                 ) {
                                     if let Some(process) = sys.process(pid) {
                                         let name = process.name();
