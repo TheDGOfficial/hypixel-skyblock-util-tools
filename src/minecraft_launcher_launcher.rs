@@ -100,7 +100,7 @@ pub(crate) fn launch() -> ExitCode {
 pub(crate) fn launch() -> ExitCode {
     let user = sudo::check() == RunningAs::User;
 
-    if user && find_launcher_processes(System::new(), false) {
+    if user && find_launcher_processes(System::new(), false, true) {
         println!("Already open, exiting.");
 
         return ExitCode::SUCCESS;
@@ -221,7 +221,7 @@ fn kill_launcher_process(launcher_process: &Process) {
 }
 
 #[inline]
-fn find_launcher_processes(mut sys: System, kill: bool) -> bool {
+fn find_launcher_processes(mut sys: System, kill: bool, check_parent: bool) -> bool {
     if kill
         && KILLING_IN_PROGRESS.compare_exchange(
             false,
@@ -244,7 +244,7 @@ fn find_launcher_processes(mut sys: System, kill: bool) -> bool {
                             * characters in Linux as docs on the
                             * processes_by_name method suggests. */
     ) {
-        if launcher_process.pid() != self_pid {
+        if launcher_process.pid() != self_pid && (!check_parent || launcher_process.parent() != Some(self_pid)) {
             println!(
                 "Found launcher process {}. PID: {}",
                 launcher_process.name(),
@@ -266,6 +266,7 @@ fn find_launcher_processes(mut sys: System, kill: bool) -> bool {
     for possible_stealth_launcher_process in sys.processes().values() {
         if possible_stealth_launcher_process.name() == "exe"
             && possible_stealth_launcher_process.pid() != self_pid
+            && (!check_parent || possible_stealth_launcher_process.parent() != Some(self_pid))
             && possible_stealth_launcher_process
                 .cmd()
                 .iter()
@@ -331,7 +332,7 @@ fn start_watching_java_process() {
                                             )
                                         {
                                             backup_launcher_profiles();
-                                            find_launcher_processes(sys, true);
+                                            find_launcher_processes(sys, true, false);
                                             restore_launcher_profiles();
                                             break;
                                         }
@@ -551,7 +552,7 @@ pub(crate) fn install(binary_file_name: &str, args: &[String]) -> ExitCode {
                     }
 
                     backup_launcher_profiles();
-                    if find_launcher_processes(System::new(), true) {
+                    if find_launcher_processes(System::new(), true, true) {
                         println!("Killed launcher to proceed with install. Please restart it after install if desired.");
                     }
                     restore_launcher_profiles();
