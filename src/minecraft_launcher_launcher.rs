@@ -234,7 +234,10 @@ fn find_launcher_processes(mut sys: System, kill: bool, check_parent: bool) -> b
         notify_error("atomic operation failure (expected false, got true)");
     }
 
-    sys.refresh_processes();
+    sys.refresh_processes_specifics(
+        ProcessRefreshKind::new()
+	    .with_cmd(UpdateKind::OnlyIfNotSet)
+    );
 
     let mut found = false;
     let self_pid = Pid::from_u32(process::id());
