@@ -47,7 +47,7 @@ rev_buf_reader = "0.3.0"
 
 log = { version = "0.4.20", features = ["release_max_level_warn"] }
 
-env_logger = "0.10.2"
+env_logger = "0.11.0"
 
 notify-rust = "4.10.0"
 
