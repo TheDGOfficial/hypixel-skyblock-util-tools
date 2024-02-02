@@ -147,6 +147,7 @@ async fn do_requests_and_extract_prices(
 ) -> bool {
     let mut requests = Vec::with_capacity(7);
     let client = reqwest::ClientBuilder::new()
+        .https_only(true)
         .timeout(Duration::from_secs(10))
         .min_tls_version(Version::TLS_1_3)
         .brotli(true)
