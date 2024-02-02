@@ -92,7 +92,7 @@ if [ "$TUNE_CPU" != "$TUNE_CPU_DEFAULT" ]; then
  TARGET_TUNE_CPU="$TARGET_TUNE_CPU -Z tune-cpu=$TUNE_CPU"
 fi
 
-export NORMAL_FLAGS="--remap-path-prefix=/home/$USER/.cargo/=/.cargo/ -C opt-level=3$TARGET_TUNE_CPU -C lto -Z mir-opt-level=4"
+export NORMAL_FLAGS="--remap-path-prefix=/home/$USER/.cargo/=/.cargo/ -C opt-level=3$TARGET_TUNE_CPU -C lto -Z mir-opt-level=4 --cfg reqwest_unstable"
 
 CARGO_CMD="$(get_cargo_cmd build $TARGET)"
 CARGO_CMD_TEST="$(get_cargo_cmd test $TARGET)"
