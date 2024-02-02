@@ -182,7 +182,7 @@ async fn do_requests_and_extract_prices(
                         .header("Sec-GPC", "1")
                         .header("TE", "trailers")
                         .header("Upgrade-Insecure-Requests", "1")
-                        .header("User-Agent", "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/112.0")
+                        .header("User-Agent", "Mozilla/5.0 (X11; Linux x86_64; rv:122.0) Gecko/20100101 Firefox/122.0")
                         .send(),
                 );
             },
