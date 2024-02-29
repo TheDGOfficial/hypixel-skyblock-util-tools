@@ -30,5 +30,8 @@ if [[ -z "$SKIP_RUST_UPDATES" ]]; then
  
  # Prevent target folder from growing to a gigantic size
  cargo sweep --toolchains nightly-x86_64-unknown-linux-gnu
+
+ # Remove old versions of crates installed by cargo-install
+ rm -f ~/.cargo/bin/*-v*
 fi
 
