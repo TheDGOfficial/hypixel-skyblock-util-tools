@@ -2,4 +2,4 @@
 ./shellcheck.sh
 ./format.sh
 ./test.sh
-cargo clippy $CLIPPY_ARGS
+cargo --cfg reqwest_unstable clippy $CLIPPY_ARGS

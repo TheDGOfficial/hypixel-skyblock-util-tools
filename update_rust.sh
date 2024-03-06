@@ -21,10 +21,10 @@ if [[ -z "$SKIP_RUST_UPDATES" ]]; then
  
  curl -LsSf https://get.nexte.st/latest/linux | tar zxf - -C ${CARGO_HOME:-~/.cargo}/bin
 
- podman image ls --format "{{.Repository}}:{{.Tag}}" | while read -r container ; do
-  podman pull "$container"
- done
- podman image prune -f
+ #podman image ls --format "{{.Repository}}:{{.Tag}}" | while read -r container ; do
+ # podman pull "$container"
+ #done
+ #podman image prune -f
  
  cargo binstall -y cargo-sweep
  
