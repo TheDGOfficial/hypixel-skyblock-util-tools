@@ -69,7 +69,7 @@ fn get_cata_stat_boost(catacombs_level: i32) -> i32 {
 
     for level in 0..=catacombs_level {
         cata_stat_boost += match level {
-            0 => 0,
+            0 => 10,
 
             1..=5 => 4,
             6..=10 => 5,
