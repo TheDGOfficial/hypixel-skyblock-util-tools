@@ -1,3 +1,6 @@
+// Source: https://wiki.hypixel.net/General's_Medallion#Usage
+pub(crate) const SECRETS_NEEDED_FOR_MAX_GENERALS_MEDALLION: i32 = 100_000;
+
 // Source: https://hypixel-skyblock.fandom.com/wiki/Magic_Find#Trivia
 pub(crate) const MAXIMUM_MAGIC_FIND: i32 = 900;
 

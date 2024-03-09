@@ -1,9 +1,14 @@
+use core::cmp;
+
 use std::time::Instant;
+
+use crate::constants::SECRETS_NEEDED_FOR_MAX_GENERALS_MEDALLION;
 
 use colored::Colorize;
 
 use crate::utils::ask_int_input;
 use crate::utils::percentage_change;
+use crate::utils::u32_to_i32;
 
 #[inline]
 pub(crate) fn catacombs_stat_boost_calculator(
@@ -28,6 +33,8 @@ pub(crate) fn catacombs_stat_boost_calculator(
         Some(5),
     );
 
+    let generals_medallion_stat_boost = u32_to_i32(cmp::min(SECRETS_NEEDED_FOR_MAX_GENERALS_MEDALLION, ask_int_input("Enter the amount of secrets you have (Enter 0 if you don't have General's Medallion): ", Some(0), Some(i32::MAX))).checked_ilog10().unwrap_or(0)) + 1;
+
     let planned_catacombs_level_boost = get_cata_stat_boost(ask_int_input(
         "Enter your planned Catacombs Level: ",
         Some(0),
@@ -47,17 +54,20 @@ pub(crate) fn catacombs_stat_boost_calculator(
         Some(5),
     );
 
+    let planned_generals_medallion_stat_boost = u32_to_i32(cmp::min(SECRETS_NEEDED_FOR_MAX_GENERALS_MEDALLION, ask_int_input("Enter the amount of secrets you plan to have (Enter 0 if you don't plan to have General's Medallion): ", Some(0), Some(i32::MAX))).checked_ilog10().unwrap_or(0)) + 1;
+
     *start_without_user_input = Some(Instant::now());
 
     let total_stat_boost =
-        catacombs_boost + normal_stars_boost + master_stars_boost;
+        catacombs_boost + normal_stars_boost + master_stars_boost + generals_medallion_stat_boost;
 
     let planned_total_stat_boost = planned_catacombs_level_boost
         + planned_normal_stars_boost
-        + planned_master_stars_boost;
+        + planned_master_stars_boost
+        + planned_generals_medallion_stat_boost;
 
     println!();
-    println!("{}{}{}", "Difference between your current and planned Catacombs level and Stars/Master Stars in percent is %".bright_green(), percentage_change(From::from(total_stat_boost), From::from(planned_total_stat_boost)).to_string().bright_yellow(), ".".white());
+    println!("{}{}{}", "Difference between your current and planned Catacombs level, Stars/Master Stars and General's Medallion boost in percent is %".bright_green(), percentage_change(From::from(total_stat_boost), From::from(planned_total_stat_boost)).to_string().bright_yellow(), ".".white());
 
     true
 }

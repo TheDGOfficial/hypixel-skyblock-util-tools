@@ -134,6 +134,27 @@ pub(crate) fn i64_to_f64(i64: i64) -> f64 {
     )
 }
 
+#[inline]
+#[must_use]
+pub(crate) fn u32_to_i32(u32: u32) -> i32 {
+    i32::from_u32(u32).map_or_else(
+        || {
+            eprintln!(
+                "{}{u32}",
+                "warning: loss of precision while converting u32 to i32: "
+                    .yellow()
+            );
+
+            #[allow(clippy::cast_precision_loss)]
+            #[allow(clippy::as_conversions)]
+            {
+                u32 as i32
+            }
+        },
+        |i32| i32,
+    )
+}
+
 // Result<T, E> like enum but without the result and error.
 // This useful if a function can fail without an error.
 pub(crate) enum FunctionResult {
