@@ -257,7 +257,7 @@ pub(crate) fn new_rng() -> impl Rng {
 #[inline]
 #[must_use]
 pub(crate) fn rand_f64(rng: &mut impl Rng) -> f64 {
-    rng.gen()
+    rng.r#gen()
 }
 
 #[inline]

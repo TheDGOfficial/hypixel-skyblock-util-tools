@@ -1,4 +1,4 @@
-cargo-features = ["profile-rustflags"]
+cargo-features = ["profile-rustflags", "edition2024"]
 
 [package]
 name = "hypixel-skyblock-util-tools"
@@ -12,7 +12,7 @@ documentation = "https://github.com/TheDGOfficial/hypixel-skyblock-util-tools/"
 keywords = ["hypixel skyblock"]
 categories = ["command-line-utilities"]
 
-edition = "2021"
+edition = "2024"
 #TODO bump with every Rust version
 rust-version = "1.81.0"
 exclude = ["/.github/*"]
