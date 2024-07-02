@@ -14,7 +14,7 @@ categories = ["command-line-utilities"]
 
 edition = "2021"
 #TODO bump with every Rust version
-rust-version = "1.80.0"
+rust-version = "1.81.0"
 exclude = ["/.github/*"]
 
 [dependencies]
@@ -24,14 +24,14 @@ reqwest = { version = "0.12.5", default-features = false, features = ["brotli", 
 futures = "0.3.30"
 
 serde = "1.0.203"
-serde_json = "1.0.117"
+serde_json = "1.0.120"
 
 #jemallocator = "0.5.4"
 mimalloc = { version = "0.1.43", default-features = false }
 
 nohash-hasher = "0.2.0"
 
-#rustc-hash = "1.1.0"
+#rustc-hash = "2.0.0"
 
 colored = "2.1.0"
 
@@ -45,7 +45,7 @@ notify = "6.1.1"
 
 rev_buf_reader = "0.3.0"
 
-log = { version = "0.4.21", features = ["release_max_level_warn"] }
+log = { version = "0.4.22", features = ["release_max_level_warn"] }
 
 env_logger = "0.11.3"
 
