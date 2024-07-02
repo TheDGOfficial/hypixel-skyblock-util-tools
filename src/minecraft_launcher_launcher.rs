@@ -252,7 +252,6 @@ fn find_launcher_processes(
 
     match root_result {
         Ok(root) => {
-            #[allow(box_pointers)]
             for launcher_process in sys.processes_by_name(
                 "minecraft-launc", /* Not a typo, process names are limited
                                     * to 15
@@ -502,7 +501,6 @@ fn launch_launcher() {
 
 #[inline]
 fn escalate_if_needed() -> bool {
-    #[allow(box_pointers)]
     if let Err(e) = sudo::escalate_if_needed() {
         notify_error(&format!("error while trying to escalate to root permissions automatically: {e}"));
 

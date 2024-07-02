@@ -2,10 +2,8 @@
 // errors/smells https://doc.rust-lang.org/rustc/lints/listing/allowed-by-default.html
 
 #![warn(absolute_paths_not_starting_with_crate)]
-#![warn(box_pointers)]
 #![warn(elided_lifetimes_in_paths)]
 #![warn(explicit_outlives_requirements)]
-#![feature(c_unwind)]
 #![warn(ffi_unwind_calls)]
 #![feature(strict_provenance)]
 #![warn(fuzzy_provenance_casts)]
@@ -22,7 +20,6 @@
 #![feature(non_exhaustive_omitted_patterns_lint)]
 #![warn(non_exhaustive_omitted_patterns)]
 #![warn(noop_method_call)]
-#![warn(pointer_structural_match)]
 #![warn(rust_2021_incompatible_closure_captures)]
 #![warn(rust_2021_incompatible_or_patterns)]
 #![warn(rust_2021_prefixes_incompatible_syntax)]
