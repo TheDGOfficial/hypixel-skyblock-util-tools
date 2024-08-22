@@ -58,8 +58,10 @@ pub(crate) fn catacombs_stat_boost_calculator(
 
     *start_without_user_input = Some(Instant::now());
 
-    let total_stat_boost =
-        catacombs_boost + normal_stars_boost + master_stars_boost + generals_medallion_stat_boost;
+    let total_stat_boost = catacombs_boost
+        + normal_stars_boost
+        + master_stars_boost
+        + generals_medallion_stat_boost;
 
     let planned_total_stat_boost = planned_catacombs_level_boost
         + planned_normal_stars_boost

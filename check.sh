@@ -1,5 +1,6 @@
 #!/bin/bash
 ./shellcheck.sh
 ./format.sh
+export RUSTFLAGS='--cfg reqwest_unstable'
 ./test.sh
-cargo --cfg reqwest_unstable clippy $CLIPPY_ARGS
+cargo clippy $CLIPPY_ARGS
