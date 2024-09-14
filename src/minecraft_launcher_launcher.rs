@@ -9,6 +9,7 @@ use std::path::Path;
 use std::path::PathBuf;
 use std::process::Command;
 use std::process::ExitCode;
+use std::ffi::OsStr;
 
 use crate::utils;
 use colored::Colorize;
@@ -19,6 +20,7 @@ use sysinfo::ProcessRefreshKind;
 use sysinfo::System;
 use sysinfo::Uid;
 use sysinfo::UpdateKind;
+use sysinfo::ProcessesToUpdate;
 
 #[cfg(target_os = "linux")]
 use sudo::RunningAs;
@@ -216,13 +218,14 @@ fn kill_launcher_process(launcher_process: &Process) {
         if signal::kill(NixPid::from_raw(pid_i32), Signal::SIGTERM).is_ok() {
             println!("Killed process successfully");
         } else {
-            eprintln!("Couldn't kill Minecraft Launcher process named {} with PID {}. Already killed?", launcher_process.name(), launcher_process.pid());
+            eprintln!("Couldn't kill Minecraft Launcher process named {} with PID {}. Already killed?", launcher_process.name().to_string_lossy(), launcher_process.pid());
             // Can happen if already killed, not a fatal error.
         }
     }
 }
 
 #[inline]
+#[allow(unused_results)]
 fn find_launcher_processes(
     mut sys: System,
     kill: bool,
@@ -240,6 +243,7 @@ fn find_launcher_processes(
     }
 
     sys.refresh_processes_specifics(
+        ProcessesToUpdate::All,
         ProcessRefreshKind::new()
             .with_cmd(UpdateKind::OnlyIfNotSet)
             .with_user(UpdateKind::OnlyIfNotSet),
@@ -253,7 +257,7 @@ fn find_launcher_processes(
     match root_result {
         Ok(root) => {
             for launcher_process in sys.processes_by_name(
-                "minecraft-launc", /* Not a typo, process names are limited
+                OsStr::new("minecraft-launc"), /* Not a typo, process names are limited
                                     * to 15
                                     * characters in Linux as docs on the
                                     * processes_by_name method suggests. */
@@ -266,7 +270,7 @@ fn find_launcher_processes(
                 {
                     println!(
                         "Found launcher process {}. PID: {}",
-                        launcher_process.name(),
+                        launcher_process.name().to_string_lossy(),
                         launcher_process.pid(),
                     );
 
@@ -295,11 +299,11 @@ fn find_launcher_processes(
                     && possible_stealth_launcher_process
                         .cmd()
                         .iter()
-                        .any(|element| element.contains("--launcherui"))
+                        .any(|element| element.to_string_lossy().contains("--launcherui"))
                 {
                     println!(
                         "Found stealth launcher process {}. PID: {}",
-                        possible_stealth_launcher_process.name(),
+                        possible_stealth_launcher_process.name().to_string_lossy(),
                         possible_stealth_launcher_process.pid(),
                     );
 
@@ -353,18 +357,18 @@ fn start_watching_java_process() {
                             if let Ok(id_u32) = u32::try_from(id) {
                                 let pid = Pid::from_u32(id_u32);
 
-                                if sys.refresh_process_specifics(
-                                    pid,
+                                if sys.refresh_processes_specifics(
+                                    ProcessesToUpdate::Some(&[pid]),
                                     ProcessRefreshKind::new()
                                         .with_cmd(UpdateKind::OnlyIfNotSet),
-                                ) {
+                                ) == 1 {
                                     if let Some(process) = sys.process(pid) {
                                         let name = process.name();
 
                                         if name == "java"
                                             && process.cmd().iter().any(
                                                 |element| {
-                                                    element
+                                                    element.to_string_lossy()
                                                         .contains("-Dminecraft.launcher.brand=minecraft-launcher")
                                                 },
                                             )

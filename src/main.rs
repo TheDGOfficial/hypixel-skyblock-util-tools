@@ -40,7 +40,6 @@
 #![warn(dead_code)]
 #![warn(variant_size_differences)]
 #![feature(stmt_expr_attributes)]
-#![feature(const_fn_floating_point_arithmetic)]
 
 use std::collections::HashMap;
 use std::env;
