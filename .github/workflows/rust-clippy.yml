@@ -74,7 +74,7 @@ jobs:
           chmod +x release_build.sh && rustup component add rust-src --toolchain nightly-x86_64-unknown-linux-gnu && ./release_build.sh --portable
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@v4.4.1
+        uses: actions/upload-artifact@v4.4.2
         with:
           name: hypixel-skyblock-util-tools
           path: target/x86_64-unknown-linux-gnu/release/hypixel-skyblock-util-tools
