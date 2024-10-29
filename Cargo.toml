@@ -19,7 +19,7 @@ exclude = ["/.github/*"]
 
 [dependencies]
 tokio = { version = "1.41.0", features = ["full"] }
-reqwest = { version = "0.12.8", default-features = false, features = ["brotli", "rustls-tls", "http3"] }
+reqwest = { version = "0.12.9", default-features = false, features = ["brotli", "rustls-tls", "http3"] }
 
 futures = "0.3.31"
 
