@@ -245,7 +245,7 @@ fn find_launcher_processes(
     sys.refresh_processes_specifics(
         ProcessesToUpdate::All,
         true,
-        ProcessRefreshKind::new()
+        ProcessRefreshKind::nothing()
             .with_cmd(UpdateKind::OnlyIfNotSet)
             .with_user(UpdateKind::OnlyIfNotSet),
     );
@@ -361,7 +361,7 @@ fn start_watching_java_process() {
                                 if sys.refresh_processes_specifics(
                                     ProcessesToUpdate::Some(&[pid]),
                                     true,
-                                    ProcessRefreshKind::new()
+                                    ProcessRefreshKind::nothing()
                                         .with_cmd(UpdateKind::OnlyIfNotSet),
                                 ) == 1 {
                                     if let Some(process) = sys.process(pid) {

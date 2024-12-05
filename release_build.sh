@@ -74,7 +74,7 @@ else
   #echo "Profile Guided Optimization (PGO) will be done using default inputs."
 fi
 
-LLVM_VERSION="16"
+LLVM_VERSION="19"
 LLVM_PROFDATA_CMD="llvm-profdata-$LLVM_VERSION"
 
 if ! command -v $LLVM_PROFDATA_CMD &>/dev/null; then

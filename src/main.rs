@@ -5,7 +5,7 @@
 #![warn(elided_lifetimes_in_paths)]
 #![warn(explicit_outlives_requirements)]
 #![warn(ffi_unwind_calls)]
-#![feature(strict_provenance)]
+#![feature(strict_provenance_lints)]
 #![warn(fuzzy_provenance_casts)]
 #![warn(lossy_provenance_casts)]
 #![warn(keyword_idents)]
