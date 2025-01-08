@@ -33,7 +33,7 @@ nohash-hasher = "0.2.0"
 
 #rustc-hash = "2.0.0"
 
-colored = "2.2.0"
+colored = "3.0.0"
 
 num = "0.4.3"
 
