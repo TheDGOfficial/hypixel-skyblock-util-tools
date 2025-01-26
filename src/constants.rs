@@ -11,7 +11,7 @@ pub(crate) const CHIMERA_DROP_CHANCE: f64 = 1.0;
 pub(crate) const JUDGEMENT_CORE_DROP_CHANCE: f64 = 0.0565;
 
 // Source: In-game RNG Meter base chance.
-pub(crate) const WARDEN_HEART_DROP_CHANCE: f64 = 0.0130;
+pub(crate) const WARDEN_HEART_DROP_CHANCE: f64 = 0.0138;
 
 // Source: In-game RNG Meter base chance.
 pub(crate) const OVERFLUX_CAPACITOR_DROP_CHANCE: f64 = 0.0406;
@@ -20,7 +20,7 @@ pub(crate) const OVERFLUX_CAPACITOR_DROP_CHANCE: f64 = 0.0406;
 pub(crate) const NECRONS_HANDLE_DROP_CHANCE: f64 = 0.1094;
 
 // Source: In-game RNG Meter base chance.
-pub(crate) const NECRONS_HANDLE_MASTER_MODE_DROP_CHANCE: f64 = 0.1295;
+pub(crate) const NECRONS_HANDLE_MASTER_MODE_DROP_CHANCE: f64 = 0.1296;
 
 // Source: In-game RNG Meter base chance.
 pub(crate) const DARK_CLAYMORE_DROP_CHANCE: f64 = 0.072;
