@@ -116,7 +116,7 @@ pub(crate) fn rng_simulator(
     print_drops_selection();
 
     let selection =
-        ask_int_input("Enter a number to select: ", Some(1), Some(7));
+        ask_int_input("Enter a number to select: ", Some(1), Some(8));
 
     let mut no_looting = true;
     let mut has_bestiary = false;
