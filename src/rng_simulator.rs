@@ -79,11 +79,13 @@ fn print_drops_selection() {
 #[must_use]
 fn get_drop_chance(
     selection: i32,
+    no_rngmeter: &mut bool,
     no_looting: &mut bool,
     has_bestiary: &mut bool,
 ) -> f64 {
     match selection {
         1 => {
+            *no_rngmeter = true;
             *no_looting = false;
             *has_bestiary = true;
 
@@ -97,6 +99,7 @@ fn get_drop_chance(
         7 => DARK_CLAYMORE_DROP_CHANCE,
         8 => {
             *no_looting = false;
+            *has_bestiary = true;
 
             ask_float_input("Enter custom drop chance: ", None, None)
         },
@@ -118,19 +121,20 @@ pub(crate) fn rng_simulator(
     let selection =
         ask_int_input("Enter a number to select: ", Some(1), Some(8));
 
+    let mut no_rngmeter = false;
     let mut no_looting = true;
     let mut has_bestiary = false;
 
     let mut drop_chance =
-        get_drop_chance(selection, &mut no_looting, &mut has_bestiary);
+        get_drop_chance(selection, &mut no_rngmeter, &mut no_looting, &mut has_bestiary);
 
     let original_drop_chance = drop_chance;
     let mut rng_meter_percent = -1.0;
 
-    if selection != 1 && selection != 8 {
+    if !no_rngmeter {
         rng_meter_percent = ask_float_input(
-            "Enter your current RNG meter completion percentage for this drop: ",
-            Some(0.0),
+            "Enter your current RNG meter completion percentage for this drop (if it works on this drop, enter -1 if no): ",
+            Some(-1.0),
             Some(100.0),
         );
 
@@ -158,7 +162,7 @@ pub(crate) fn rng_simulator(
         * conditional_value_or_default(
             !no_looting,
             || {
-                ask_int_input("What is your Looting level? (if it works on this drop, 0-5): ", Some(0), Some(5))
+                ask_int_input("What is your Looting level? (if it works on this drop, enter 0 if no, 0-5): ", Some(0), Some(5))
             },
             0,
         );
@@ -167,9 +171,9 @@ pub(crate) fn rng_simulator(
         has_bestiary,
         || {
             ask_int_input(
-                "What is your extra Magic Find from Bestiary?: ",
+                "What is your extra Magic Find from Bestiary? (if it affects this drop, enter 0 if no): ",
                 Some(0),
-                Some(70),
+                Some(MAXIMUM_MAGIC_FIND),
             )
         },
         0,
