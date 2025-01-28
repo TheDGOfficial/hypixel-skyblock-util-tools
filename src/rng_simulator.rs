@@ -255,13 +255,13 @@ pub(crate) fn rng_simulator(
 #[inline]
 #[must_use]
 pub(crate) fn new_rng() -> impl Rng {
-    SmallRng::from_entropy()
+    SmallRng::from_os_rng()
 }
 
 #[inline]
 #[must_use]
 pub(crate) fn rand_f64(rng: &mut impl Rng) -> f64 {
-    rng.r#gen()
+    rng.random()
 }
 
 #[inline]
