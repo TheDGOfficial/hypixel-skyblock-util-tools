@@ -82,6 +82,7 @@ fn get_drop_chance(
     no_rngmeter: &mut bool,
     no_looting: &mut bool,
     has_bestiary: &mut bool,
+    no_magicfind: &mut bool,
 ) -> f64 {
     match selection {
         1 => {
@@ -94,9 +95,21 @@ fn get_drop_chance(
         2 => JUDGEMENT_CORE_DROP_CHANCE,
         3 => WARDEN_HEART_DROP_CHANCE,
         4 => OVERFLUX_CAPACITOR_DROP_CHANCE,
-        5 => NECRONS_HANDLE_DROP_CHANCE,
-        6 => NECRONS_HANDLE_MASTER_MODE_DROP_CHANCE,
-        7 => DARK_CLAYMORE_DROP_CHANCE,
+        5 => {
+            *no_magicfind = true;
+
+            NECRONS_HANDLE_DROP_CHANCE
+        },
+        6 => {
+            *no_magicfind = true;
+
+            NECRONS_HANDLE_MASTER_MODE_DROP_CHANCE
+        },
+        7 => {
+            *no_magicfind = true;
+
+            DARK_CLAYMORE_DROP_CHANCE
+        },
         8 => {
             *no_looting = false;
             *has_bestiary = true;
@@ -124,9 +137,10 @@ pub(crate) fn rng_simulator(
     let mut no_rngmeter = false;
     let mut no_looting = true;
     let mut has_bestiary = false;
+    let mut no_magicfind = false;
 
     let mut drop_chance =
-        get_drop_chance(selection, &mut no_rngmeter, &mut no_looting, &mut has_bestiary);
+        get_drop_chance(selection, &mut no_rngmeter, &mut no_looting, &mut has_bestiary, &mut no_magicfind);
 
     let original_drop_chance = drop_chance;
     let mut rng_meter_percent = -1.0;
@@ -147,7 +161,7 @@ pub(crate) fn rng_simulator(
         }
     }
 
-    let mut magic_find = if selection == 5 || selection == 6 || selection == 7
+    let mut magic_find = if no_magicfind
     {
         0
     } else {
