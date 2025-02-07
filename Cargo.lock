@@ -429,7 +429,7 @@ dependencies = [
 [[package]]
 name = "cnproc"
 version = "0.2.1"
-source = "git+https://github.com/yorodm/cnproc-rs#fdb412ef483aecb0c451b6aed70234e52fe5acbc"
+source = "git+https://github.com/yorodm/cnproc-rs#fd806a19a7a11257db6000271083c5bb8c1bfaa8"
 dependencies = [
  "libc",
 ]

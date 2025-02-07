@@ -354,7 +354,8 @@ fn start_watching_java_process() {
             loop {
                 if let Some(e) = monitor.recv() {
                     match e {
-                        PidEvent::Exec(id) => {
+                        PidEvent::Exec { process_pid, .. } => {
+                            let id = process_pid;
                             if let Ok(id_u32) = u32::try_from(id) {
                                 let pid = Pid::from_u32(id_u32);
 
@@ -389,7 +390,8 @@ fn start_watching_java_process() {
                             }
                         },
 
-                        PidEvent::Exit(id) => {
+                        PidEvent::Exit { process_pid, .. } => {
+                            let id = process_pid;
                             if let Ok(id_u32) = u32::try_from(id) {
                                 let pid = Pid::from_u32(id_u32);
 
@@ -410,7 +412,7 @@ fn start_watching_java_process() {
                             }
                         },
 
-                        PidEvent::Fork { .. } | PidEvent::Coredump(_) => {},
+                        PidEvent::Fork { .. } | PidEvent::Coredump { .. } => {},
                     }
                 } else {
                     notify_error("no events to receive");
