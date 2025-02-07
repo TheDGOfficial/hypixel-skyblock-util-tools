@@ -81,12 +81,12 @@ strip = "debuginfo"
 codegen-units = 1
 incremental = false
 opt-level = 3
-rustflags = ["-C", "opt-level=3", "-C", "target-cpu=native", "-Z", "tune-cpu=native", "-Z", "mir-opt-level=4", "--cfg", "reqwest_unstable"]
+rustflags = ["-C", "opt-level=3", "-C", "target-cpu=native", "-Z", "tune-cpu=native", "-Z", "mir-opt-level=4", "-Z", "threads=8", "-Z", "polonius=next", "--cfg", "reqwest_unstable"]
 
 [profile.dev]
 strip = false
 lto = false
-rustflags = ["-C", "opt-level=0", "-Z", "share-generics=y", "--cfg", "reqwest_unstable"]
+rustflags = ["-C", "opt-level=0", "-Z", "share-generics=y", "-Z", "threads=8", "-Z", "polonius=next", "--cfg", "reqwest_unstable"]
 codegen-units = 512
 incremental = true
 
