@@ -45,7 +45,7 @@ notify = "8.0.0"
 
 rev_buf_reader = "0.3.0"
 
-log = { version = "0.4.26", features = ["release_max_level_warn"] }
+log = { version = "0.4.27", features = ["release_max_level_warn"] }
 
 env_logger = "0.11.7"
 
