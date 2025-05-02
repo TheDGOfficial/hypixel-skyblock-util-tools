@@ -57,7 +57,7 @@ sudo = "0.6.0"
 
 cnproc = "0.2.1"
 
-sysinfo = "0.34.2"
+sysinfo = "0.35.0"
 
 once_cell = "1.21.3"
 
