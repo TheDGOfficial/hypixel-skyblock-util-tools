@@ -18,7 +18,7 @@ rust-version = "1.86.0"
 exclude = ["/.github/*"]
 
 [dependencies]
-tokio = { version = "1.44.2", features = ["full"] }
+tokio = { version = "1.45.0", features = ["full"] }
 reqwest = { version = "0.12.15", default-features = false, features = ["brotli", "rustls-tls", "http3"] }
 
 futures = "0.3.31"
