@@ -40,7 +40,7 @@ use nix::sys::signal::Signal;
 #[cfg(target_os = "linux")]
 use nix::sys::signal;
 
-use once_cell::sync::Lazy;
+use std::sync::LazyLock;
 
 use notify_rust::Notification;
 use notify_rust::Urgency;
@@ -125,8 +125,8 @@ pub(crate) fn launch() -> ExitCode {
     ExitCode::SUCCESS
 }
 
-static KILLING_IN_PROGRESS: Lazy<AtomicBool> =
-    Lazy::new(|| AtomicBool::new(false));
+static KILLING_IN_PROGRESS: LazyLock<AtomicBool> =
+    LazyLock::new(|| AtomicBool::new(false));
 
 const LAUNCHER_PROFILES_MLLBACKUP_FILE: &str =
     "launcher_profiles.json.mllbackup";

@@ -35,7 +35,7 @@ use notify::RecursiveMode;
 use notify::Watcher;
 use notify_rust::Notification;
 use notify_rust::Urgency;
-use once_cell::sync::Lazy;
+use std::sync::LazyLock;
 use serde_json::Error;
 
 // TODO
@@ -623,7 +623,8 @@ fn save_session_data_to_file(data: &VoidgloomData) -> bool {
     true
 }
 
-static PRINTED_MSG: Lazy<AtomicBool> = Lazy::new(|| AtomicBool::new(false));
+static PRINTED_MSG: LazyLock<AtomicBool> =
+    LazyLock::new(|| AtomicBool::new(false));
 
 #[inline]
 fn save_data_to_file(

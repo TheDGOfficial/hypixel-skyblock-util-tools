@@ -957,7 +957,6 @@ dependencies = [
  "notify",
  "notify-rust",
  "num",
- "once_cell",
  "rand",
  "reqwest",
  "rev_buf_reader",
