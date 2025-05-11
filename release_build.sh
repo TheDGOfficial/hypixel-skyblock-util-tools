@@ -109,7 +109,17 @@ fi
 
 export RUSTFLAGS="$NORMAL_FLAGS$PGO_FLAG"
 
-$CARGO_CMD_FULL
+EXIT_CODE=0
+
+$CARGO_CMD_FULL || EXIT_CODE=1
+
+(return 0 2>/dev/null) && sourced=1 || sourced=0
+
+if (( sourced )); then
+    return "$EXIT_CODE"
+else
+    exit "$EXIT_CODE"
+fi
 
 if [ "$PGO_FLAG" != "" ]; then
   echo -e "1\n1\n7\n" | ./target/$TARGET/release/hypixel-skyblock-util-tools
