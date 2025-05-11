@@ -13,10 +13,10 @@ if [[ -z "$SKIP_RUST_UPDATES" ]]; then
 
  cargo install cargo-binstall
 
- cargo binstall -y cargo-binstall
+ cargo binstall -y --force cargo-binstall
  cargo binstall -y cross
 
- cargo binstall -y --disable-strategies quick-install cargo-update
+ cargo binstall -y --force cargo-update
  cargo install-update --git --all
  
  curl -LsSf https://get.nexte.st/latest/linux | tar zxf - -C ${CARGO_HOME:-~/.cargo}/bin
