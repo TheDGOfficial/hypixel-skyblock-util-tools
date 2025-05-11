@@ -199,7 +199,11 @@ fn kill_launcher_process(launcher_process: &Process) {
     if launcher_process.kill() {
         println!("Killed process successfully");
     } else {
-        eprintln!("Couldn't kill Minecraft Launcher process named {} with PID {}. Already killed?", launcher_process.name(), launcher_process.pid());
+        eprintln!(
+            "Couldn't kill Minecraft Launcher process named {} with PID {}. Already killed?",
+            launcher_process.name(),
+            launcher_process.pid()
+        );
         // Can happen if already killed, not a fatal error.
     }
 }
@@ -213,7 +217,11 @@ fn kill_launcher_process(launcher_process: &Process) {
         if signal::kill(NixPid::from_raw(pid_i32), Signal::SIGTERM).is_ok() {
             println!("Killed process successfully");
         } else {
-            eprintln!("Couldn't kill Minecraft Launcher process named {} with PID {}. Already killed?", launcher_process.name().to_string_lossy(), launcher_process.pid());
+            eprintln!(
+                "Couldn't kill Minecraft Launcher process named {} with PID {}. Already killed?",
+                launcher_process.name().to_string_lossy(),
+                launcher_process.pid()
+            );
             // Can happen if already killed, not a fatal error.
         }
     }
@@ -253,10 +261,13 @@ fn find_launcher_processes(
     match root_result {
         Ok(root) => {
             for launcher_process in sys.processes_by_name(
-                OsStr::new("minecraft-launc"), /* Not a typo, process names are limited
-                                    * to 15
-                                    * characters in Linux as docs on the
-                                    * processes_by_name method suggests. */
+                OsStr::new("minecraft-launc"), /* Not a typo, process names
+                                                * are limited
+                                                * to 15
+                                                * characters in Linux as
+                                                * docs on the
+                                                * processes_by_name method
+                                                * suggests. */
             ) {
                 if launcher_process.pid() != self_pid
                     && (!check_parent
@@ -292,14 +303,17 @@ fn find_launcher_processes(
                         .effective_user_id()
                         .unwrap_or(root)
                         != 0
-                    && possible_stealth_launcher_process
-                        .cmd()
-                        .iter()
-                        .any(|element| element.to_string_lossy().contains("--launcherui"))
+                    && possible_stealth_launcher_process.cmd().iter().any(
+                        |element| {
+                            element.to_string_lossy().contains("--launcherui")
+                        },
+                    )
                 {
                     println!(
                         "Found stealth launcher process {}. PID: {}",
-                        possible_stealth_launcher_process.name().to_string_lossy(),
+                        possible_stealth_launcher_process
+                            .name()
+                            .to_string_lossy(),
                         possible_stealth_launcher_process.pid(),
                     );
 
@@ -330,7 +344,7 @@ fn find_launcher_processes(
         },
 
         Err(error) => {
-            eprintln!("Error while constructing user ID: {}", error);
+            eprintln!("Error while constructing user ID: {error}");
 
             false
         },
@@ -359,7 +373,8 @@ fn start_watching_java_process() {
                                     true,
                                     ProcessRefreshKind::nothing()
                                         .with_cmd(UpdateKind::OnlyIfNotSet),
-                                ) == 1 {
+                                ) == 1
+                                {
                                     if let Some(process) = sys.process(pid) {
                                         let name = process.name();
 
@@ -407,7 +422,8 @@ fn start_watching_java_process() {
                             }
                         },
 
-                        PidEvent::Fork { .. } | PidEvent::Coredump { .. } => {},
+                        PidEvent::Fork { .. } | PidEvent::Coredump { .. } => {
+                        },
                     }
                 } else {
                     notify_error("no events to receive");
@@ -505,7 +521,9 @@ fn launch_launcher() {
 #[inline]
 fn escalate_if_needed() -> bool {
     if let Err(e) = sudo::escalate_if_needed() {
-        notify_error(&format!("error while trying to escalate to root permissions automatically: {e}"));
+        notify_error(&format!(
+            "error while trying to escalate to root permissions automatically: {e}"
+        ));
 
         return false;
     }
@@ -532,7 +550,7 @@ pub(crate) fn install(binary_file_name: &str, args: &[String]) -> ExitCode {
 
     println!("Starting install");
 
-    return match env::current_exe() {
+    match env::current_exe() {
         Ok(self_path) => {
             if !self_path.exists() {
                 eprintln!(
@@ -574,7 +592,9 @@ pub(crate) fn install(binary_file_name: &str, args: &[String]) -> ExitCode {
             let launcher_path = bin_dir.join("minecraft-launcher");
 
             if !launcher_path.exists() {
-                eprintln!("Minecraft Launcher doesn't exist, can't continue. Please install it first.");
+                eprintln!(
+                    "Minecraft Launcher doesn't exist, can't continue. Please install it first."
+                );
 
                 return ExitCode::FAILURE;
             }
@@ -593,7 +613,9 @@ pub(crate) fn install(binary_file_name: &str, args: &[String]) -> ExitCode {
 
                     backup_launcher_profiles();
                     if find_launcher_processes(System::new(), true, true) {
-                        println!("Killed launcher to proceed with install. Please restart it after install if desired.");
+                        println!(
+                            "Killed launcher to proceed with install. Please restart it after install if desired."
+                        );
                     }
                     restore_launcher_profiles();
 
@@ -612,7 +634,9 @@ pub(crate) fn install(binary_file_name: &str, args: &[String]) -> ExitCode {
                     }
 
                     if real_launcher_path.exists() {
-                        println!("Real launcher already exists, will skip. If you've re-installed the launcher (bootstrap), please re-install again and then run the program with the --upgrade argument.");
+                        println!(
+                            "Real launcher already exists, will skip. If you've re-installed the launcher (bootstrap), please re-install again and then run the program with the --upgrade argument."
+                        );
                     } else if !utils::copy(&launcher_path, &real_launcher_path)
                     {
                         eprintln!("{}", "Install failed".red());
@@ -640,7 +664,7 @@ pub(crate) fn install(binary_file_name: &str, args: &[String]) -> ExitCode {
                 Err(e) => {
                     eprintln!("{}{e}", "error while comparing current executable with launcher path to check if they are same: ".red());
 
-                    return ExitCode::FAILURE;
+                    ExitCode::FAILURE
                 },
             }
         },
@@ -653,5 +677,5 @@ pub(crate) fn install(binary_file_name: &str, args: &[String]) -> ExitCode {
 
             ExitCode::FAILURE
         },
-    };
+    }
 }

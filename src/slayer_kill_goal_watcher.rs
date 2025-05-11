@@ -315,13 +315,12 @@ fn get_global_data(
 ) -> bool {
     // Load global data
     if get_global_data_file().exists() {
-        read_file(&get_global_data_file()).map_or(false, |file_content| {
-            load_data(file_content.as_str()).map_or(false, |data| {
+        read_file(&get_global_data_file())
+            .and_then(|file_content| load_data(file_content.as_str()))
+            .is_some_and(|data| {
                 *global_data = data;
-
                 true
             })
-        })
     } else {
         // Caller's problem, just emit a warning if desired
         if print_warnings {
@@ -492,10 +491,7 @@ fn register_watcher_with_new_clipboard(
                 );
 
                 if retries > 10 {
-                    eprintln!(
-                        "tried {} times with no luck, exiting.",
-                        retries
-                    );
+                    eprintln!("tried {retries} times with no luck, exiting.");
 
                     should_retry = false;
                 } else {
@@ -503,8 +499,7 @@ fn register_watcher_with_new_clipboard(
                     retry_cooldown += 10;
 
                     eprintln!(
-                        "tried {} times so far, will retry again in {}s.",
-                        retries, retry_cooldown
+                        "tried {retries} times so far, will retry again in {retry_cooldown}s."
                     );
                     thread::sleep(Duration::from_secs(retry_cooldown));
 
@@ -554,7 +549,7 @@ fn print_all_statistics(
                 if !save_session_data_to_file(session_data) {
                     eprintln!("{}", "warning: saving of session data to reflect end time failed, look above for possible errors".yellow());
                 }
-            };
+            }
         }
 
         print_statistics("Last session", last_session_file);
@@ -579,7 +574,7 @@ fn print_all_statistics(
                 if !save_global_data_to_file(global_data) {
                     eprintln!("{}", "warning: saving of global data to reflect end time failed, look above for possible errors".yellow());
                 }
-            };
+            }
         }
 
         print_statistics("Global", global_data_file);
@@ -932,8 +927,8 @@ fn parse_log_line(
 }
 
 #[inline]
-fn async_watcher(
-) -> notify::Result<(RecommendedWatcher, Receiver<notify::Result<Event>>)> {
+fn async_watcher()
+-> notify::Result<(RecommendedWatcher, Receiver<notify::Result<Event>>)> {
     let (mut tx, rx) = channel(1);
 
     let watcher = RecommendedWatcher::new(

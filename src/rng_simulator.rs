@@ -64,7 +64,11 @@ fn print_drops_selection() {
         "5".bright_blue(),
         get_odds(NECRONS_HANDLE_DROP_CHANCE)
     );
-    println!(" {}. Necron's Handle (Master Mode) (%{NECRONS_HANDLE_MASTER_MODE_DROP_CHANCE}) [1/{}]", "6".bright_blue(), get_odds(NECRONS_HANDLE_MASTER_MODE_DROP_CHANCE));
+    println!(
+        " {}. Necron's Handle (Master Mode) (%{NECRONS_HANDLE_MASTER_MODE_DROP_CHANCE}) [1/{}]",
+        "6".bright_blue(),
+        get_odds(NECRONS_HANDLE_MASTER_MODE_DROP_CHANCE)
+    );
     println!(
         " {}. Dark Claymore (%{DARK_CLAYMORE_DROP_CHANCE}%) [1/{}]",
         "7".bright_blue(),
@@ -139,8 +143,13 @@ pub(crate) fn rng_simulator(
     let mut has_bestiary = false;
     let mut no_magicfind = false;
 
-    let mut drop_chance =
-        get_drop_chance(selection, &mut no_rngmeter, &mut no_looting, &mut has_bestiary, &mut no_magicfind);
+    let mut drop_chance = get_drop_chance(
+        selection,
+        &mut no_rngmeter,
+        &mut no_looting,
+        &mut has_bestiary,
+        &mut no_magicfind,
+    );
 
     let original_drop_chance = drop_chance;
     let mut rng_meter_percent = -1.0;
@@ -161,8 +170,7 @@ pub(crate) fn rng_simulator(
         }
     }
 
-    let mut magic_find = if no_magicfind
-    {
+    let mut magic_find = if no_magicfind {
         0
     } else {
         ask_int_input(
@@ -176,7 +184,11 @@ pub(crate) fn rng_simulator(
         * conditional_value_or_default(
             !no_looting,
             || {
-                ask_int_input("What is your Looting level? (if it works on this drop, enter 0 if no, 0-5): ", Some(0), Some(5))
+                ask_int_input(
+                    "What is your Looting level? (if it works on this drop, enter 0 if no, 0-5): ",
+                    Some(0),
+                    Some(5),
+                )
             },
             0,
         );
@@ -251,7 +263,10 @@ pub(crate) fn rng_simulator(
     println!("Out of {rolls} rolls, {drops} rolls succeeded.");
 
     if !percent.is_nan() {
-        println!("You got %{} of the possible drops ({drops}/{max_drops}) with maximum magic find, with your magic find.", percent.to_string().yellow());
+        println!(
+            "You got %{} of the possible drops ({drops}/{max_drops}) with maximum magic find, with your magic find.",
+            percent.to_string().yellow()
+        );
     }
 
     if !all_succeeded_magic_find_values.is_empty() {
@@ -377,7 +392,9 @@ fn do_rolls_and_get_drops(
     let do_printing = rolls < 100_000;
 
     if !do_printing {
-        println!("Will not print individual roll details to optimize performance since roll amount is 100K or higher.");
+        println!(
+            "Will not print individual roll details to optimize performance since roll amount is 100K or higher."
+        );
     }
 
     let looting_extra_chance_f64 = f64::from(looting_extra_chance);
@@ -421,7 +438,7 @@ fn do_rolls_and_get_drops(
                 );
 
         let magic_number = rand_f64(&mut rand); // future perf ref: this call is basically free, main bottleneck is io
-                                                // on the println! and other code
+        // on the println! and other code
         let success = if magic_number
             < new_drop_rate_with_magic_find_and_looting / 100.0
         {
@@ -470,18 +487,38 @@ fn do_rolls_and_get_drops(
                         "Roll #{}: {}, minimum magic find to succeed is {}. RNG Meter: %{}",
                         roll.to_string().yellow(),
                         "PASS".bright_green(),
-                        minimum_magic_find_needed_to_succeed.to_string().green(),
+                        minimum_magic_find_needed_to_succeed
+                            .to_string()
+                            .green(),
                         rng_meter_percent
                     ) {
-                        // If the above call failed, this one will fail too probably, but try anyway and let the macro handle the error.
-                        eprintln!("{}{e}", "error: can't write to stdout: ".red());
+                        // If the above call failed, this one will fail too
+                        // probably, but try anyway and let the macro handle
+                        // the error.
+                        eprintln!(
+                            "{}{e}",
+                            "error: can't write to stdout: ".red()
+                        );
                     }
                 }
 
                 if !success {
-                    if let Err(e) = writeln!(buf, "Roll #{}: {}, minimum magic find to succeed is {} which is higher than yours.", roll.to_string().yellow(), "FAIL".bright_red(), minimum_magic_find_needed_to_succeed.to_string().bright_red()) {
-                        // If the above call failed, this one will fail too probably, but try anyway and let the macro handle the error.
-                        eprintln!("{}{e}", "error: can't write to stdout: ".red());
+                    if let Err(e) = writeln!(
+                        buf,
+                        "Roll #{}: {}, minimum magic find to succeed is {} which is higher than yours.",
+                        roll.to_string().yellow(),
+                        "FAIL".bright_red(),
+                        minimum_magic_find_needed_to_succeed
+                            .to_string()
+                            .bright_red()
+                    ) {
+                        // If the above call failed, this one will fail too
+                        // probably, but try anyway and let the macro handle
+                        // the error.
+                        eprintln!(
+                            "{}{e}",
+                            "error: can't write to stdout: ".red()
+                        );
                     }
                 }
             }
@@ -530,7 +567,9 @@ fn print_statistics(
         if let Some(range_succeed_magic_find) =
             range(all_succeeded_magic_find_values)
         {
-            println!("Range (Difference between smallest and highest) Succeed Magic Find: {range_succeed_magic_find}");
+            println!(
+                "Range (Difference between smallest and highest) Succeed Magic Find: {range_succeed_magic_find}"
+            );
         }
     }
 
@@ -539,7 +578,10 @@ fn print_statistics(
     }
 
     if compare_f64(original_rng_meter, -1.0) {
-        println!("{}: The RNG Meter doesn't work on this drop type, so values below are based on if the RNG meter existed as a percentage to expected amount of rolls to get the drop, but didn't actually guarantee drops or modify chances.", "Note".red());
+        println!(
+            "{}: The RNG Meter doesn't work on this drop type, so values below are based on if the RNG meter existed as a percentage to expected amount of rolls to get the drop, but didn't actually guarantee drops or modify chances.",
+            "Note".red()
+        );
         println!();
     }
 
@@ -548,7 +590,9 @@ fn print_statistics(
             - f64::abs(percentage_change(odds, cap(mean_succeed_rolls, odds)));
 
         if !mean_succeed_rolls.is_nan() && !mean_succeed_meter.is_nan() {
-            println!("Mean (Average) Amount of Rolls until Succeed: {mean_succeed_rolls} (%{mean_succeed_meter} RNG Meter)");
+            println!(
+                "Mean (Average) Amount of Rolls until Succeed: {mean_succeed_rolls} (%{mean_succeed_meter} RNG Meter)"
+            );
         }
     }
 
@@ -559,7 +603,9 @@ fn print_statistics(
                 cap(median_succeed_rolls, odds),
             ));
 
-        println!("Median (Middle) Amount of Rolls until Succeed: {median_succeed_rolls} (%{median_succeed_meter} RNG Meter)");
+        println!(
+            "Median (Middle) Amount of Rolls until Succeed: {median_succeed_rolls} (%{median_succeed_meter} RNG Meter)"
+        );
     }
 
     if !has_unique_elements(meter_succeeded_rolls) {
@@ -584,7 +630,9 @@ fn print_statistics(
                     cap(f64::from(range_succeed_rolls), odds),
                 ));
 
-            println!("Range (Difference between smallest and highest) Amount of Rolls until Succeed: {range_succeed_rolls} (%{range_succeed_meter} RNG Meter)");
+            println!(
+                "Range (Difference between smallest and highest) Amount of Rolls until Succeed: {range_succeed_rolls} (%{range_succeed_meter} RNG Meter)"
+            );
         }
     }
 
@@ -594,6 +642,8 @@ fn print_statistics(
                 odds,
                 cap(f64::from(max.to_owned()), odds),
             ));
-        println!("Maximum Amount of Rolls before Succeed: {max} (%{max_meter} RNG Meter)");
+        println!(
+            "Maximum Amount of Rolls before Succeed: {max} (%{max_meter} RNG Meter)"
+        );
     }
 }

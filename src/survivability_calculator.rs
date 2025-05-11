@@ -49,7 +49,11 @@ pub(crate) fn survivability_calculator(
     let hits_to_die =
         calculate_hits_to_die(effective_health, enemy_damage_per_hit);
 
-    let crit_damage = ask_int_input("What's your Crit Damage? (If you don't plan to use Wither Shield, enter 0): ", Some(0), None);
+    let crit_damage = ask_int_input(
+        "What's your Crit Damage? (If you don't plan to use Wither Shield, enter 0): ",
+        Some(0),
+        None,
+    );
 
     *start_without_user_input = Some(Instant::now());
 
@@ -65,14 +69,23 @@ pub(crate) fn survivability_calculator(
     );
 
     println!();
-    println!("{} Even though Wither Shield is factored in, all other factors aren't, even the Wither Shield's secret %10 damage reduction ability. These not factored in conditions include: any sort of healing or damage reduction other than Defense, and special variants/attacks. Also, hits to die means that, you will be dead after taking that amount of hits, not that you will survive that amount of hits.", "Note:".red());
+    println!(
+        "{} Even though Wither Shield is factored in, all other factors aren't, even the Wither Shield's secret %10 damage reduction ability. These not factored in conditions include: any sort of healing or damage reduction other than Defense, and special variants/attacks. Also, hits to die means that, you will be dead after taking that amount of hits, not that you will survive that amount of hits.",
+        "Note:".red()
+    );
     println!();
-    println!("Your enemy can and will do up to {} damage in one hit. You have {} Effective Health, taking {hits_to_die} (rounded down to {}) hits to die. With Wither Shield and full health, these values become {} Effective Health and taking {hits_to_die_with_wither_shield} (rounded down to {}) hits to die.",
-             with_comma_separators(&enemy_damage_per_hit.to_string()).unwrap_or_else(|| enemy_damage_per_hit.to_string()),
-             with_comma_separators(&effective_health.to_string()).unwrap_or_else(|| effective_health.to_string()),
-             hits_to_die.trunc(),
-             with_comma_separators(&effective_health_with_wither_shield.to_string()).unwrap_or_else(|| effective_health_with_wither_shield.to_string()),
-             hits_to_die_with_wither_shield.trunc(),
+    println!(
+        "Your enemy can and will do up to {} damage in one hit. You have {} Effective Health, taking {hits_to_die} (rounded down to {}) hits to die. With Wither Shield and full health, these values become {} Effective Health and taking {hits_to_die_with_wither_shield} (rounded down to {}) hits to die.",
+        with_comma_separators(&enemy_damage_per_hit.to_string())
+            .unwrap_or_else(|| enemy_damage_per_hit.to_string()),
+        with_comma_separators(&effective_health.to_string())
+            .unwrap_or_else(|| effective_health.to_string()),
+        hits_to_die.trunc(),
+        with_comma_separators(
+            &effective_health_with_wither_shield.to_string()
+        )
+        .unwrap_or_else(|| effective_health_with_wither_shield.to_string()),
+        hits_to_die_with_wither_shield.trunc(),
     );
 
     let next_effective_health_milestone =
@@ -93,7 +106,9 @@ pub(crate) fn survivability_calculator(
             - effective_health_with_wither_shield;
 
     println!();
-    println!("To afford to take another hit, you need {next_effective_health_milestone} ({difference} more than your current) Effective Health, or {next_effective_health_milestone_with_wither_shield} ({difference_with_wither_shield} more than your current) Effective Health with Wither Shield.");
+    println!(
+        "To afford to take another hit, you need {next_effective_health_milestone} ({difference} more than your current) Effective Health, or {next_effective_health_milestone_with_wither_shield} ({difference_with_wither_shield} more than your current) Effective Health with Wither Shield."
+    );
 
     let needed_health =
         find_needed_health(health, defense, next_effective_health_milestone);
@@ -101,7 +116,9 @@ pub(crate) fn survivability_calculator(
         find_needed_defense(health, defense, next_effective_health_milestone);
 
     println!();
-    println!("To afford to take another hit, you need {needed_health} more Health or {needed_defense} more Defense.");
+    println!(
+        "To afford to take another hit, you need {needed_health} more Health or {needed_defense} more Defense."
+    );
 
     let needed_health_with_wither_shield = find_needed_health(
         total_health_with_wither_shield,
@@ -124,7 +141,9 @@ pub(crate) fn survivability_calculator(
         next_effective_health_milestone_with_wither_shield,
     );
 
-    println!("To afford to take another hit with Wither Shield, you need {needed_health_with_wither_shield} more Health, {needed_crit_damage} more Crit Damage or {needed_defense_with_wither_shield} more Defense.");
+    println!(
+        "To afford to take another hit with Wither Shield, you need {needed_health_with_wither_shield} more Health, {needed_crit_damage} more Crit Damage or {needed_defense_with_wither_shield} more Defense."
+    );
 
     true
 }
@@ -289,13 +308,19 @@ fn get_enemy_damage_per_hit(selection: i32) -> i32 {
                 2 => VOIDGLOOM_SERAPH_TIER_2_TOTAL_DAMAGE,
                 3 => {
                     println!();
-                    println!("{} This assumes there are no heads, and the hit shield DPS increase is also not factored in.", "Note:".red());
+                    println!(
+                        "{} This assumes there are no heads, and the hit shield DPS increase is also not factored in.",
+                        "Note:".red()
+                    );
 
                     VOIDGLOOM_SERAPH_TIER_3_TOTAL_DAMAGE
                 },
                 4 => {
                     println!();
-                    println!("{} This assumes there are no heads, you didn't get hit by any lasers, and the hit shield DPS increase is also not factored in.", "Note:".red());
+                    println!(
+                        "{} This assumes there are no heads, you didn't get hit by any lasers, and the hit shield DPS increase is also not factored in.",
+                        "Note:".red()
+                    );
 
                     VOIDGLOOM_SERAPH_TIER_4_TOTAL_DAMAGE
                 },
