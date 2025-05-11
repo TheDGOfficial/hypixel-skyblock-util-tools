@@ -11,7 +11,7 @@ if [[ -z "$SKIP_RUST_UPDATES" ]]; then
  cargo update
  cargo generate-lockfile
 
- cargo install cargo-binstall
+ cargo install --force cargo-binstall
 
  cargo binstall -y --force cargo-binstall
  cargo binstall -y cross
