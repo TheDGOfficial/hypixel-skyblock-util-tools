@@ -228,7 +228,7 @@ fn kill_launcher_process(launcher_process: &Process) {
 }
 
 #[inline]
-#[allow(unused_results)]
+#[expect(unused_results)]
 fn find_launcher_processes(
     mut sys: System,
     kill: bool,
@@ -352,7 +352,7 @@ fn find_launcher_processes(
 }
 
 #[inline]
-#[allow(unused_results)]
+#[expect(unused_results)]
 fn start_watching_java_process() {
     println!("Starting monitoring");
 
@@ -466,7 +466,7 @@ pub(crate) fn remove_javacheck() {
 }
 
 #[inline]
-#[allow(unused_results)]
+#[expect(unused_results)]
 fn launch_launcher() {
     tokio::spawn(async move {
         let mut envs = HashMap::from([

@@ -77,8 +77,8 @@ pub(crate) fn f64_to_i32(f64: f64) -> i32 {
         eprintln!("{}{f64}", "warning: loss of precision while converting from f64 to i32, if this is intentional, call .trunc() on the value before calling this function. f64 value: ".yellow());
 
         // i32::from is not implemented for f64 so using as is the only option.
-        #[allow(clippy::cast_possible_truncation)]
-        #[allow(clippy::as_conversions)]
+        #[expect(clippy::cast_possible_truncation)]
+        #[expect(clippy::as_conversions)]
         {
             f64 as i32
         }
@@ -91,8 +91,8 @@ pub(crate) fn u128_to_u64(u128: u128) -> u64 {
     u64::from_u128(u128).map_or_else(|| {
         eprintln!("{}{u128}", "warning: loss of precision due to overflow of u128 while converting to u64: ".yellow());
 
-        #[allow(clippy::cast_possible_truncation)]
-        #[allow(clippy::as_conversions)]
+        #[expect(clippy::cast_possible_truncation)]
+        #[expect(clippy::as_conversions)]
         {
             u128 as u64
         }
@@ -105,8 +105,8 @@ pub(crate) fn usize_to_f64(usize: usize) -> f64 {
     f64::from_usize(usize).map_or_else(|| {
         eprintln!("{}{usize}", "warning: loss of precision due to overflow of usize while converting to f64: ".yellow());
 
-        #[allow(clippy::cast_precision_loss)]
-        #[allow(clippy::as_conversions)]
+        #[expect(clippy::cast_precision_loss)]
+        #[expect(clippy::as_conversions)]
         {
             usize as f64
         }
@@ -124,8 +124,8 @@ pub(crate) fn i64_to_f64(i64: i64) -> f64 {
                     .yellow()
             );
 
-            #[allow(clippy::cast_precision_loss)]
-            #[allow(clippy::as_conversions)]
+            #[expect(clippy::cast_precision_loss)]
+            #[expect(clippy::as_conversions)]
             {
                 i64 as f64
             }
@@ -145,8 +145,7 @@ pub(crate) fn u32_to_i32(u32: u32) -> i32 {
                     .yellow()
             );
 
-            #[allow(clippy::cast_precision_loss)]
-            #[allow(clippy::as_conversions)]
+            #[expect(clippy::as_conversions)]
             {
                 u32 as i32
             }

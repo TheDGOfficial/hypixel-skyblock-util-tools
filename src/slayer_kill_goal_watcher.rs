@@ -24,10 +24,10 @@ use crate::utils::read_file;
 use crate::utils::u128_to_u64;
 use crate::utils::write_file;
 use arboard::Clipboard;
-use futures::channel::mpsc::channel;
-use futures::channel::mpsc::Receiver;
 use futures::SinkExt;
 use futures::StreamExt;
+use futures::channel::mpsc::Receiver;
+use futures::channel::mpsc::channel;
 use notify::Config;
 use notify::Event;
 use notify::RecommendedWatcher;
@@ -35,8 +35,8 @@ use notify::RecursiveMode;
 use notify::Watcher;
 use notify_rust::Notification;
 use notify_rust::Urgency;
-use std::sync::LazyLock;
 use serde_json::Error;
+use std::sync::LazyLock;
 
 // TODO
 // Make it count individual twilight arrow poison amount gained, currently it
@@ -684,7 +684,7 @@ fn remove_color_codes(text: &str) -> String {
 #[must_use]
 fn crop_letters(s: &str, pos: usize) -> &str {
     match s.char_indices().nth(pos) {
-        #[allow(clippy::indexing_slicing, clippy::string_slice)]
+        #[expect(clippy::string_slice)]
         Some((position, _)) => &s[position..],
         None => "",
     }
@@ -824,7 +824,7 @@ fn parse_log_line(
     global_data: &mut VoidgloomData,
     added_log_message: &str,
 ) {
-    #[allow(clippy::else_if_without_else)]
+    #[expect(clippy::else_if_without_else)]
     if added_log_message.contains("SLAYER QUEST COMPLETE!") {
         [session_data, global_data]
             .iter_mut()

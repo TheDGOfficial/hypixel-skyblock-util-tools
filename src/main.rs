@@ -40,6 +40,7 @@
 #![warn(dead_code)]
 #![warn(variant_size_differences)]
 #![feature(stmt_expr_attributes)]
+#![feature(new_range_api)]
 
 use std::collections::HashMap;
 use std::env;

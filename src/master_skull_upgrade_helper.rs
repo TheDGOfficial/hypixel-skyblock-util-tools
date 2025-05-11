@@ -3,8 +3,8 @@ use core::time::Duration;
 use std::time::Instant;
 
 use colored::Colorize;
-use futures::stream::FuturesOrdered;
 use futures::StreamExt;
+use futures::stream::FuturesOrdered;
 use nohash_hasher::BuildNoHashHasher;
 use nohash_hasher::IntMap;
 use reqwest::Error;
