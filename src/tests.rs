@@ -11,6 +11,7 @@ use crate::rng_simulator;
 use crate::rng_simulator::drop_rate_with_magic_find_and_looting;
 use crate::rng_simulator::get_minimum_magic_find_needed_to_succeed;
 use crate::rng_simulator::passes;
+use crate::utils::FunctionResult;
 use crate::utils::cap;
 use crate::utils::compare_f64;
 use crate::utils::conditional_value_or_default;
@@ -29,18 +30,17 @@ use crate::utils::range;
 use crate::utils::return_first_elem_if_only_one_elem;
 use crate::utils::usize_to_f64;
 use crate::utils::with_comma_separators;
-use crate::utils::FunctionResult;
 
 fn get_workspace_path() -> PathBuf {
     Path::new(".idea").join("workspace.xml")
 }
 
 fn should_test_intellij_clippy_args() -> bool {
-    return get_workspace_path().exists() && env::var("CLIPPY_ARGS").is_ok();
+    get_workspace_path().exists() && env::var("CLIPPY_ARGS").is_ok()
 }
 
 #[test]
-fn test_intellij_clippy_args() {
+fn intellij_clippy_args() {
     if should_test_intellij_clippy_args() {
         if let Ok(clippy_args) = env::var("CLIPPY_ARGS") {
             test_intellij_clippy_args0(&clippy_args);
@@ -50,12 +50,12 @@ fn test_intellij_clippy_args() {
 
 #[test]
 #[should_panic(expected = "assertion `left == right` failed")]
-fn test_intellij_clippy_args_should_fail() {
+fn intellij_clippy_args_should_fail() {
     if should_test_intellij_clippy_args() {
         test_intellij_clippy_args0("whatever");
     } else {
         panic!("assertion `left == right` failed"); // workaround to not
-                                                    // fail the test
+        // fail the test
     }
 }
 
@@ -86,7 +86,7 @@ fn test_intellij_clippy_args0(args: &str) {
 }
 
 #[test]
-fn test_compare_f64() {
+fn compare_f64_works() {
     assert!(compare_f64(1.0, 1.0));
     assert!(compare_f64(-1.0, -1.0));
 
@@ -95,74 +95,60 @@ fn test_compare_f64() {
 }
 
 #[test]
-fn test_mean() {
+fn mean_works() {
     let mean = mean(&vec![1, 2, 3, 4, 5]).unwrap();
     let expected_result = 3.0;
 
-    assert!(
-        compare_f64(mean, expected_result),
-        "{} != {}",
-        mean,
-        expected_result
-    );
+    assert!(compare_f64(mean, expected_result), "{mean} != {expected_result}");
 }
 
 #[test]
-fn test_mean_overflow_i32() {
-    let mean = mean(&vec![i32::MAX / 2; 3]).unwrap();
-    let expected_result = f64::from(i32::MAX / 2);
+fn mean_overflow_i32() {
+    let mean = mean(&vec![i32::MAX >> 1; 3]).unwrap();
+    let expected_result = f64::from(i32::MAX >> 1);
 
-    assert!(
-        compare_f64(mean, expected_result),
-        "{} != {}",
-        mean,
-        expected_result
-    );
+    assert!(compare_f64(mean, expected_result), "{mean} != {expected_result}");
 }
 
 #[test]
-fn test_convert_i32_option_to_f64_option() {
-    let optional = Some(42);
+fn convert_i32_option_to_f64_option_works() {
+    let value = 42;
 
     assert_eq!(
-        optional.unwrap(),
-        f64_to_i32(convert_i32_option_to_f64_option(optional).unwrap())
+        value,
+        f64_to_i32(convert_i32_option_to_f64_option(Some(value)).unwrap())
     );
 }
 
 #[test]
-fn test_with_comma_separators() {
+fn with_comma_separators_works() {
     assert_eq!(with_comma_separators("100000").unwrap(), "100,000");
 }
 
 #[test]
-fn test_percentage_change() {
+fn percentage_change_works() {
     let value = percentage_change(1.0, 2.0);
     let expected_result = 100.0;
 
     assert!(
         compare_f64(value, expected_result),
-        "{} != {}",
-        value,
-        expected_result
+        "{value} != {expected_result}"
     );
 }
 
 #[test]
-fn test_percent_of() {
+fn percent_of_works() {
     let value = percent_of(50.0, 25.0);
     let expected_result = 12.5;
 
     assert!(
         compare_f64(value, expected_result),
-        "{} != {}",
-        value,
-        expected_result
+        "{value} != {expected_result}"
     );
 }
 
 #[test]
-fn test_conditional_value_or_default() {
+fn conditional_value_or_default_works() {
     assert_eq!(
         conditional_value_or_default(false, || { unreachable!() }, 100),
         100
@@ -172,119 +158,105 @@ fn test_conditional_value_or_default() {
 }
 
 #[test]
-fn test_range() {
+fn range_works() {
     assert_eq!(range(&[1, 2, 3, 4, 5]).unwrap(), 4);
 }
 
 #[test]
-fn test_mode() {
+fn mode_works() {
     assert_eq!(mode(&vec![1, 2, 3, 4, 5, 2, 2, 3]).unwrap(), 2);
 }
 
 #[test]
-fn test_median() {
-    let value = median(&mut vec![1, 2, 3, 4, 5]).unwrap();
+fn median_works() {
+    let value = median(&mut [1, 2, 3, 4, 5]).unwrap();
     let expected_result = 3.0;
 
     assert!(
         compare_f64(value, expected_result),
-        "{} != {}",
-        value,
-        expected_result
+        "{value} != {expected_result}"
     );
 }
 
 #[test]
-fn test_median_2() {
-    let value = median(&mut vec![1, 2, 3, 4, 5, 6]).unwrap();
+fn median_2() {
+    let value = median(&mut [1, 2, 3, 4, 5, 6]).unwrap();
     let expected_result = 3.5;
 
     assert!(
         compare_f64(value, expected_result),
-        "{} != {}",
-        value,
-        expected_result
+        "{value} != {expected_result}"
     );
 }
 
 #[test]
-fn test_i64_to_f64() {
+fn i64_to_f64_works() {
     let value = i64_to_f64(10);
     let expected_result = 10.0;
 
     assert!(
         compare_f64(value, expected_result),
-        "{} != {}",
-        value,
-        expected_result
+        "{value} != {expected_result}"
     );
 }
 
 #[test]
-fn test_usize_to_f64() {
+fn usize_to_f64_works() {
     let value = usize_to_f64(10);
     let expected_result = 10.0;
 
     assert!(
         compare_f64(value, expected_result),
-        "{} != {}",
-        value,
-        expected_result
+        "{value} != {expected_result}"
     );
 }
 
 #[test]
-fn test_f64_to_i32() {
+fn f64_to_i32_works() {
     assert_eq!(f64_to_i32(10.0), 10);
 }
 
 #[test]
-fn test_cap() {
+fn cap_works() {
     let value = cap(11.0, 10.0);
     let expected_result = 10.0;
 
     assert!(
         compare_f64(value, expected_result),
-        "{} != {}",
-        value,
-        expected_result
+        "{value} != {expected_result}"
     );
 }
 
 #[test]
-fn test_has_unique_elements() {
+fn has_unique_elements_works() {
     assert!(has_unique_elements(&[1, 2, 3, 4, 5]));
     assert!(!has_unique_elements(&[1, 2, 3, 4, 5, 2]));
 }
 
 #[test]
-fn test_get_odds() {
+fn get_odds_works() {
     let value = get_odds(0.5);
     let expected_result = 200.0;
 
     assert!(
         compare_f64(value, expected_result),
-        "{} != {}",
-        value,
-        expected_result
+        "{value} != {expected_result}"
     );
 }
 
 #[test]
-fn test_drop_rate_with_magic_find_and_looting() {
+fn drop_rate_with_magic_find_and_looting_works() {
     let value = drop_rate_with_magic_find_and_looting(1.0, 50, 50.0);
     let expected_result = 2.25;
 
     assert!(
         compare_f64(value, expected_result),
-        "{} != {}",
-        value,
-        expected_result
+        "{value} != {expected_result}"
     );
 }
 
 #[test]
-fn test_passes() {
+fn passes_works() {
     let drop_chance = 6.0;
     let magic_number = rng_simulator::rand_f64(&mut rng_simulator::new_rng());
 
@@ -302,9 +274,7 @@ fn test_passes() {
 
     assert!(
         compare_f64(value, expected_result),
-        "{} != {}",
-        value,
-        expected_result
+        "{value} != {expected_result}"
     );
 
     assert!(
@@ -315,7 +285,7 @@ fn test_passes() {
 }
 
 #[test]
-fn test_get_minimum_magic_find_needed_to_succeed() {
+fn get_minimum_magic_find_needed_to_succeed_works() {
     assert_eq!(
         get_minimum_magic_find_needed_to_succeed(
             rng_simulator::rand_f64(&mut rng_simulator::new_rng()),
@@ -343,31 +313,27 @@ fn test_get_minimum_magic_find_needed_to_succeed() {
 }
 
 #[test]
-fn test_get_total_required_amount() {
+fn get_total_required_amount_works() {
     assert_eq!(get_total_required_amount(1, 7), 4096);
 }
 
 #[test]
-fn test_return_first_elem_if_only_elem() {
+fn return_first_elem_if_only_elem() {
     test_return_first_elem_if_only_elem0(
-        &vec![15],
+        &[15],
         Some(15.0),
         &FunctionResult::Success,
     );
+    test_return_first_elem_if_only_elem0(&[], None, &FunctionResult::Failure);
     test_return_first_elem_if_only_elem0(
-        &vec![],
-        None,
-        &FunctionResult::Failure,
-    );
-    test_return_first_elem_if_only_elem0(
-        &vec![1, 2],
+        &[1, 2],
         None,
         &FunctionResult::Failure,
     );
 }
 
 fn test_return_first_elem_if_only_elem0(
-    vec: &Vec<i32>,
+    vec: &[i32],
     expected_value: Option<f64>,
     expected_function_result: &FunctionResult,
 ) {
@@ -378,9 +344,7 @@ fn test_return_first_elem_if_only_elem0(
 
         assert!(
             compare_f64(value, expected_result),
-            "{} != {}",
-            value,
-            expected_result
+            "{value} != {expected_result}"
         );
     } else {
         assert!(result.0.is_none());

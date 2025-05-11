@@ -3,4 +3,5 @@
 ./format.sh
 export RUSTFLAGS='--cfg reqwest_unstable'
 ./test.sh
-cargo clippy $CLIPPY_ARGS
+# shellcheck disable=SC2086
+cargo clippy --fix --allow-dirty $CLIPPY_ARGS

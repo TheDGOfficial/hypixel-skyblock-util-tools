@@ -38,7 +38,9 @@ pub(crate) fn skill_average_helper(
         utils::mean(&skills.iter().map(|skill| skill.level).collect())
             .unwrap_or(0.0);
 
-    println!("Your Skill Average is {skill_average}. Max Skill Average is {max_skill_average}.");
+    println!(
+        "Your Skill Average is {skill_average}. Max Skill Average is {max_skill_average}."
+    );
     println!();
 
     let skill_levels_required_for_target_average =
@@ -47,7 +49,9 @@ pub(crate) fn skill_average_helper(
             target_skill_average,
         );
 
-    println!("To get your target Skill Average, you need to level one of the Skills below to specified levels (or level multiple to get in total {skill_levels_required_for_target_average} Skill Levels):");
+    println!(
+        "To get your target Skill Average, you need to level one of the Skills below to specified levels (or level multiple to get in total {skill_levels_required_for_target_average} Skill Levels):"
+    );
     println!();
 
     let mut target_skills: Vec<Skill> = skills.clone();
@@ -79,7 +83,13 @@ pub(crate) fn skill_average_helper(
             {
                 if target_skills[index].level > target_skills[index].max_level
                 {
-                    println!("{} {} AND {} levels from other skills (from ones below or above)", skill.name, target_skills[index].max_level, target_skills[index].level - target_skills[index].max_level);
+                    println!(
+                        "{} {} AND {} levels from other skills (from ones below or above)",
+                        skill.name,
+                        target_skills[index].max_level,
+                        target_skills[index].level
+                            - target_skills[index].max_level
+                    );
                 } else {
                     println!("{} {}", skill.name, target_skills[index].level);
                 }
@@ -98,7 +108,9 @@ pub(crate) fn skill_average_helper(
         }
     }
 
-    println!("If Required Skill Levels needed fairly split between non maxed skills (Recommended):");
+    println!(
+        "If Required Skill Levels needed fairly split between non maxed skills (Recommended):"
+    );
     println!();
 
     for skill in &nonmaxed_skills {

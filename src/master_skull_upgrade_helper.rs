@@ -7,9 +7,9 @@ use futures::stream::FuturesOrdered;
 use futures::StreamExt;
 use nohash_hasher::BuildNoHashHasher;
 use nohash_hasher::IntMap;
-use reqwest::tls::Version;
 use reqwest::Error;
 use reqwest::Response;
+use reqwest::tls::Version;
 use serde_json::Value;
 
 use crate::utils::ask_int_input;

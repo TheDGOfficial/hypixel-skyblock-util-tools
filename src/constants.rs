@@ -40,7 +40,7 @@ pub(crate) const M4_SHADOW_ASSASSIN_DAMAGE: i32 = M3_SHADOW_ASSASSIN_DAMAGE;
 pub(crate) const M5_SHADOW_ASSASSIN_DAMAGE: i32 = 270_000; // Has 2 variants, take the higher one
 pub(crate) const M6_SHADOW_ASSASSIN_DAMAGE: i32 = 400_000;
 pub(crate) const M7_SHADOW_ASSASSIN_DAMAGE: i32 = M6_SHADOW_ASSASSIN_DAMAGE; // Has 2 variants, but they do the same damage unlike F7, and they also do same
-                                                                             // damage as Shadow Assassins on M6. (although they have much more HP)
+// damage as Shadow Assassins on M6. (although they have much more HP)
 
 // Fels
 // Source: https://wiki.hypixel.net/Fels#Stats

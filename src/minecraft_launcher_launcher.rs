@@ -5,11 +5,11 @@ use std::process;
 use core::sync::atomic::AtomicBool;
 use core::sync::atomic::Ordering;
 use std::collections::HashMap;
+use std::ffi::OsStr;
 use std::path::Path;
 use std::path::PathBuf;
 use std::process::Command;
 use std::process::ExitCode;
-use std::ffi::OsStr;
 
 use crate::utils;
 use colored::Colorize;
@@ -17,10 +17,10 @@ use colored::Colorize;
 use sysinfo::Pid;
 use sysinfo::Process;
 use sysinfo::ProcessRefreshKind;
+use sysinfo::ProcessesToUpdate;
 use sysinfo::System;
 use sysinfo::Uid;
 use sysinfo::UpdateKind;
-use sysinfo::ProcessesToUpdate;
 
 #[cfg(target_os = "linux")]
 use sudo::RunningAs;
@@ -132,24 +132,20 @@ const LAUNCHER_PROFILES_MLLBACKUP_FILE: &str =
     "launcher_profiles.json.mllbackup";
 
 fn get_launcher_profiles_path() -> Option<PathBuf> {
-    match home::home_dir() {
-        Some(home_folder) => {
-            // not using utils::get_minecraft_dir_from_home_path as that can be
-            // overriden to return a different folder specific to a
-            // installation, but the launcher files will always be in the
-            // .minecraft foler.
-            let launcher_profiles_path = Path::new(&home_folder)
-                .join(".minecraft")
-                .join("launcher_profiles.json");
+    if let Some(home_folder) = home::home_dir() {
+        // not using utils::get_minecraft_dir_from_home_path as that can be
+        // overriden to return a different folder specific to a
+        // installation, but the launcher files will always be in the
+        // .minecraft foler.
+        let launcher_profiles_path = Path::new(&home_folder)
+            .join(".minecraft")
+            .join("launcher_profiles.json");
 
-            Some(launcher_profiles_path)
-        },
+        Some(launcher_profiles_path)
+    } else {
+        notify_error("can't find home directory");
 
-        None => {
-            notify_error("can't find home directory");
-
-            None
-        },
+        None
     }
 }
 
@@ -187,8 +183,7 @@ fn restore_launcher_profiles() {
 
                 if let Err(e) = fs::remove_file(backup_file_path) {
                     notify_error(&format!(
-                        "error while removing {}: {e}",
-                        LAUNCHER_PROFILES_MLLBACKUP_FILE
+                        "error while removing {LAUNCHER_PROFILES_MLLBACKUP_FILE}: {e}"
                     ));
                 }
             } // error will be printed by the read method if None

@@ -141,10 +141,10 @@ async fn main() -> ExitCode {
 
     let args: Vec<String> = env::args().collect();
 
-    debug!("given commandline arguments are {:#?}", args);
+    debug!("given commandline arguments are {args:#?}");
 
     if let Some(binary_name) = args.first() {
-        debug!("binary name is {}", binary_name);
+        debug!("binary name is {binary_name}");
 
         if let Some(binary_file_name) = Path::new(binary_name).file_name() {
             if let Some(argument) = args.get(1) {
@@ -158,7 +158,7 @@ async fn main() -> ExitCode {
                 eprintln!("{}{argument}", "invalid argument: ".red());
 
                 return ExitCode::FAILURE; // Exit because providing invalid
-                                          // arguments should not fall through
+                // arguments should not fall through
             } // No arguments given, fall through to hypixel skyblock tools
 
             if binary_file_name == "minecraft-launcher" {
@@ -166,8 +166,8 @@ async fn main() -> ExitCode {
                 // though its basically another project
                 return minecraft_launcher_launcher::launch();
             } // Binary name is not minecraft-launcher so
-              // assume user wants the hypixel skyblock tools and
-              // fall through
+        // assume user wants the hypixel skyblock tools and
+        // fall through
         } else {
             eprintln!(
                 "{}",
@@ -200,7 +200,9 @@ async fn main() -> ExitCode {
     }
 
     println!();
-    println!("Program finished, took {elapsed:.2?} (without user input {elapsed_without_user_input:.2?}), exiting..");
+    println!(
+        "Program finished, took {elapsed:.2?} (without user input {elapsed_without_user_input:.2?}), exiting.."
+    );
 
     ExitCode::SUCCESS
 }
