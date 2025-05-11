@@ -22,13 +22,23 @@ if ! command -v mold &>/dev/null; then
   MOLD_WRAPPER_CMD=""
 fi
 
+EXIT_CODE=0
+
 if [ "$1" == "--skip-extra-analyzers" ] || [ "$2" == "--skip-extra-analyzers" ]; then
-  $MOLD_WRAPPER_CMD cargo run
+  $MOLD_WRAPPER_CMD cargo run || EXIT_CODE=1
 else
   . ./init_clippy_args.sh
-  $MOLD_WRAPPER_CMD cargo clippy "$CLIPPY_ARGS" && . ./test.sh && $MOLD_WRAPPER_CMD cargo run
+  $MOLD_WRAPPER_CMD cargo clippy "$CLIPPY_ARGS" && . ./test.sh && $MOLD_WRAPPER_CMD cargo run || EXIT_CODE=1
   #MIRAI_FLAGS=--diag=paranoid cargo mirai
 fi
 
 # Disabled for same reason as above.
 #. ./ramdisk_flush_and_unmount.sh
+
+(return 0 2>/dev/null) && sourced=1 || sourced=0
+
+if (( sourced )); then
+    return "$EXIT_CODE"
+else
+    exit "$EXIT_CODE"
+fi
