@@ -128,8 +128,7 @@ fi
 
 BINARY=target/$TARGET/release/hypixel-skyblock-util-tools
 
-while [ -n "$(lsof -e /run/user/1000/gvfs -e /run/user/1000/doc "$BINARY")" ]
-do
+while fuser "$BINARY" >/dev/null 2>&1; do
   echo "Generated binary is still in use.. Will check again in a second.."
   sleep 1
 done
