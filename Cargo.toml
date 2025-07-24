@@ -57,7 +57,7 @@ sudo = "0.6.0"
 
 cnproc = "0.2.1"
 
-sysinfo = "0.36.0"
+sysinfo = "0.36.1"
 
 nix = { version = "0.30.1", features = ["process", "signal"] }
 
