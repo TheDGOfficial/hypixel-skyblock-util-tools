@@ -487,7 +487,7 @@ fn launch_launcher() {
             ("MESA_SHADER_CACHE_DISABLE", "false"), /* Force enable Shader
                                                      * Cache */
             ("MESA_SHADER_CACHE_MAX_SIZE", "4G"), /* Use a big value as limit for Shader Cache */
-            ("LD_PRELOAD", "/usr/local/lib/libmimalloc.so.2.1"), /* Use mimalloc to increase memory/GC performance */
+            ("LD_PRELOAD", "/usr/local/lib/libmimalloc.so.2.2"), /* Use mimalloc to increase memory/GC performance */
         ]);
 
         if let Ok(value) =
