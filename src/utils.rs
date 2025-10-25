@@ -73,7 +73,7 @@ pub(crate) const fn cap(number: f64, cap: f64) -> f64 {
 #[inline]
 #[must_use]
 pub(crate) fn f64_to_i32(f64: f64) -> i32 {
-    i32::from_f64(f64).map_or_else(|| {
+    i32::from_f64(f64).unwrap_or_else(|| {
         eprintln!("{}{f64}", "warning: loss of precision while converting from f64 to i32, if this is intentional, call .trunc() on the value before calling this function. f64 value: ".yellow());
 
         // i32::from is not implemented for f64 so using as is the only option.
@@ -82,13 +82,13 @@ pub(crate) fn f64_to_i32(f64: f64) -> i32 {
         {
             f64 as i32
         }
-    }, |i32| i32)
+    })
 }
 
 #[inline]
 #[must_use]
 pub(crate) fn u128_to_u64(u128: u128) -> u64 {
-    u64::from_u128(u128).map_or_else(|| {
+    u64::from_u128(u128).unwrap_or_else(|| {
         eprintln!("{}{u128}", "warning: loss of precision due to overflow of u128 while converting to u64: ".yellow());
 
         #[expect(clippy::cast_possible_truncation)]
@@ -96,13 +96,13 @@ pub(crate) fn u128_to_u64(u128: u128) -> u64 {
         {
             u128 as u64
         }
-    }, |u64| u64)
+    })
 }
 
 #[inline]
 #[must_use]
 pub(crate) fn usize_to_f64(usize: usize) -> f64 {
-    f64::from_usize(usize).map_or_else(|| {
+    f64::from_usize(usize).unwrap_or_else(|| {
         eprintln!("{}{usize}", "warning: loss of precision due to overflow of usize while converting to f64: ".yellow());
 
         #[expect(clippy::cast_precision_loss)]
@@ -110,14 +110,13 @@ pub(crate) fn usize_to_f64(usize: usize) -> f64 {
         {
             usize as f64
         }
-    }, |f64| f64)
+    })
 }
 
 #[inline]
 #[must_use]
 pub(crate) fn i64_to_f64(i64: i64) -> f64 {
-    f64::from_i64(i64).map_or_else(
-        || {
+    f64::from_i64(i64).unwrap_or_else(|| {
             eprintln!(
                 "{}{i64}",
                 "warning: loss of precision while converting i64 to f64: "
@@ -129,16 +128,13 @@ pub(crate) fn i64_to_f64(i64: i64) -> f64 {
             {
                 i64 as f64
             }
-        },
-        |f64| f64,
-    )
+        })
 }
 
 #[inline]
 #[must_use]
 pub(crate) fn u32_to_i32(u32: u32) -> i32 {
-    i32::from_u32(u32).map_or_else(
-        || {
+    i32::from_u32(u32).unwrap_or_else(|| {
             eprintln!(
                 "{}{u32}",
                 "warning: loss of precision while converting u32 to i32: "
@@ -149,9 +145,7 @@ pub(crate) fn u32_to_i32(u32: u32) -> i32 {
             {
                 u32 as i32
             }
-        },
-        |i32| i32,
-    )
+        })
 }
 
 // Result<T, E> like enum but without the result and error.
@@ -234,12 +228,11 @@ pub(crate) fn median(array: &mut [i32]) -> Option<f64> {
 
     array.sort_unstable();
 
-    if array.len() % 2 == 0 {
-        if let Some(left) = array.get(array.len() / 2 - 1) {
-            if let Some(right) = array.get(array.len() / 2) {
+    if array.len().is_multiple_of(2) {
+        if let Some(left) = array.get(array.len() / 2 - 1)
+            && let Some(right) = array.get(array.len() / 2) {
                 return Some(f64::from(left + right) / 2.0);
             }
-        }
 
         return None;
     }
@@ -273,11 +266,10 @@ pub(crate) fn mode(array: &Vec<i32>) -> Option<i32> {
 #[inline]
 #[must_use]
 pub(crate) fn range(array: &[i32]) -> Option<i32> {
-    if let Some(min) = array.iter().min() {
-        if let Some(max) = array.iter().max() {
+    if let Some(min) = array.iter().min()
+        && let Some(max) = array.iter().max() {
             return Some(max - min);
         }
-    }
 
     None
 }

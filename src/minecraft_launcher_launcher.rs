@@ -151,8 +151,8 @@ fn get_launcher_profiles_path() -> Option<PathBuf> {
 
 fn backup_launcher_profiles() {
     println!("Backing up launcher profiles...");
-    if let Some(path) = get_launcher_profiles_path() {
-        if let Some(contents) = utils::read_file(&path) {
+    if let Some(path) = get_launcher_profiles_path()
+        && let Some(contents) = utils::read_file(&path) {
             if let Some(parent) = &path.parent() {
                 if utils::write_file(
                     &parent.join(LAUNCHER_PROFILES_MLLBACKUP_FILE),
@@ -167,7 +167,7 @@ fn backup_launcher_profiles() {
                 ));
             }
         } // error will be printed by the read method if None
-    } // error will be printed by the get method if None
+     // error will be printed by the get method if None
 }
 
 fn restore_launcher_profiles() {
@@ -374,8 +374,7 @@ fn start_watching_java_process() {
                                     ProcessRefreshKind::nothing()
                                         .with_cmd(UpdateKind::OnlyIfNotSet),
                                 ) == 1
-                                {
-                                    if let Some(process) = sys.process(pid) {
+                                    && let Some(process) = sys.process(pid) {
                                         let name = process.name();
 
                                         if name == "java"
@@ -392,7 +391,6 @@ fn start_watching_java_process() {
                                             break;
                                         }
                                     }
-                                }
                             } else {
                                 notify_error(&format!(
                                     "Can't convert i32 PID to usize PID: {id}"
@@ -492,15 +490,13 @@ fn launch_launcher() {
 
         if let Ok(value) =
             env::var("MC_LAUNCHER_LAUNCHER_NO_GL_VERSION_OVERRIDE")
-        {
-            if value == "true" {
+            && value == "true" {
                 println!("Not overriding advertised GL versions.");
 
                 envs.remove("MESA_GL_VERSION_OVERRIDE");
                 envs.remove("MESA_GLES_VERSION_OVERRIDE");
                 envs.remove("MESA_GLSL_VERSION_OVERRIDE");
             }
-        }
 
         envs.remove("LD_PRELOAD"); // Temporary; mimalloc causes launcher to never load.
 
@@ -622,8 +618,8 @@ pub(crate) fn install(binary_file_name: &str, args: &[String]) -> ExitCode {
                     let real_launcher_path =
                         bin_dir.join("minecraft-launcher-real");
 
-                    if args.contains(&"--upgrade".to_owned()) {
-                        if let Err(e) =
+                    if args.contains(&"--upgrade".to_owned())
+                        && let Err(e) =
                             fs::remove_file(real_launcher_path.clone())
                         {
                             eprintln!(
@@ -631,7 +627,6 @@ pub(crate) fn install(binary_file_name: &str, args: &[String]) -> ExitCode {
                                 "error while removing real launcher: ".red()
                             );
                         }
-                    }
 
                     if real_launcher_path.exists() {
                         println!(

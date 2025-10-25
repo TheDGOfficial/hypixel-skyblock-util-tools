@@ -463,8 +463,8 @@ fn do_rolls_and_get_drops(
             );
 
         if minimum_magic_find_needed_to_succeed == MAXIMUM_MAGIC_FIND + 1 {
-            if do_printing {
-                if let Err(e) = writeln!(
+            if do_printing
+                && let Err(e) = writeln!(
                     buf,
                     "Roll #{}: {}, can't succeed even with max Magic Find.",
                     roll.to_string().yellow(),
@@ -475,14 +475,13 @@ fn do_rolls_and_get_drops(
                     // macro handle the error.
                     eprintln!("{}{e}", "error: can't write to stdout: ".red());
                 }
-            }
         } else {
             all_succeeded_magic_find_values
                 .push(minimum_magic_find_needed_to_succeed);
 
             if do_printing {
-                if success {
-                    if let Err(e) = writeln!(
+                if success
+                    && let Err(e) = writeln!(
                         buf,
                         "Roll #{}: {}, minimum magic find to succeed is {}. RNG Meter: %{}",
                         roll.to_string().yellow(),
@@ -500,10 +499,9 @@ fn do_rolls_and_get_drops(
                             "error: can't write to stdout: ".red()
                         );
                     }
-                }
 
-                if !success {
-                    if let Err(e) = writeln!(
+                if !success
+                    && let Err(e) = writeln!(
                         buf,
                         "Roll #{}: {}, minimum magic find to succeed is {} which is higher than yours.",
                         roll.to_string().yellow(),
@@ -520,7 +518,6 @@ fn do_rolls_and_get_drops(
                             "error: can't write to stdout: ".red()
                         );
                     }
-                }
             }
         }
     }
@@ -553,25 +550,23 @@ fn print_statistics(
         );
     }
 
-    if !has_unique_elements(all_succeeded_magic_find_values) {
-        if let Some(mode_succeed_magic_find) =
+    if !has_unique_elements(all_succeeded_magic_find_values)
+        && let Some(mode_succeed_magic_find) =
             mode(all_succeeded_magic_find_values)
         {
             println!(
                 "Mode (Most Repeated) Succeed Magic Find: {mode_succeed_magic_find}"
             );
         }
-    }
 
-    if all_succeeded_magic_find_values.len() > 1 {
-        if let Some(range_succeed_magic_find) =
+    if all_succeeded_magic_find_values.len() > 1
+        && let Some(range_succeed_magic_find) =
             range(all_succeeded_magic_find_values)
         {
             println!(
                 "Range (Difference between smallest and highest) Succeed Magic Find: {range_succeed_magic_find}"
             );
         }
-    }
 
     if !meter_succeeded_rolls.is_empty() {
         println!();
@@ -608,8 +603,8 @@ fn print_statistics(
         );
     }
 
-    if !has_unique_elements(meter_succeeded_rolls) {
-        if let Some(mode_succeed_rolls) = mode(meter_succeeded_rolls) {
+    if !has_unique_elements(meter_succeeded_rolls)
+        && let Some(mode_succeed_rolls) = mode(meter_succeeded_rolls) {
             let mode_succeed_meter = 100.0
                 - f64::abs(percentage_change(
                     odds,
@@ -620,10 +615,9 @@ fn print_statistics(
                 "Mode (Most Repeated) Amount of Rolls until Succeed: {mode_succeed_rolls} (%{mode_succeed_meter} RNG Meter)"
             );
         }
-    }
 
-    if meter_succeeded_rolls.len() > 1 {
-        if let Some(range_succeed_rolls) = range(meter_succeeded_rolls) {
+    if meter_succeeded_rolls.len() > 1
+        && let Some(range_succeed_rolls) = range(meter_succeeded_rolls) {
             let range_succeed_meter = 100.0
                 - f64::abs(percentage_change(
                     odds,
@@ -634,7 +628,6 @@ fn print_statistics(
                 "Range (Difference between smallest and highest) Amount of Rolls until Succeed: {range_succeed_rolls} (%{range_succeed_meter} RNG Meter)"
             );
         }
-    }
 
     if let Some(max) = meter_succeeded_rolls.iter().max() {
         let max_meter = 100.0

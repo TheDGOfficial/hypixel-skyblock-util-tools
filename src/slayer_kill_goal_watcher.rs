@@ -188,13 +188,12 @@ fn print_values(data: &VoidgloomData) {
 #[inline]
 fn print_statistics(label: &str, file: &Path) {
     if file.exists() {
-        if let Some(json) = read_file(file) {
-            if let Some(data) = load_data(json.as_str()) {
+        if let Some(json) = read_file(file)
+            && let Some(data) = load_data(json.as_str()) {
                 println!();
                 println!("-- Statistics for {label}");
                 print_values(&data);
             }
-        }
     } else {
         eprintln!("{}{label}", "No statistics for ".red());
     }
@@ -436,8 +435,8 @@ pub(crate) fn slayer_kill_goal_watcher(
         }
     }
 
-    if session_data.start_time == 0 {
-        if let Some(epoch) = nano_time() {
+    if session_data.start_time == 0
+        && let Some(epoch) = nano_time() {
             // Warning will be written by the util method if we can't get the
             // time
             session_data.start_time = epoch;
@@ -446,10 +445,9 @@ pub(crate) fn slayer_kill_goal_watcher(
                 eprintln!("{}", "warning: saving of session data to reflect session start time failed, look above for possible errors".yellow());
             }
         }
-    }
 
-    if get_global_data(global_data, true) && global_data.start_time == 0 {
-        if let Some(epoch) = nano_time() {
+    if get_global_data(global_data, true) && global_data.start_time == 0
+        && let Some(epoch) = nano_time() {
             // Warning will be written by the util method if we can't get the
             // time
             global_data.start_time = epoch;
@@ -458,7 +456,6 @@ pub(crate) fn slayer_kill_goal_watcher(
                 eprintln!("{}", "warning: saving of global data to reflect start time failed, look above for possible errors".yellow());
             }
         }
-    }
 
     register_watcher_with_new_clipboard(session_data, global_data);
 
@@ -517,13 +514,12 @@ fn register_watcher(
     clipboard: &mut Clipboard,
 ) {
     futures::executor::block_on(async {
-        if let Some(path) = get_log_file_path() {
-            if let Err(e) =
+        if let Some(path) = get_log_file_path()
+            && let Err(e) =
                 async_watch(path, session_data, global_data, clipboard).await
             {
                 eprintln!("{}{e}", "watch error: ".red());
             }
-        }
     });
 }
 
@@ -540,8 +536,7 @@ fn print_all_statistics(
         let mut changed = false;
 
         if session_data.end_time == 0 && get_last_session_data_file().exists()
-        {
-            if let Some(epoch) = nano_time() {
+            && let Some(epoch) = nano_time() {
                 // Warning will be written by util method if we can't get time
                 session_data.end_time = epoch;
                 changed = true;
@@ -550,7 +545,6 @@ fn print_all_statistics(
                     eprintln!("{}", "warning: saving of session data to reflect end time failed, look above for possible errors".yellow());
                 }
             }
-        }
 
         print_statistics("Last session", last_session_file);
 
@@ -565,8 +559,8 @@ fn print_all_statistics(
     if get_global_data(global_data, false) {
         let mut global_changed = false;
 
-        if global_data.end_time == 0 && global_data_file.exists() {
-            if let Some(epoch) = nano_time() {
+        if global_data.end_time == 0 && global_data_file.exists()
+            && let Some(epoch) = nano_time() {
                 // Warning will be written by util method if we can't get time
                 global_data.end_time = epoch;
                 global_changed = true;
@@ -575,7 +569,6 @@ fn print_all_statistics(
                     eprintln!("{}", "warning: saving of global data to reflect end time failed, look above for possible errors".yellow());
                 }
             }
-        }
 
         print_statistics("Global", global_data_file);
 
