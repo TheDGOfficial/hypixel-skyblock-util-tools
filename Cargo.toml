@@ -1,4 +1,4 @@
-cargo-features = ["profile-rustflags"]
+cargo-features = ["profile-rustflags", "panic-immediate-abort"]
 
 [package]
 name = "hypixel-skyblock-util-tools"
@@ -14,7 +14,7 @@ categories = ["command-line-utilities"]
 
 edition = "2024"
 #TODO bump with every Rust version
-rust-version = "1.88.0"
+rust-version = "1.92.0"
 exclude = ["/.github/*"]
 
 [dependencies]
@@ -69,7 +69,7 @@ debug = false
 strip = "debuginfo"  # Automatically strip symbols from the binary.
 lto = "fat"
 codegen-units = 1
-panic = "abort"
+panic = "immediate-abort"
 incremental = false
 opt-level = 3
 

@@ -6,7 +6,7 @@ get_cargo_cmd() {
    BUILD_MAIN_CMD="cross"
   fi
 
-  PANIC_ABORT_CMDLINE="$BUILD_MAIN_CMD $1 -Z build-std=std,panic_abort -Z build-std-features=panic_immediate_abort --target=$2"
+  PANIC_ABORT_CMDLINE="$BUILD_MAIN_CMD $1 -Z build-std --target=$2"
 
   if [ "$1" == "test" ]; then
     echo "$BUILD_MAIN_CMD $1 --target=$2"
