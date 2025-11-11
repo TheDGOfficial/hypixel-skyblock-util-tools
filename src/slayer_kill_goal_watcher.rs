@@ -693,7 +693,7 @@ fn crop_netty(mut s: String) -> String {
         );
     }
 
-    s
+    s.replace("] Render thread/INFO] CHAT] ",  "")
 }
 
 #[inline]
