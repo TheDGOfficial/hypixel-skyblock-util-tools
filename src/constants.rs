@@ -5,7 +5,7 @@ pub(crate) const SECRETS_NEEDED_FOR_MAX_GENERALS_MEDALLION: i32 = 100_000;
 pub(crate) const MAXIMUM_MAGIC_FIND: i32 = 900;
 
 // Source: https://wiki.hypixel.net/Minos_Inquisitor#Loot
-pub(crate) const CHIMERA_DROP_CHANCE: f64 = 1.0;
+pub(crate) const CHIMERA_DROP_CHANCE: f64 = 1.25;
 
 // Source: In-game RNG Meter base chance.
 pub(crate) const JUDGEMENT_CORE_DROP_CHANCE: f64 = 0.0565;
