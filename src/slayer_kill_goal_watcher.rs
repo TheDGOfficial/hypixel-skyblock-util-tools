@@ -777,9 +777,6 @@ fn refresh_data_from_logs(
                             && !added_log_message
                                 .contains("Enchanted Ender Pearl")
                             && !added_log_message.contains("Griffin Feather")
-                            && !added_log_message.contains("Chimera")
-                        // Copy the Enchanted Book one as it includes magic
-                        // find and its cooler
                         {
                             copy_to_clipboard(
                             clipboard,
