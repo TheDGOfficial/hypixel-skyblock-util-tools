@@ -470,6 +470,7 @@ fn launch_launcher() {
         let mut envs = HashMap::from([
             ("vblank_mode", "0"),         // Improves performance
             ("__GL_SYNC_TO_VBLANK", "0"), /* Same as the above environment variable, but also works on NVIDIA closed source drivers. */
+            ("ALSOFT_DRIVERS", "pipewire"),  /* Use native pipewire */
             ("LIBGL_DRI2_DISABLE", "true"), // Force use of DRI3 if available
             ("MESA_NO_ERROR", "true"),      /* Disable error checking for
                                              * performance */
