@@ -14,12 +14,12 @@ categories = ["command-line-utilities"]
 
 edition = "2024"
 #TODO bump with every Rust version
-rust-version = "1.93.0"
+rust-version = "1.95.0"
 exclude = ["/.github/*"]
 
 [dependencies]
 tokio = { version = "1.49.0", features = ["full"] }
-reqwest = { version = "0.12.28", default-features = false, features = ["brotli", "rustls-tls", "http3"] }
+reqwest = { version = "0.13.1", default-features = false, features = ["brotli", "http3", "query"] }
 
 futures = "0.3.31"
 
