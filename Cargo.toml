@@ -59,7 +59,7 @@ cnproc = "0.2.1"
 
 sysinfo = "0.37.2"
 
-nix = { version = "0.30.1", features = ["process", "signal"] }
+nix = { version = "0.31.1", features = ["process", "signal"] }
 
 [patch.crates-io]
 cnproc = { git = "https://github.com/yorodm/cnproc-rs" } # makes it so recv only returns when an event happens
