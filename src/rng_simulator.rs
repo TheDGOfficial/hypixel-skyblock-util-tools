@@ -6,7 +6,9 @@ use std::time::Instant;
 use colored::Colorize;
 
 use rand::Rng;
-use rand::SeedableRng;
+use rand::make_rng;
+
+use rand::RngExt;
 
 use rand::rngs::SmallRng;
 
@@ -284,7 +286,7 @@ pub(crate) fn rng_simulator(
 #[inline]
 #[must_use]
 pub(crate) fn new_rng() -> impl Rng {
-    SmallRng::from_os_rng()
+    make_rng::<SmallRng>()
 }
 
 #[inline]
