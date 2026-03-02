@@ -18,48 +18,48 @@ rust-version = "1.96.0"
 exclude = ["/.github/*"]
 
 [dependencies]
-tokio = { version = "1.49.0", features = ["full"] }
+tokio = { version = "1.49.0", default-features = false, features = ["rt-multi-thread"] }
 reqwest = { version = "0.13.2", default-features = false, features = ["brotli", "http3", "query"] }
 
-futures = "0.3.32"
+futures = { version = "0.3.32", default-features = false }
 
-serde = "1.0.228"
-serde_json = "1.0.149"
+serde = { version = "1.0.228", default-features = false }
+serde_json = { version = "1.0.149", default-features = false, features = ["std"] }
 
-#jemallocator = "0.5.4"
+#jemallocator = { version = "0.5.4", default-features = false }
 mimalloc = { version = "0.1.48", default-features = false, features = ["v3"] }
 
-nohash-hasher = "0.2.0"
+nohash-hasher = { version = "0.2.0", default-features = false, features = ["std"] }
 
-#rustc-hash = "2.1.1"
+#rustc-hash = { version = "2.1.1", default-features = false }
 
-colored = "3.1.1"
+colored = { version = "3.1.1", default-features = false }
 
-num = "0.4.3"
+num = { version = "0.4.3", default-features = false }
 
-rand = "0.10.0"
+rand = { version = "0.10.0", default-features = false, features = ["sys_rng"] }
 
-home = "0.5.12"
+home = { version = "0.5.12", default-features = false }
 
-notify = "8.2.0"
+notify = { version = "8.2.0", default-features = false }
 
-rev_buf_reader = "0.3.0"
+rev_buf_reader = { version = "0.3.0", default-features = false }
 
-log = { version = "0.4.29", features = ["release_max_level_warn"] }
+log = { version = "0.4.29", default-features = false, features = ["release_max_level_warn"] }
 
-env_logger = "0.11.9"
+env_logger = { version = "0.11.9", default-features = false }
 
 notify-rust = "4.12.0"
 
-arboard = { version = "3.6.1", features = ["wayland-data-control"] }
+arboard = { version = "3.6.1", default-features = false, features = ["wayland-data-control"] }
 
-sudo = "0.6.0"
+sudo = { version = "0.6.0", default-features = false }
 
-cnproc = "0.2.1"
+cnproc = { version = "0.2.1", default-features = false }
 
-sysinfo = "0.38.0"
+sysinfo = { version = "0.38.0", default-features = false, features = ["system"] }
 
-nix = { version = "0.31.1", features = ["process", "signal"] }
+nix = { version = "0.31.1", default-features = false, features = ["process", "signal"] }
 
 [patch.crates-io]
 cnproc = { git = "https://github.com/yorodm/cnproc-rs" } # makes it so recv only returns when an event happens
@@ -79,7 +79,7 @@ strip = true
 codegen-units = 1
 incremental = false
 opt-level = 3
-rustflags = ["-C", "opt-level=3", "-C", "target-cpu=native", "-Z", "tune-cpu=native", "-Z", "mir-opt-level=4", "-Z", "threads=8", "-Z", "polonius=next", "--cfg", "reqwest_unstable"]
+rustflags = ["-C", "opt-level=3", "-C", "target-cpu=native", "-Z", "tune-cpu=native", "-Z", "mir-opt-level=4", "-Z", "threads=8", "-Z", "polonius=next", "--cfg", "reqwest_unstable", "-Z", "location-detail=none", "-Z", "fmt-debug=none"]
 
 [profile.dev]
 strip = false

@@ -516,8 +516,12 @@ fn register_watcher(
     futures::executor::block_on(async {
         if let Some(path) = get_log_file_path()
             && let Err(e) =
-                async_watch(path, session_data, global_data, clipboard).await
+                async_watch(&path, session_data, global_data, clipboard).await
             {
+                if !path.exists() {
+                    eprintln!("{}", "latest.log file is missing, can't watch".red());
+                    return;
+                }
                 eprintln!("{}{e}", "watch error: ".red());
             }
     });
@@ -942,7 +946,7 @@ fn async_watcher()
 
 #[inline]
 async fn async_watch<P: AsRef<Path> + Send>(
-    path: P,
+    path: &P,
     session_data: &mut VoidgloomData,
     global_data: &mut VoidgloomData,
     clipboard: &mut Clipboard,
@@ -984,7 +988,7 @@ async fn async_watch<P: AsRef<Path> + Send>(
                             event
                         );
                     },
-                Err(e) => eprintln!("{}{e}", "watch error: ".red()),
+                Err(e) => eprintln!("{}{e}", "watch error inside loop: ".red()),
             }
         } else {
             remove_hook();

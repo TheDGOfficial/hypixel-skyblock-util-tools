@@ -6,7 +6,7 @@ get_cargo_cmd() {
    BUILD_MAIN_CMD="cross"
   fi
 
-  PANIC_ABORT_CMDLINE="$BUILD_MAIN_CMD $1 -Z build-std --target=$2"
+  PANIC_ABORT_CMDLINE="$BUILD_MAIN_CMD $1 -Z build-std=std,panic_abort -Z unstable-options -Z build-std-features="" --target=$2"
 
   if [ "$1" == "test" ]; then
     echo "$BUILD_MAIN_CMD $1 --target=$2"
@@ -92,7 +92,7 @@ if [ "$TUNE_CPU" != "$TUNE_CPU_DEFAULT" ]; then
  TARGET_TUNE_CPU="$TARGET_TUNE_CPU -Z tune-cpu=$TUNE_CPU"
 fi
 
-export NORMAL_FLAGS="--remap-path-prefix=/home/$USER/.cargo/=/.cargo/ -C opt-level=3$TARGET_TUNE_CPU -C lto -Z mir-opt-level=4 -Z threads=8 -Z polonius=next --cfg reqwest_unstable"
+export NORMAL_FLAGS="--remap-path-prefix=/home/$USER/.cargo/=/.cargo/ -C opt-level=3$TARGET_TUNE_CPU -C lto -Z unstable-options -C panic=immediate-abort -Z mir-opt-level=4 -Z threads=8 -Z polonius=next -Z location-detail=none -Z fmt-debug=none --cfg reqwest_unstable"
 
 CARGO_CMD="$(get_cargo_cmd build $TARGET)"
 CARGO_CMD_TEST="$(get_cargo_cmd test $TARGET)"
@@ -135,7 +135,7 @@ done
 
 if [[ -z "$PROFILING_PROFILE" ]]; then
  strip "$BINARY"
- #upx --best "$BINARY"
+ upx --best --lzma "$BINARY"
 fi
 
 (return 0 2>/dev/null) && sourced=1 || sourced=0

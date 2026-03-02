@@ -76,6 +76,28 @@ mod tests;
 static GLOBAL: MiMalloc = MiMalloc;
 
 #[inline]
+fn fmt_duration(dur: std::time::Duration) -> String {
+    let secs = dur.as_secs();
+    let nanos = dur.subsec_nanos();
+
+    if secs > 0 {
+        // fractional seconds as float
+        let fsecs = secs as f64 + nanos as f64 / 1_000_000_000.0;
+        format!("{:.2}s", fsecs)
+    } else if nanos >= 1_000_000 {
+        // milliseconds
+        let fms = nanos as f64 / 1_000_000.0;
+        format!("{:.2}ms", fms)
+    } else if nanos >= 1_000 {
+        // microseconds
+        let fus = nanos as f64 / 1_000.0;
+        format!("{:.2}µs", fus)
+    } else {
+        format!("{nanos}ns")
+    }
+}
+
+#[inline]
 fn print_selections() {
     println!("Select which utility you want to run: ");
     println!(
@@ -202,7 +224,9 @@ async fn main() -> ExitCode {
 
     println!();
     println!(
-        "Program finished, took {elapsed:.2?} (without user input {elapsed_without_user_input:.2?}), exiting.."
+        "Program finished, took {} (without user input {}), exiting..",
+        fmt_duration(elapsed),
+        fmt_duration(elapsed_without_user_input)
     );
 
     ExitCode::SUCCESS
