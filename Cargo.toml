@@ -57,7 +57,7 @@ sudo = { version = "0.6.0", default-features = false }
 
 cnproc = { version = "0.2.1", default-features = false }
 
-sysinfo = { version = "0.38.0", default-features = false, features = ["system"] }
+sysinfo = { version = "0.38.3", default-features = false, features = ["system"] }
 
 nix = { version = "0.31.1", default-features = false, features = ["process", "signal"] }
 
